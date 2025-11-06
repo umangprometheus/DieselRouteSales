@@ -84,7 +84,7 @@ export async function createFieldVisitCheckIn(
 
     const customObjectResponse = await client.crm.objects.basicApi.create(customObjectTypeId, {
       properties: {
-        hs_object_id: recordName, // Use timestamp as record name
+        check_in_name: recordName, // Use timestamp as record name
       },
     });
 
