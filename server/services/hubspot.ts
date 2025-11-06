@@ -90,25 +90,55 @@ export async function createFieldVisitCheckIn(
 
     console.log(`✅ Created check-in record ${customObjectResponse.id}: "${recordName}"`);
 
-    // Associate the check-in with the company using the CORRECT API
-    // Companies have object type ID "0-2" in HubSpot
+    // Associate the check-in with the company
     try {
       const axios = (await import('axios')).default;
       const apiKey = process.env.HUBSPOT_API_KEY;
       
-      // Step 1: Get the correct association type ID from HubSpot
-      const labelsResponse = await axios.get(
-        `https://api.hubapi.com/crm/v4/associations/${customObjectTypeId}/0-2/labels`,
-        {
-          headers: {
-            'Authorization': `Bearer ${apiKey}`,
-            'Content-Type': 'application/json',
+      // Step 1: Check if association definition exists, create if not
+      let labelsResponse;
+      try {
+        labelsResponse = await axios.get(
+          `https://api.hubapi.com/crm/v4/associations/${customObjectTypeId}/0-2/labels`,
+          {
+            headers: {
+              'Authorization': `Bearer ${apiKey}`,
+              'Content-Type': 'application/json',
+            }
           }
-        }
-      );
+        );
+      } catch (error: any) {
+        // Association definition doesn't exist - create it
+        console.log(`Creating association definition between ${customObjectTypeId} and companies...`);
+        await axios.post(
+          `https://api.hubapi.com/crm/v3/schemas/${customObjectTypeId}/associations`,
+          {
+            fromObjectTypeId: customObjectTypeId,
+            toObjectTypeId: "company",
+            name: "check_in_to_company"
+          },
+          {
+            headers: {
+              'Authorization': `Bearer ${apiKey}`,
+              'Content-Type': 'application/json',
+            }
+          }
+        );
+        console.log(`✅ Created association definition`);
+        
+        // Now fetch the labels
+        labelsResponse = await axios.get(
+          `https://api.hubapi.com/crm/v4/associations/${customObjectTypeId}/0-2/labels`,
+          {
+            headers: {
+              'Authorization': `Bearer ${apiKey}`,
+              'Content-Type': 'application/json',
+            }
+          }
+        );
+      }
       
       const associationTypes = labelsResponse.data.results || [];
-      // Use the first HUBSPOT_DEFINED association type (default/unlabeled)
       const defaultAssocType = associationTypes.find((a: any) => 
         a.category === 'HUBSPOT_DEFINED'
       );
@@ -118,9 +148,9 @@ export async function createFieldVisitCheckIn(
       }
       
       const associationTypeId = defaultAssocType.typeId;
-      console.log(`Found association type ID: ${associationTypeId} (${defaultAssocType.category})`);
+      console.log(`Using association type ID: ${associationTypeId}`);
       
-      // Step 2: Create the association using v3 PUT endpoint with proper object type IDs
+      // Step 2: Create the association using v3 PUT endpoint
       await axios.put(
         `https://api.hubapi.com/crm/v3/objects/${customObjectTypeId}/${customObjectResponse.id}/associations/0-2/${companyId}/${associationTypeId}`,
         {},
@@ -133,7 +163,6 @@ export async function createFieldVisitCheckIn(
       );
       
       console.log(`✅ Associated check-in ${customObjectResponse.id} with company ${companyId}`);
-      console.log(`   Using association type ID: ${associationTypeId}`);
     } catch (assocError: any) {
       console.error("❌ Failed to create check-in → company association:", assocError?.message || assocError);
       if (assocError?.response?.data) {
