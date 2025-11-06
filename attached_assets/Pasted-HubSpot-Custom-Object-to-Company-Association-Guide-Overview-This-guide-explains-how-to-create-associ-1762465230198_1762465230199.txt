@@ -1,0 +1,419 @@
+HubSpot Custom Object to Company Association Guide
+Overview
+This guide explains how to create associations between custom objects and companies in HubSpot via the API. There are multiple approaches depending on when you want to create the association and which API version you're using.
+Prerequisites
+
+HubSpot API Key or Private App Token
+Custom Object Type ID (e.g., 2-xxxxxxx)
+Association Type ID (for custom labels)
+Company and Custom Object Record IDs
+
+API Versions
+HubSpot offers two main API versions for associations:
+
+v3 API: Basic associations
+v4 API: Supports association labels (recommended)
+
+Method 1: Create Association During Record Creation
+Using v3 API
+When creating a custom object record, you can include associations in the same request:
+javascriptconst axios = require('axios');
+
+async function createCustomObjectWithAssociation(apiKey, customObjectType, companyId) {
+  const url = `https://api.hubapi.com/crm/v3/objects/${customObjectType}`;
+  
+  const data = {
+    properties: {
+      name: "My Custom Object",
+      description: "Description here",
+      // Add your custom properties
+    },
+    associations: [
+      {
+        to: {
+          id: companyId
+        },
+        types: [
+          {
+            associationCategory: "HUBSPOT_DEFINED",
+            associationTypeId: 280  // Standard company association
+          }
+        ]
+      }
+    ]
+  };
+
+  try {
+    const response = await axios.post(url, data, {
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json'
+      }
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error:', error.response?.data || error);
+    throw error;
+  }
+}
+Method 2: Create Association After Record Creation
+Using v4 API (Recommended)
+javascriptconst axios = require('axios');
+
+async function associateCustomObjectToCompany(apiKey, customObjectId, companyId, customObjectType) {
+  // For individual association
+  const url = `https://api.hubapi.com/crm/v4/objects/${customObjectType}/${customObjectId}/associations/company/${companyId}`;
+  
+  const data = [
+    {
+      associationCategory: "HUBSPOT_DEFINED",
+      associationTypeId: 280  // Unlabeled association
+    }
+  ];
+
+  try {
+    const response = await axios.put(url, data, {
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json'
+      }
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error:', error.response?.data || error);
+    throw error;
+  }
+}
+Using v4 Batch API
+For associating multiple records at once:
+javascriptasync function batchAssociateCustomObjectsToCompanies(apiKey, customObjectType, associations) {
+  const url = `https://api.hubapi.com/crm/v4/associations/${customObjectType}/company/batch/create`;
+  
+  const data = {
+    inputs: associations.map(assoc => ({
+      from: { id: assoc.customObjectId },
+      to: { id: assoc.companyId },
+      types: [
+        {
+          associationCategory: "HUBSPOT_DEFINED",
+          associationTypeId: 280
+        }
+      ]
+    }))
+  };
+
+  try {
+    const response = await axios.post(url, data, {
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json'
+      }
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error:', error.response?.data || error);
+    throw error;
+  }
+}
+Method 3: Using HubSpot Node.js Client
+If you're using the official HubSpot Node.js client:
+javascriptconst hubspot = require('@hubspot/api-client');
+
+const hubspotClient = new hubspot.Client({ accessToken: YOUR_ACCESS_TOKEN });
+
+// Create custom object with association
+async function createWithAssociation() {
+  const customObjectInput = {
+    properties: {
+      name: 'My Custom Object',
+      // other properties
+    },
+    associations: [
+      {
+        to: { id: 'COMPANY_ID' },
+        types: [
+          {
+            associationCategory: 'HUBSPOT_DEFINED',
+            associationTypeId: 280
+          }
+        ]
+      }
+    ]
+  };
+
+  try {
+    const response = await hubspotClient.crm.objects.basicApi.create(
+      'CUSTOM_OBJECT_TYPE',
+      customObjectInput
+    );
+    return response;
+  } catch (error) {
+    console.error('Error:', error);
+    throw error;
+  }
+}
+
+// Create association separately
+async function createAssociationSeparately() {
+  try {
+    const response = await hubspotClient.crm.associations.v4.basicApi.create(
+      'CUSTOM_OBJECT_TYPE',
+      'CUSTOM_OBJECT_ID',
+      'company',
+      'COMPANY_ID',
+      [
+        {
+          associationCategory: 'HUBSPOT_DEFINED',
+          associationTypeId: 280
+        }
+      ]
+    );
+    return response;
+  } catch (error) {
+    console.error('Error:', error);
+    throw error;
+  }
+}
+Finding Association Type IDs
+1. Get Association Types Between Objects
+javascriptasync function getAssociationTypes(apiKey, fromObjectType, toObjectType = 'company') {
+  const url = `https://api.hubapi.com/crm/v4/associations/${fromObjectType}/${toObjectType}/labels`;
+  
+  try {
+    const response = await axios.get(url, {
+      headers: {
+        'Authorization': `Bearer ${apiKey}`
+      }
+    });
+    return response.data.results;
+  } catch (error) {
+    console.error('Error:', error.response?.data || error);
+    throw error;
+  }
+}
+2. Common Association Type IDs
+
+Unlabeled association: Usually has typeId around 279-280
+Primary company: typeId = 1
+Custom labels: Will have unique IDs that you need to retrieve
+
+Complete Example for Replit App
+javascriptconst axios = require('axios');
+
+class HubSpotCustomObjectAssociator {
+  constructor(apiKey) {
+    this.apiKey = apiKey;
+    this.baseUrl = 'https://api.hubapi.com';
+    this.headers = {
+      'Authorization': `Bearer ${apiKey}`,
+      'Content-Type': 'application/json'
+    };
+  }
+
+  // Create custom object with company association
+  async createCustomObjectWithCompany(customObjectType, properties, companyId, associationTypeId = 280) {
+    const url = `${this.baseUrl}/crm/v3/objects/${customObjectType}`;
+    
+    const data = {
+      properties,
+      associations: [
+        {
+          to: { id: companyId },
+          types: [
+            {
+              associationCategory: "HUBSPOT_DEFINED",
+              associationTypeId: associationTypeId
+            }
+          ]
+        }
+      ]
+    };
+
+    try {
+      const response = await axios.post(url, data, { headers: this.headers });
+      return response.data;
+    } catch (error) {
+      this.handleError(error);
+    }
+  }
+
+  // Associate existing custom object to company
+  async associateToCompany(customObjectType, customObjectId, companyId, associationTypeId = 280) {
+    const url = `${this.baseUrl}/crm/v4/objects/${customObjectType}/${customObjectId}/associations/company/${companyId}`;
+    
+    const data = [
+      {
+        associationCategory: "HUBSPOT_DEFINED",
+        associationTypeId: associationTypeId
+      }
+    ];
+
+    try {
+      const response = await axios.put(url, data, { headers: this.headers });
+      return response.data;
+    } catch (error) {
+      this.handleError(error);
+    }
+  }
+
+  // Get all associations for a custom object
+  async getAssociations(customObjectType, customObjectId) {
+    const url = `${this.baseUrl}/crm/v4/objects/${customObjectType}/${customObjectId}/associations/company`;
+    
+    try {
+      const response = await axios.get(url, { headers: this.headers });
+      return response.data.results;
+    } catch (error) {
+      this.handleError(error);
+    }
+  }
+
+  // Remove association
+  async removeAssociation(customObjectType, customObjectId, companyId) {
+    const url = `${this.baseUrl}/crm/v4/objects/${customObjectType}/${customObjectId}/associations/company/${companyId}`;
+    
+    try {
+      const response = await axios.delete(url, { headers: this.headers });
+      return response.data;
+    } catch (error) {
+      this.handleError(error);
+    }
+  }
+
+  // Get available association types
+  async getAssociationTypes(customObjectType) {
+    const url = `${this.baseUrl}/crm/v4/associations/${customObjectType}/company/labels`;
+    
+    try {
+      const response = await axios.get(url, { headers: this.headers });
+      return response.data.results;
+    } catch (error) {
+      this.handleError(error);
+    }
+  }
+
+  handleError(error) {
+    if (error.response) {
+      console.error('API Error:', error.response.data);
+      console.error('Status:', error.response.status);
+    } else {
+      console.error('Error:', error.message);
+    }
+    throw error;
+  }
+}
+
+// Usage example
+async function main() {
+  const apiKey = process.env.HUBSPOT_API_KEY;
+  const customObjectType = '2-1234567'; // Replace with your custom object type
+  const companyId = '12345678';
+  
+  const associator = new HubSpotCustomObjectAssociator(apiKey);
+  
+  try {
+    // Example 1: Create custom object with company association
+    const newObject = await associator.createCustomObjectWithCompany(
+      customObjectType,
+      {
+        name: 'My Custom Object',
+        description: 'Test object',
+        status: 'active'
+      },
+      companyId
+    );
+    console.log('Created object:', newObject);
+    
+    // Example 2: Associate existing objects
+    const association = await associator.associateToCompany(
+      customObjectType,
+      newObject.id,
+      companyId
+    );
+    console.log('Created association:', association);
+    
+    // Example 3: Get associations
+    const associations = await associator.getAssociations(
+      customObjectType,
+      newObject.id
+    );
+    console.log('Current associations:', associations);
+    
+  } catch (error) {
+    console.error('Failed:', error);
+  }
+}
+
+// Run if this is the main module
+if (require.main === module) {
+  main();
+}
+
+module.exports = HubSpotCustomObjectAssociator;
+Best Practices
+
+Use v4 API when possible for better label support
+Batch operations when associating multiple records
+Check association types before creating associations
+Handle errors appropriately with retry logic
+Use environment variables for API keys
+Implement rate limiting to avoid API limits
+
+Common Issues and Solutions
+Issue: Association Type Not Found
+javascript// First, get available association types
+const types = await getAssociationTypes(apiKey, 'YOUR_CUSTOM_OBJECT_TYPE', 'company');
+console.log('Available types:', types);
+Issue: Permission Errors
+
+Ensure your API key has the necessary scopes
+Check if associations are enabled for your custom object
+
+Issue: Invalid Object IDs
+
+Verify both custom object and company IDs exist
+Use the correct format for custom object type (e.g., '2-xxxxxxx')
+
+Rate Limits
+
+Daily limits: 500,000 requests (Professional/Enterprise)
+Burst limits: 150 requests per 10 seconds
+Batch operations: 2,000 inputs per request
+
+Environment Variables for Replit
+bashHUBSPOT_API_KEY=your-api-key-here
+CUSTOM_OBJECT_TYPE=2-xxxxxxx
+Testing Your Integration
+javascript// Test script for your Replit app
+async function testAssociations() {
+  const associator = new HubSpotCustomObjectAssociator(process.env.HUBSPOT_API_KEY);
+  
+  // Test data
+  const testCompanyId = 'YOUR_TEST_COMPANY_ID';
+  const customObjectType = process.env.CUSTOM_OBJECT_TYPE;
+  
+  try {
+    // Get association types first
+    const types = await associator.getAssociationTypes(customObjectType);
+    console.log('Available association types:', types);
+    
+    // Create test object with association
+    const testObject = await associator.createCustomObjectWithCompany(
+      customObjectType,
+      { name: 'Test Object ' + Date.now() },
+      testCompanyId
+    );
+    console.log('✓ Successfully created and associated object');
+    
+    // Verify association
+    const associations = await associator.getAssociations(
+      customObjectType,
+      testObject.id
+    );
+    console.log('✓ Verified associations:', associations);
+    
+  } catch (error) {
+    console.error('✗ Test failed:', error);
+  }
+}
+This guide provides comprehensive coverage of creating associations between custom objects and companies in HubSpot. Choose the method that best fits your use case and API version requirements.
