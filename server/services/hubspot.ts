@@ -118,6 +118,31 @@ export async function createFieldVisitCheckIn(
       
       console.log(`✅ Associated check-in ${customObjectResponse.id} with company ${companyId}`);
       console.log(`   Using association type: ${associationType}`);
+      
+      // VERIFY: Read back the association to confirm it exists in HubSpot
+      try {
+        const verifyResponse = await axios.get(
+          `https://api.hubapi.com/crm/v3/objects/${customObjectTypeId}/${customObjectResponse.id}/associations/companies`,
+          {
+            headers: {
+              'Authorization': `Bearer ${apiKey}`,
+              'Content-Type': 'application/json',
+            }
+          }
+        );
+        
+        const associatedCompanies = verifyResponse.data.results || [];
+        const foundAssociation = associatedCompanies.find((a: any) => a.id === companyId);
+        
+        if (foundAssociation) {
+          console.log(`✅ VERIFIED: Association exists in HubSpot! Check-in is linked to company ${companyId}`);
+          console.log(`   View in HubSpot: https://app.hubspot.com/contacts/YOUR_HUB_ID/${customObjectTypeId}/${customObjectResponse.id}`);
+        } else {
+          console.log(`⚠️  Association not found in verification (found ${associatedCompanies.length} total)`);
+        }
+      } catch (verifyError) {
+        console.log(`   (Could not verify association - but creation succeeded)`);
+      }
     } catch (assocError: any) {
       console.error("❌ Failed to create check-in → company association:", assocError?.message || assocError);
       if (assocError?.response?.data) {
