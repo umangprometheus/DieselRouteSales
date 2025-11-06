@@ -90,20 +90,26 @@ export async function createFieldVisitCheckIn(
 
     console.log(`✅ Created check-in record ${customObjectResponse.id}: "${recordName}"`);
 
-    // Associate the check-in with the company
+    // Associate the check-in with the company using simpler v4 associations API
     try {
-      await client.crm.associations.batchApi.create(customObjectTypeId, "companies", {
-        inputs: [
+      await client.crm.associations.v4.basicApi.create(
+        customObjectTypeId,
+        customObjectResponse.id,
+        "companies",
+        companyId,
+        [
           {
-            _from: { id: customObjectResponse.id },
-            to: { id: companyId },
-            type: "check_ins_to_companies", // Association label
-          },
-        ],
-      });
+            associationCategory: "USER_DEFINED" as any,
+            associationTypeId: 1,
+          }
+        ]
+      );
       console.log(`✅ Associated check-in ${customObjectResponse.id} with company ${companyId}`);
     } catch (assocError: any) {
-      console.warn("Could not create check-in → company association:", assocError?.message || assocError);
+      console.error("❌ Failed to create check-in → company association:", assocError?.message || assocError);
+      if (assocError?.body) {
+        console.error("Association error body:", JSON.stringify(assocError.body, null, 2));
+      }
     }
 
     return customObjectResponse.id;
