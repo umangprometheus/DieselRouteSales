@@ -90,34 +90,30 @@ export async function createFieldVisitCheckIn(
 
     console.log(`✅ Created check-in record ${customObjectResponse.id}: "${recordName}"`);
 
-    // Associate the check-in with the company using batch API with numeric object type ID
+    // Associate the check-in with the company using v4 PUT endpoint
+    // PUT /crm/v4/objects/{customObjectType}/{customObjectId}/associations/{toObjectType}/{toObjectId}
     try {
-      const batchResponse = await client.crm.associations.batchApi.create(
-        customObjectTypeId, // Use numeric ID: "2-175854274"
-        "companies",
+      const axios = (await import('axios')).default;
+      const apiKey = process.env.HUBSPOT_API_KEY;
+      
+      const associationUrl = `https://api.hubapi.com/crm/v4/objects/${customObjectTypeId}/${customObjectResponse.id}/associations/companies/${companyId}`;
+      
+      await axios.put(
+        associationUrl,
+        {}, // Empty body for PUT request
         {
-          inputs: [
-            {
-              _from: { id: customObjectResponse.id },
-              to: { id: companyId },
-              types: [
-                {
-                  associationCategory: "USER_DEFINED" as any,
-                  associationTypeId: 1,
-                }
-              ],
-            },
-          ],
+          headers: {
+            'Authorization': `Bearer ${apiKey}`,
+            'Content-Type': 'application/json',
+          }
         }
       );
       
       console.log(`✅ Associated check-in ${customObjectResponse.id} with company ${companyId}`);
-      console.log(`   Batch response status: ${batchResponse.status}`);
-      console.log(`   Batch results:`, batchResponse.results?.length || 0, "associations created");
     } catch (assocError: any) {
       console.error("❌ Failed to create check-in → company association:", assocError?.message || assocError);
-      if (assocError?.body) {
-        console.error("   Association error body:", JSON.stringify(assocError.body, null, 2));
+      if (assocError?.response?.data) {
+        console.error("   Association error:", JSON.stringify(assocError.response.data, null, 2));
       }
     }
 

@@ -1,0 +1,36 @@
+To associate a HubSpot custom object record with a standard object record (e.g., Contact, Company) via the API, you will use the Associations API.
+1. Identify the Object Types and Record IDs:
+Custom Object: You need the objectTypeId of your custom object (e.g., 2-XXXXXXX) and the id of the specific custom object record you want to associate.
+Standard Object: You need the name of the standard object (e.g., contacts, companies) and the id of the specific record you want to associate.
+2. Make an API Request to Create the Association:
+You will use a PUT request to the Associations API endpoint. The endpoint structure depends on the direction of the association.
+Associating from Custom Object to Standard Object:
+Code
+
+    PUT https://api.hubapi.com/crm/v4/objects/{customObjectType}/{customObjectId}/associations/{toObjectType}/{toObjectId}
+Replace:
+{customObjectType}: The objectTypeId of your custom object.
+{customObjectId}: The ID of the specific custom object record.
+{toObjectType}: The name of the standard object (e.g., contacts, companies).
+{toObjectId}: The ID of the specific standard object record.
+Associating from Standard Object to Custom Object:
+Code
+
+    PUT https://api.hubapi.com/crm/v4/objects/{standardObjectType}/{standardObjectId}/associations/{toObjectType}/{toObjectId}
+Replace:
+{standardObjectType}: The name of the standard object (e.g., contacts, companies).
+{standardObjectId}: The ID of the specific standard object record.
+{toObjectType}: The objectTypeId of your custom object.
+{toObjectId}: The ID of the specific custom object record.
+3. Example (Associating a Custom Object Record to a Contact):
+Code
+
+PUT https://api.hubapi.com/crm/v4/objects/2-1234567/123/associations/contacts/456
+In this example:
+2-1234567 is the objectTypeId of the custom object.
+123 is the ID of the custom object record.
+contacts is the name of the standard object (Contacts).
+456 is the ID of the Contact record.
+4. Authentication:
+Ensure your API request is authenticated using a Private App or OAuth with the necessary scopes (e.g., crm.objects.custom.write, crm.objects.custom.read, crm.objects.contacts.write, crm.objects.companies.write depending on the objects involved).
+Note: You can also define association labels during the association process or create custom association cards to display specific properties or set up a custom sort order for associated records within the HubSpot UI. 
