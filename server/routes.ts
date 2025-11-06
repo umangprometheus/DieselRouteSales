@@ -201,6 +201,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // DEBUG: Query HubSpot association types
+  app.get("/api/debug/association-types", requireAuth, async (req, res) => {
+    try {
+      const axios = (await import('axios')).default;
+      const apiKey = process.env.HUBSPOT_API_KEY;
+      
+      const url = 'https://api.hubapi.com/crm/v4/associations/2-175854274/0-2/labels';
+      
+      const response = await axios.get(url, {
+        headers: {
+          'Authorization': `Bearer ${apiKey}`,
+          'Content-Type': 'application/json',
+        }
+      });
+      
+      res.json({ 
+        success: true,
+        associationTypes: response.data,
+        note: "These are the available association type IDs between Check-Ins (2-175854274) and Companies (0-2)"
+      });
+    } catch (error: any) {
+      console.error("Error fetching association types:", error?.response?.data || error.message);
+      res.status(error?.response?.status || 500).json({ 
+        error: { 
+          code: "ASSOCIATION_QUERY_ERROR", 
+          message: error.message,
+          details: error?.response?.data 
+        } 
+      });
+    }
+  });
+
   // Get HubSpot owners (for admin setup)
   app.get("/api/hubspot/owners", requireAuth, async (req, res) => {
     try {
