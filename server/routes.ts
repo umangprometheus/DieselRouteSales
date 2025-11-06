@@ -201,6 +201,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get HubSpot owners (for admin setup)
+  app.get("/api/hubspot/owners", requireAuth, async (req, res) => {
+    try {
+      const { fetchHubSpotOwners } = await import("./services/hubspot");
+      const owners = await fetchHubSpotOwners();
+      res.json({ owners });
+    } catch (error) {
+      console.error("Error fetching HubSpot owners:", error);
+      res.status(500).json({ error: { code: "SERVER_ERROR", message: "Failed to fetch HubSpot owners" } });
+    }
+  });
+
   // ============================================================================
   // Route Planning Routes
   // ============================================================================
