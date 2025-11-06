@@ -90,17 +90,20 @@ export async function createFieldVisitCheckIn(
 
     console.log(`✅ Created check-in record ${customObjectResponse.id}: "${recordName}"`);
 
-    // Associate the check-in with the company using v4 PUT endpoint
-    // PUT /crm/v4/objects/{customObjectType}/{customObjectId}/associations/{toObjectType}/{toObjectId}
+    // Associate the check-in with the company using v3 batch associations API
+    // Similar to the custom workflow pattern
     try {
       const axios = (await import('axios')).default;
       const apiKey = process.env.HUBSPOT_API_KEY;
       
-      const associationUrl = `https://api.hubapi.com/crm/v4/objects/${customObjectTypeId}/${customObjectResponse.id}/associations/companies/${companyId}`;
-      
-      await axios.put(
-        associationUrl,
-        {}, // Empty body for PUT request
+      await axios.post(
+        `https://api.hubapi.com/crm/v3/associations/${customObjectTypeId}/companies/batch/create`,
+        { 
+          inputs: [{ 
+            from: { id: customObjectResponse.id }, 
+            to: { id: companyId } 
+          }] 
+        },
         {
           headers: {
             'Authorization': `Bearer ${apiKey}`,
