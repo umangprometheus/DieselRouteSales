@@ -91,36 +91,40 @@ export async function createFieldVisitCheckIn(
     console.log(`✅ Created check-in record ${customObjectResponse.id}: "${recordName}"`);
 
     // Associate the check-in with the company using v4 API
-    // Use numeric object type IDs: 0-2 for companies
-    try {
-      const axios = (await import('axios')).default;
-      const apiKey = process.env.HUBSPOT_API_KEY;
-      
-      // Use 0-2 for company object type and the correct association type ID (73)
-      const url = `https://api.hubapi.com/crm/v4/objects/${customObjectTypeId}/${customObjectResponse.id}/associations/0-2/${companyId}`;
-      
-      await axios.put(
-        url,
-        [
+    // Skip demo companies (they don't exist in HubSpot)
+    if (!companyId.startsWith('demo-')) {
+      try {
+        const axios = (await import('axios')).default;
+        const apiKey = process.env.HUBSPOT_API_KEY;
+        
+        // Use 0-2 for company object type and the correct association type ID (73)
+        const url = `https://api.hubapi.com/crm/v4/objects/${customObjectTypeId}/${customObjectResponse.id}/associations/0-2/${companyId}`;
+        
+        await axios.put(
+          url,
+          [
+            {
+              associationCategory: "USER_DEFINED",
+              associationTypeId: 73  // Account-specific association type ID
+            }
+          ],
           {
-            associationCategory: "USER_DEFINED",
-            associationTypeId: 73  // Account-specific association type ID
+            headers: {
+              'Authorization': `Bearer ${apiKey}`,
+              'Content-Type': 'application/json',
+            }
           }
-        ],
-        {
-          headers: {
-            'Authorization': `Bearer ${apiKey}`,
-            'Content-Type': 'application/json',
-          }
+        );
+        
+        console.log(`✅ Associated check-in ${customObjectResponse.id} with company ${companyId}`);
+      } catch (assocError: any) {
+        console.error("❌ Failed to create check-in → company association:", assocError?.message || assocError);
+        if (assocError?.response?.data) {
+          console.error("   Association error:", JSON.stringify(assocError.response.data, null, 2));
         }
-      );
-      
-      console.log(`✅ Associated check-in ${customObjectResponse.id} with company ${companyId}`);
-    } catch (assocError: any) {
-      console.error("❌ Failed to create check-in → company association:", assocError?.message || assocError);
-      if (assocError?.response?.data) {
-        console.error("   Association error:", JSON.stringify(assocError.response.data, null, 2));
       }
+    } else {
+      console.log(`⏭️  Skipped association for demo company ${companyId}`);
     }
 
     return customObjectResponse.id;
