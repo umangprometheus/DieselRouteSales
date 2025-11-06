@@ -67,46 +67,51 @@ export async function createFieldVisitCheckIn(
 ) {
   const client = getHubSpotClient();
 
+  // Use custom object type ID from HubSpot (2-175854274)
+  const customObjectTypeId = "2-175854274";
+
   try {
-    const customObjectResponse = await client.crm.objects.basicApi.create("field_visits", {
+    // Create check-in record with just the timestamp as the name
+    const checkInDate = new Date(timestamp);
+    const recordName = checkInDate.toLocaleString('en-US', {
+      month: '2-digit',
+      day: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: true
+    });
+
+    const customObjectResponse = await client.crm.objects.basicApi.create(customObjectTypeId, {
       properties: {
-        company_name: companyName,
-        company_id: companyId,
-        rep_username: username,
-        rep_user_id: userId,
-        latitude: lat.toString(),
-        longitude: lng.toString(),
-        notes: note || "",
-        check_in_time: timestamp,
+        hs_object_id: recordName, // Use timestamp as record name
       },
     });
 
-    console.log(`✅ Created field visit custom object ${customObjectResponse.id}`);
+    console.log(`✅ Created check-in record ${customObjectResponse.id}: "${recordName}"`);
 
-    const associationTypeId = process.env.HUBSPOT_FIELD_VISIT_ASSOCIATION_TYPE_ID;
-    if (associationTypeId) {
-      try {
-        await client.crm.associations.batchApi.create("field_visits", "companies", {
-          inputs: [
-            {
-              _from: { id: customObjectResponse.id },
-              to: { id: companyId },
-              type: associationTypeId,
-            },
-          ],
-        });
-        console.log(`✅ Associated field visit ${customObjectResponse.id} with company ${companyId}`);
-      } catch (assocError) {
-        console.warn("Could not create field visit → company association (non-fatal):", assocError);
-      }
+    // Associate the check-in with the company
+    try {
+      await client.crm.associations.batchApi.create(customObjectTypeId, "companies", {
+        inputs: [
+          {
+            _from: { id: customObjectResponse.id },
+            to: { id: companyId },
+            type: "check_ins_to_companies", // Association label
+          },
+        ],
+      });
+      console.log(`✅ Associated check-in ${customObjectResponse.id} with company ${companyId}`);
+    } catch (assocError: any) {
+      console.warn("Could not create check-in → company association:", assocError?.message || assocError);
     }
 
     return customObjectResponse.id;
   } catch (error: any) {
-    console.error("Error creating field visit check-in:", error);
+    console.error("Error creating check-in record:", error);
 
     if (error?.body?.category === "OBJECT_NOT_FOUND" || error?.statusCode === 404) {
-      console.log("Custom object 'field_visits' not found, falling back to Note creation");
+      console.log("Custom check-in object not found, falling back to Note creation");
       return await createHubSpotNote(companyId, companyName, username, lat, lng, note, timestamp);
     }
 
