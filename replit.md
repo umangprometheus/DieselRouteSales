@@ -103,6 +103,18 @@ Preferred communication style: Simple, everyday language.
 - Geocoding of new/updated addresses via Mapbox
 - Soft-delete pattern for removed companies
 - Rate limiting: 150ms delay between geocoding requests
+- Check-ins create custom object records (ID: 2-175854274) with associations to companies
+
+**HubSpot Custom Object Associations (Critical Implementation Notes)**:
+- Custom object type ID: `2-175854274` (Check-Ins)
+- Company object type ID: `0-2` (standard HubSpot companies)
+- Association type ID: **73** (account-specific, must query via API)
+- Association category: `USER_DEFINED` (for custom objects)
+- Association must be defined in HubSpot UI first (Settings → Objects → Check-Ins → Associations)
+- API endpoint: `PUT /crm/v4/objects/{fromObjectType}/{fromObjectId}/associations/{toObjectType}/{toObjectId}`
+- Request payload: `[{ "associationCategory": "USER_DEFINED", "associationTypeId": 73 }]`
+- Demo companies (IDs starting with "demo-") are skipped for associations (don't exist in HubSpot)
+- Query available association types: `GET /crm/v4/associations/{fromObjectType}/{toObjectType}/labels`
 
 **Sync Strategy**:
 - Manual trigger via UI sync button

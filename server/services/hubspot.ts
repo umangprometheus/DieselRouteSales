@@ -55,6 +55,18 @@ export async function fetchHubSpotCompanies(ownerId?: string) {
   }
 }
 
+/**
+ * Create a check-in record in HubSpot's custom object and associate it with a company
+ * 
+ * CRITICAL NOTES FOR CUSTOM OBJECT ASSOCIATIONS:
+ * - Custom object type ID: 2-175854274 (Field Visit Check-Ins)
+ * - Association type ID: 73 (account-specific, must be queried via API)
+ * - Query association types: GET /crm/v4/associations/2-175854274/0-2/labels
+ * - Association must be defined in HubSpot UI first (Settings → Objects → Check-Ins → Associations)
+ * - Use "USER_DEFINED" category for custom object associations
+ * - Use numeric object type IDs: "0-2" for companies, "2-175854274" for check-ins
+ * - Demo companies (ID starting with "demo-") are skipped (don't exist in HubSpot)
+ */
 export async function createFieldVisitCheckIn(
   companyId: string,
   companyName: string,
