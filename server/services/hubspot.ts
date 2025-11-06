@@ -90,11 +90,10 @@ export async function createFieldVisitCheckIn(
 
     console.log(`✅ Created check-in record ${customObjectResponse.id}: "${recordName}"`);
 
-    // Associate the check-in with the company using batch API
+    // Associate the check-in with the company using batch API with numeric object type ID
     try {
-      // Use the object type name "check_ins" instead of numeric ID
       const batchResponse = await client.crm.associations.batchApi.create(
-        "check_ins",
+        customObjectTypeId, // Use numeric ID: "2-175854274"
         "companies",
         {
           inputs: [
@@ -114,6 +113,7 @@ export async function createFieldVisitCheckIn(
       
       console.log(`✅ Associated check-in ${customObjectResponse.id} with company ${companyId}`);
       console.log(`   Batch response status: ${batchResponse.status}`);
+      console.log(`   Batch results:`, batchResponse.results?.length || 0, "associations created");
     } catch (assocError: any) {
       console.error("❌ Failed to create check-in → company association:", assocError?.message || assocError);
       if (assocError?.body) {
