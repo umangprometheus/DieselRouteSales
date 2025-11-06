@@ -6,9 +6,10 @@ import { Badge } from "@/components/ui/badge";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ArrowLeft, Download, MapPin, Clock, CalendarIcon } from "lucide-react";
+import { ArrowLeft, Download, MapPin, Clock, CalendarIcon, LogOut } from "lucide-react";
 import { format } from "date-fns";
 import { useSummary } from "@/lib/api";
+import { useAuth } from "@/lib/auth";
 
 export default function SummaryPage() {
   const [, navigate] = useLocation();
@@ -16,6 +17,7 @@ export default function SummaryPage() {
   const dateString = format(selectedDate, "yyyy-MM-dd");
   
   const { data: summary, isLoading } = useSummary(dateString);
+  const { logout } = useAuth();
 
   const handleExport = () => {
     if (!summary) return;
@@ -217,6 +219,18 @@ export default function SummaryPage() {
             )}
           </CardContent>
         </Card>
+
+        {/* Logout Button */}
+        <div className="flex justify-center pb-4">
+          <Button
+            variant="destructive"
+            onClick={logout}
+            data-testid="button-logout"
+          >
+            <LogOut className="w-4 h-4 mr-2" />
+            Logout
+          </Button>
+        </div>
       </div>
     </div>
   );
