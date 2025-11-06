@@ -91,13 +91,13 @@ export async function createFieldVisitCheckIn(
     console.log(`✅ Created check-in record ${customObjectResponse.id}: "${recordName}"`);
 
     // Associate the check-in with the company using v4 API
-    // Use standard association type ID 280 for unlabeled company associations
+    // Use numeric object type IDs: 0-2 for companies
     try {
       const axios = (await import('axios')).default;
       const apiKey = process.env.HUBSPOT_API_KEY;
       
-      // Use v4 API with standard association type ID 280 (unlabeled company association)
-      const url = `https://api.hubapi.com/crm/v4/objects/${customObjectTypeId}/${customObjectResponse.id}/associations/company/${companyId}`;
+      // CRITICAL: Use 0-2 (not "company") for the company object type
+      const url = `https://api.hubapi.com/crm/v4/objects/${customObjectTypeId}/${customObjectResponse.id}/associations/0-2/${companyId}`;
       
       await axios.put(
         url,
