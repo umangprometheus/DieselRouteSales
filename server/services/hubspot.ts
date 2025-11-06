@@ -91,17 +91,21 @@ export async function createFieldVisitCheckIn(
     console.log(`✅ Created check-in record ${customObjectResponse.id}: "${recordName}"`);
 
     // Associate the check-in with the company using v3 batch associations API
-    // Similar to the custom workflow pattern
+    // Similar to the custom workflow pattern - must include 'type' field
     try {
       const axios = (await import('axios')).default;
       const apiKey = process.env.HUBSPOT_API_KEY;
+      
+      // For custom object to company, use the pattern: {customObjectType}_to_company
+      const associationType = `${customObjectTypeId}_to_company`;
       
       await axios.post(
         `https://api.hubapi.com/crm/v3/associations/${customObjectTypeId}/companies/batch/create`,
         { 
           inputs: [{ 
             from: { id: customObjectResponse.id }, 
-            to: { id: companyId } 
+            to: { id: companyId },
+            type: associationType
           }] 
         },
         {
@@ -113,6 +117,7 @@ export async function createFieldVisitCheckIn(
       );
       
       console.log(`✅ Associated check-in ${customObjectResponse.id} with company ${companyId}`);
+      console.log(`   Using association type: ${associationType}`);
     } catch (assocError: any) {
       console.error("❌ Failed to create check-in → company association:", assocError?.message || assocError);
       if (assocError?.response?.data) {
