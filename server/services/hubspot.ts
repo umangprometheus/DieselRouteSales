@@ -96,15 +96,15 @@ export async function createFieldVisitCheckIn(
       const axios = (await import('axios')).default;
       const apiKey = process.env.HUBSPOT_API_KEY;
       
-      // CRITICAL: Use 0-2 (not "company") for the company object type
+      // Use 0-2 for company object type and the correct association type ID (73)
       const url = `https://api.hubapi.com/crm/v4/objects/${customObjectTypeId}/${customObjectResponse.id}/associations/0-2/${companyId}`;
       
       await axios.put(
         url,
         [
           {
-            associationCategory: "HUBSPOT_DEFINED",
-            associationTypeId: 280  // Standard unlabeled company association
+            associationCategory: "USER_DEFINED",
+            associationTypeId: 73  // Account-specific association type ID
           }
         ],
         {
@@ -115,7 +115,7 @@ export async function createFieldVisitCheckIn(
         }
       );
       
-      console.log(`✅ Associated check-in ${customObjectResponse.id} with company ${companyId} (type: 280)`);
+      console.log(`✅ Associated check-in ${customObjectResponse.id} with company ${companyId}`);
     } catch (assocError: any) {
       console.error("❌ Failed to create check-in → company association:", assocError?.message || assocError);
       if (assocError?.response?.data) {
