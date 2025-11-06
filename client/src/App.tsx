@@ -1,4 +1,4 @@
-import { Switch, Route, Redirect } from "wouter";
+import { Switch, Route, Redirect, useLocation } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
@@ -52,13 +52,23 @@ function Router() {
   );
 }
 
-function AppContent() {
+function BottomNavWrapper() {
   const { isAuthenticated } = useAuth();
+  const [location] = useLocation();
 
+  // Hide bottom nav on login/public routes
+  const isPublicRoute = location === "/" || location === "/login";
+  const showBottomNav = isAuthenticated && !isPublicRoute;
+
+  if (!showBottomNav) return null;
+  return <BottomNav />;
+}
+
+function AppContent() {
   return (
     <div className="relative min-h-screen">
       <Router />
-      {isAuthenticated && <BottomNav />}
+      <BottomNavWrapper />
     </div>
   );
 }
