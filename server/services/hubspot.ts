@@ -89,14 +89,9 @@ export async function createFieldVisitCheckIn(
         await client.crm.associations.batchApi.create("field_visits", "companies", {
           inputs: [
             {
-              from: { id: customObjectResponse.id },
+              _from: { id: customObjectResponse.id },
               to: { id: companyId },
-              types: [
-                {
-                  associationCategory: "HUBSPOT_DEFINED" as any,
-                  associationTypeId: parseInt(associationTypeId),
-                },
-              ],
+              type: associationTypeId,
             },
           ],
         });
