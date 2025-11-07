@@ -84,6 +84,7 @@ export async function createFieldVisitCheckIn(
 
   try {
     // Create check-in record with just the timestamp as the name
+    // Use CST timezone (America/Chicago)
     const checkInDate = new Date(timestamp);
     const recordName = checkInDate.toLocaleString('en-US', {
       month: '2-digit',
@@ -91,7 +92,8 @@ export async function createFieldVisitCheckIn(
       year: 'numeric',
       hour: '2-digit',
       minute: '2-digit',
-      hour12: true
+      hour12: true,
+      timeZone: 'America/Chicago'  // CST timezone
     });
 
     const customObjectResponse = await client.crm.objects.basicApi.create(customObjectTypeId, {
