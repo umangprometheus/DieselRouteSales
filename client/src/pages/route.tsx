@@ -23,7 +23,10 @@ export default function RoutePage() {
   const [showProximityAlert, setShowProximityAlert] = useState(false);
   const [showCheckInForm, setShowCheckInForm] = useState(false);
   const [distanceToCurrentStop, setDistanceToCurrentStop] = useState<number | null>(null);
-  const [testMode, setTestMode] = useState(false);
+  const [testMode, setTestMode] = useState(() => {
+    const stored = localStorage.getItem("testMode");
+    return stored === "true";
+  });
   const [nearbyStopIndex, setNearbyStopIndex] = useState<number | null>(null);
   const [testLocationIndex, setTestLocationIndex] = useState<number | null>(null);
   const [showAddStopDialog, setShowAddStopDialog] = useState(false);
@@ -31,6 +34,11 @@ export default function RoutePage() {
   
   // Load route from localStorage or database
   const [routeData, setRouteData] = useState<BuildRouteResponse | null>(null);
+  
+  // Persist test mode preference across navigation
+  useEffect(() => {
+    localStorage.setItem("testMode", testMode.toString());
+  }, [testMode]);
 
   useEffect(() => {
     const loadRoute = async () => {
