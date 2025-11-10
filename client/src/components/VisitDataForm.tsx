@@ -24,18 +24,18 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Loader2 } from "lucide-react";
 
 const visitDataSchema = z.object({
-  machineryTypes: z.string().min(1, "Machinery types are required"),
-  engineTypes: z.string().min(1, "Engine types are required"),
+  machineryTypes: z.string().optional(),
+  engineTypes: z.string().optional(),
   fleetMakeup: z.string().optional(),
-  currentSuppliers: z.string().min(1, "Current suppliers are required"),
+  currentSuppliers: z.string().optional(),
   competitorData: z.string().optional(),
   pricingInfo: z.string().optional(),
   productModels: z.string().optional(),
   availabilityGaps: z.string().optional(),
-  customerNeeds: z.string().min(1, "Customer needs assessment is required"),
+  customerNeeds: z.string().optional(),
   competitivePosition: z.string().optional(),
   insideSalesIssues: z.string().optional(),
-  nextSteps: z.string().min(1, "Next steps are required"),
+  nextSteps: z.string().optional(),
   miscNotes: z.string().optional(),
 });
 
@@ -74,7 +74,7 @@ export function VisitDataForm({ defaultValues, onSubmit, isSubmitting = false }:
           <CardHeader>
             <CardTitle>Visit Details</CardTitle>
             <CardDescription>
-              Review and edit the information extracted from your voice note. All required fields must be completed.
+              Review and edit the information from your visit. All fields are optional.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -83,7 +83,7 @@ export function VisitDataForm({ defaultValues, onSubmit, isSubmitting = false }:
               name="machineryTypes"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Machinery Types *</FormLabel>
+                  <FormLabel>Machinery Types</FormLabel>
                   <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl>
                       <SelectTrigger data-testid="select-machinery-types">
@@ -112,7 +112,7 @@ export function VisitDataForm({ defaultValues, onSubmit, isSubmitting = false }:
               name="engineTypes"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Engine Types *</FormLabel>
+                  <FormLabel>Engine Types</FormLabel>
                   <FormControl>
                     <Textarea
                       {...field}
@@ -156,7 +156,7 @@ export function VisitDataForm({ defaultValues, onSubmit, isSubmitting = false }:
               name="currentSuppliers"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Current Suppliers *</FormLabel>
+                  <FormLabel>Current Suppliers</FormLabel>
                   <FormControl>
                     <Textarea
                       {...field}
@@ -266,7 +266,7 @@ export function VisitDataForm({ defaultValues, onSubmit, isSubmitting = false }:
               name="customerNeeds"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Customer Needs Assessment *</FormLabel>
+                  <FormLabel>Customer Needs Assessment</FormLabel>
                   <FormControl>
                     <Textarea
                       {...field}
@@ -332,7 +332,7 @@ export function VisitDataForm({ defaultValues, onSubmit, isSubmitting = false }:
               name="nextSteps"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Next Steps *</FormLabel>
+                  <FormLabel>Next Steps</FormLabel>
                   <FormControl>
                     <Textarea
                       {...field}

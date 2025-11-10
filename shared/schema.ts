@@ -96,13 +96,33 @@ export const checkIns = pgTable("check_ins", {
   submittedAt: timestamp("submitted_at"),
 });
 
-export const insertCheckInSchema = createInsertSchema(checkIns).omit({
-  id: true,
-  timestamp: true,
-  hubspotNoteId: true,
-  hubspotCustomObjectId: true,
-  submittedAt: true,
-});
+export const insertCheckInSchema = createInsertSchema(checkIns)
+  .omit({
+    id: true,
+    timestamp: true,
+    hubspotNoteId: true,
+    hubspotCustomObjectId: true,
+    submittedAt: true,
+  })
+  .extend({
+    // Make all structured fields optional
+    machineryTypes: z.string().optional(),
+    engineTypes: z.string().optional(),
+    fleetMakeup: z.string().optional(),
+    currentSuppliers: z.string().optional(),
+    competitorData: z.string().optional(),
+    pricingInfo: z.string().optional(),
+    productModels: z.string().optional(),
+    availabilityGaps: z.string().optional(),
+    customerNeeds: z.string().optional(),
+    competitivePosition: z.string().optional(),
+    insideSalesIssues: z.string().optional(),
+    nextSteps: z.string().optional(),
+    miscNotes: z.string().optional(),
+    voiceTranscript: z.string().optional(),
+    visitDurationMin: z.number().optional(),
+    note: z.string().optional(),
+  });
 
 export type CheckIn = typeof checkIns.$inferSelect;
 export type InsertCheckIn = z.infer<typeof insertCheckInSchema>;
