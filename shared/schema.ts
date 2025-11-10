@@ -287,23 +287,23 @@ export const checkInRequestSchema = z.object({
   // Voice transcript
   voiceTranscript: z.string().optional(),
   
-  // Structured visit data (all required per requirements)
-  machineryTypes: z.string().min(1, "Machinery types are required"),
-  engineTypes: z.string().min(1, "Engine types are required"),
+  // Structured visit data (all optional)
+  machineryTypes: z.string().optional(),
+  engineTypes: z.string().optional(),
   fleetMakeup: z.string().optional(),
-  currentSuppliers: z.string().min(1, "Current suppliers are required"),
+  currentSuppliers: z.string().optional(),
   competitorData: z.string().optional(),
   pricingInfo: z.string().optional(),
   productModels: z.string().optional(),
   availabilityGaps: z.string().optional(),
-  customerNeeds: z.string().min(1, "Customer needs assessment is required"),
+  customerNeeds: z.string().optional(),
   competitivePosition: z.string().optional(),
   insideSalesIssues: z.string().optional(),
-  nextSteps: z.string().min(1, "Next steps are required"),
+  nextSteps: z.string().optional(),
   miscNotes: z.string().optional(),
   
   // Visit duration
-  visitDurationMin: z.number().int().positive().optional(),
+  visitDurationMin: z.number().int().optional(),
 });
 
 export type CheckInRequest = z.infer<typeof checkInRequestSchema>;
