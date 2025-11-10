@@ -369,7 +369,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ error: { code: "FORBIDDEN", message: "Access denied" } });
       }
       
-      res.json(route);
+      // Get the stops with their completed status
+      const stops = await storage.getRouteStops(id);
+      
+      res.json({
+        ...route,
+        stops
+      });
     } catch (error) {
       console.error("Error fetching route:", error);
       res.status(500).json({ error: { code: "SERVER_ERROR", message: "Failed to fetch route" } });
@@ -383,7 +389,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!route) {
         return res.status(404).json({ error: { code: "NOT_FOUND", message: "No active route" } });
       }
-      res.json(route);
+      
+      // Get the stops with their completed status
+      const stops = await storage.getRouteStops(route.id);
+      
+      res.json({
+        ...route,
+        stops
+      });
     } catch (error) {
       console.error("Error fetching active route:", error);
       res.status(500).json({ error: { code: "SERVER_ERROR", message: "Failed to fetch route" } });
