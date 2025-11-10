@@ -42,13 +42,45 @@ export default function RoutePage() {
 
   useEffect(() => {
     const loadRoute = async () => {
-      // ALWAYS fetch fresh data from database to avoid stale localStorage
+      // Check localStorage for route ID
+      const stored = localStorage.getItem("activeRoute");
+      let routeId: string | null = null;
+      
+      if (stored) {
+        try {
+          const data: BuildRouteResponse = JSON.parse(stored);
+          routeId = data.routeId || null;
+        } catch (e) {
+          console.error('Failed to parse localStorage route:', e);
+        }
+      }
+      
       try {
-        const response = await fetch('/api/route/active', {
-          credentials: 'include',
-        });
+        let response;
         
-        if (response.ok) {
+        // If we have a routeId from localStorage, fetch that specific route
+        if (routeId) {
+          response = await fetch(`/api/route/${routeId}`, {
+            credentials: 'include',
+          });
+          
+          // Mark it as active
+          if (response.ok) {
+            await fetch(`/api/route/${routeId}`, {
+              method: 'PATCH',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ status: 'active' }),
+              credentials: 'include',
+            });
+          }
+        } else {
+          // Otherwise, try to find any active route
+          response = await fetch('/api/route/active', {
+            credentials: 'include',
+          });
+        }
+        
+        if (response && response.ok) {
           const activeRoute = await response.json();
           
           // Generate simple route geometry from stops (fallback for DB routes without geometry)
@@ -68,7 +100,7 @@ export default function RoutePage() {
           localStorage.setItem("activeRoute", JSON.stringify(routeResponse));
           setRouteData(routeResponse);
         } else {
-          // No active route in database
+          // No route found
           toast({
             variant: "destructive",
             title: "No active route",
@@ -77,7 +109,7 @@ export default function RoutePage() {
           navigate("/plan");
         }
       } catch (error) {
-        console.error('Failed to load active route:', error);
+        console.error('Failed to load route:', error);
         toast({
           variant: "destructive",
           title: "No active route",
