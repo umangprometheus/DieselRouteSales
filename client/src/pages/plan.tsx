@@ -280,10 +280,18 @@ export default function PlanPage() {
                 setSelectedCompanyIds([...selectedCompanyIds, id]);
               } else {
                 console.log('[Plan] Company already selected, toggling off');
-                setSelectedCompanyIds(selectedCompanyIds.filter(cid => cid !== id));
+                const newSelection = selectedCompanyIds.filter(cid => cid !== id);
+                setSelectedCompanyIds(newSelection);
+                // When deselecting, show the last remaining company or clear the sheet
+                if (newSelection.length > 0) {
+                  setClickedCompanyId(newSelection[newSelection.length - 1]);
+                } else {
+                  setClickedCompanyId(null);
+                }
               }
             }}
             onCompanyInfo={(id) => {
+              // Only update if we're adding to selection or switching companies
               setClickedCompanyId(id);
             }}
           />
