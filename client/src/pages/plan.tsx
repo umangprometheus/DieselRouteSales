@@ -407,6 +407,30 @@ export default function PlanPage() {
         {/* Controls Panel - Desktop or Mobile Sheet */}
         <div className={`${activeTab === "list" || window.innerWidth >= 768 ? "block" : "hidden"} md:block md:w-96 bg-background border-l overflow-y-auto`}>
           <div className="p-4 space-y-6">
+            {/* Start Route Button - Top of List View */}
+            {selectedCompanyIds.length >= 2 && (
+              <div className="sticky top-0 z-20 -mx-4 -mt-4 px-4 pt-4 pb-3 bg-background/95 backdrop-blur border-b">
+                <Button
+                  onClick={handleBuildRoute}
+                  className="w-full h-14 text-base font-semibold shadow-lg"
+                  disabled={buildRouteMutation.isPending}
+                  data-testid="button-start-route-top"
+                >
+                  {buildRouteMutation.isPending ? (
+                    <>
+                      <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                      Building Route...
+                    </>
+                  ) : (
+                    <>
+                      <Route className="w-5 h-5 mr-2" />
+                      Start Route ({selectedCompanyIds.length} stops)
+                    </>
+                  )}
+                </Button>
+              </div>
+            )}
+
             {/* Location Search */}
             <Card className="p-4">
               <h3 className="text-sm font-semibold text-foreground mb-3">Starting Location</h3>
