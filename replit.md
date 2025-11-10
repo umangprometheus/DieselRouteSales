@@ -2,7 +2,7 @@
 
 ## Overview
 
-A mobile-first field service application for diesel sales representatives to plan daily routes, navigate to customer locations, and check in at company sites. The application integrates with HubSpot CRM for company data management and uses Mapbox for geocoding and route optimization. Built for outdoor use with emphasis on readability and GPS-based proximity detection.
+A mobile-first field service application for diesel sales representatives to plan daily routes, navigate to customer locations, and check in at company sites with AI-powered voice-to-text data collection. The application integrates with HubSpot CRM for company data management, uses Mapbox for geocoding and route optimization, and leverages Gemini AI for intelligent transcription and structured data extraction from field visit voice notes. Built for outdoor use with emphasis on readability and GPS-based proximity detection.
 
 ## User Preferences
 
@@ -53,13 +53,14 @@ Preferred communication style: Simple, everyday language.
 - Geo service: Distance calculations using Turf.js (Haversine formula)
 - Sync service: Periodic HubSpot company data synchronization with geocoding
 - MapBox service: Address geocoding and route optimization
+- AI service: Gemini-powered speech-to-text transcription and structured visit data parsing
 
 **Data Models**:
 - Users: Username/password auth with HubSpot owner ID mapping
 - Companies: Cached HubSpot data with geocoded lat/lng coordinates
 - Routes: Active/completed routes with status tracking
 - RouteStops: Ordered waypoints with check-in status
-- CheckIns: GPS-stamped visit records with notes
+- CheckIns: GPS-stamped visit records with comprehensive structured visit data (15+ fields including machinery types, engine types, fleet makeup, suppliers, competitor data, customer needs, next steps, voice transcripts, visit duration)
 - SyncLogs: Audit trail for HubSpot synchronization
 
 ### Authentication & Authorization
@@ -95,6 +96,35 @@ Preferred communication style: Simple, everyday language.
 - Route geometry displayed on embedded Mapbox GL map
 - Real-time user location marker with heading indicator
 
+### AI-Powered Check-In Flow
+
+**Voice-to-Text Data Collection**:
+- Browser-based audio recording using MediaRecorder API (WebM format)
+- Gemini AI (gemini-2.5-flash) transcribes voice notes to text
+- Intelligent parsing extracts 15+ structured fields from unstructured speech
+- Three-tab interface: Voice Recording, AI Review/Edit, Manual Entry
+- Visit duration automatically calculated (check-in to submission timestamp)
+
+**Structured Visit Data Fields**:
+- **Required**: Machinery types, engine types, current suppliers, customer needs, next steps
+- **Optional**: Fleet makeup, competitor data, pricing info, product models, availability gaps, competitive position, inside sales issues, misc notes
+- **Auto-captured**: Voice transcript, visit duration (minutes), GPS coordinates, timestamp
+
+**AI Parsing Strategy**:
+- JSON schema-based extraction ensures consistent field structure
+- Handles industry-specific terminology (CAT, Cummins, Bosch, etc.)
+- Extracts pricing information and competitor intelligence
+- Identifies follow-up actions for next_steps field
+
+**User Experience Flow**:
+1. Proximity alert triggers when within 800 feet of customer
+2. User taps "Check In" → navigates to /check-in/submit page
+3. Records voice note describing visit observations
+4. AI transcribes and parses into structured fields
+5. User reviews/edits extracted data in form
+6. Submits → saves to database + syncs to HubSpot
+7. Redirects back to route with success confirmation
+
 ### Data Synchronization
 
 **HubSpot Integration**:
@@ -103,7 +133,8 @@ Preferred communication style: Simple, everyday language.
 - Geocoding of new/updated addresses via Mapbox
 - Soft-delete pattern for removed companies
 - Rate limiting: 150ms delay between geocoding requests
-- Check-ins create custom object records (ID: 2-175854274) with associations to companies
+- Check-ins create custom object records (ID: 2-175854274) with all structured visit data
+- Graceful fallback to Note creation if custom properties aren't configured (see HUBSPOT_SETUP.md)
 
 **HubSpot Custom Object Associations (Critical Implementation Notes)**:
 - Custom object type ID: `2-175854274` (Check-Ins)
@@ -166,6 +197,7 @@ Preferred communication style: Simple, everyday language.
 - `express`: Web framework
 - `drizzle-orm`: Type-safe ORM
 - `@hubspot/api-client`: HubSpot SDK
+- `@google/genai`: Gemini AI SDK for speech-to-text and data parsing
 - `bcryptjs`: Password hashing
 - `cookie-session`: Session management
 - `axios`: HTTP client for external APIs
