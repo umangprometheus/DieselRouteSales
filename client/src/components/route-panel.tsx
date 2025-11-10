@@ -107,7 +107,7 @@ export default function RoutePanel({
                       data-testid={`button-navigate-${index}`}
                     >
                       <Navigation className="w-4 h-4 mr-2" />
-                      Navigate to Stop
+                      Navigate to {stop.name}
                     </Button>
                   )}
                   

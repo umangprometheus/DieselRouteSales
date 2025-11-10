@@ -41,15 +41,12 @@ export default function ProximityAlert({
                 <MapPin className="w-5 h-5 text-warning" />
               </div>
               <div className="flex-1 min-w-0">
-                <h3 className="text-lg font-bold text-foreground mb-1">
-                  {isNextPlannedStop ? "Arrived at Next Stop" : "Nearby Stop Detected"}
-                </h3>
-                <p className="text-base font-semibold text-foreground truncate">
+                <h3 className="text-lg font-bold text-foreground mb-1 truncate">
                   {companyName}
-                </p>
+                </h3>
                 <p className="text-sm text-muted-foreground mt-0.5">
                   {formatDistance(distanceMeters)} away
-                  {!isNextPlannedStop && " • Out of sequence"}
+                  {isNextPlannedStop ? " • Next planned stop" : " • Out of sequence"}
                 </p>
               </div>
             </div>
