@@ -75,8 +75,8 @@ export default function RoutePage() {
         if (response && response.ok) {
           const activeRoute = await response.json();
           
-          // Generate simple route geometry from stops (fallback for DB routes without geometry)
-          const routeGeometry = activeRoute.stops.map((s: any) => ({ lat: s.lat, lng: s.lng }));
+          // Use saved routeGeometry if available, otherwise fallback to straight lines between stops
+          const routeGeometry = activeRoute.routeGeometry || activeRoute.stops.map((s: any) => ({ lat: s.lat, lng: s.lng }));
           
           // Convert database route format to BuildRouteResponse format
           const routeResponse: BuildRouteResponse = {
@@ -85,7 +85,7 @@ export default function RoutePage() {
             totalDistMi: activeRoute.totalDistanceMi,
             totalEtaMin: activeRoute.totalEtaMin,
             navUrl: `https://www.google.com/maps/dir/?api=1&waypoints=${activeRoute.stops.map((s: any) => `${s.lat},${s.lng}`).join('|')}&travelmode=driving`,
-            routeGeometry, // Simple geometry from stop coordinates
+            routeGeometry, // Use saved geometry or fallback to stop coordinates
           };
           
           // Update localStorage with fresh data

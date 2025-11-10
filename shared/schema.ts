@@ -138,6 +138,7 @@ export const routes = pgTable("routes", {
   totalEtaMin: integer("total_eta_min").notNull(),
   currentStopIndex: integer("current_stop_index").notNull().default(0),
   status: varchar("status", { length: 20 }).notNull().default("planning"),
+  routeGeometry: jsonb("route_geometry"), // Full driving route path from Mapbox
   createdAt: timestamp("created_at").notNull().defaultNow(),
   completedAt: timestamp("completed_at"),
 });

@@ -310,7 +310,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         totalDistanceMi: optimizedRoute.totalDistMi,
         totalEtaMin: Math.round(optimizedRoute.totalEtaMin), // Round to integer for database
         currentStopIndex: 0,
-        status: "planning",
+        status: "active", // Mark as active so GET /api/route/active can find it
+        routeGeometry: optimizedRoute.routeGeometry as any, // Save full driving route path
       });
       
       // Create route_stops records for better analytics
