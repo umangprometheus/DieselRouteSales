@@ -113,6 +113,19 @@ export default function RoutePage() {
   }, [navigate, toast]);
 
   const routeStops: RouteStop[] = routeData?.stops || [];
+  
+  // Advance to first uncompleted stop when route data changes
+  useEffect(() => {
+    if (routeStops.length > 0) {
+      const firstUncompletedIdx = routeStops.findIndex(s => !s.completed);
+      if (firstUncompletedIdx !== -1 && firstUncompletedIdx !== currentStopIndex) {
+        setCurrentStopIndex(firstUncompletedIdx);
+      } else if (firstUncompletedIdx === -1) {
+        // All stops completed
+        setCurrentStopIndex(routeStops.length - 1);
+      }
+    }
+  }, [routeStops, currentStopIndex]);
 
   // Watch user location (real GPS or test mode)
   useEffect(() => {
