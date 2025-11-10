@@ -187,6 +187,16 @@ export default function PlanPage() {
       return;
     }
 
+    // Check if location is available
+    if (!userLocation) {
+      toast({
+        variant: "destructive",
+        title: "Location not available",
+        description: "Waiting for your location to build an optimized route. Please allow location access or try again in a moment.",
+      });
+      return;
+    }
+
     // Check if there's already an active route
     const existingRoute = localStorage.getItem("activeRoute");
     if (existingRoute) {
@@ -203,7 +213,7 @@ export default function PlanPage() {
 
     try {
       const result = await buildRouteMutation.mutateAsync({
-        origin: userLocation || "gps",
+        origin: userLocation,
         companyIds: selectedCompanyIds,
         optimize: true,
       });
