@@ -177,62 +177,14 @@ export default function MapView({
       // Just update the data - no flickering!
       existingSource.setData(geojson);
     } else {
-      // First time setup: Add source with clustering enabled for performance
+      // First time setup: Add source without clustering so each company shows individually
       map.current.addSource(sourceId, {
         type: 'geojson',
         data: geojson,
-        cluster: true,
-        clusterMaxZoom: 14, // Max zoom to cluster points on
-        clusterRadius: 50, // Radius of each cluster when clustering points (default 50)
+        cluster: false, // Disabled - show each company marker separately
       });
 
-      // Add cluster circles layer (for grouped companies)
-      map.current.addLayer({
-        id: 'company-clusters',
-      type: 'circle',
-      source: sourceId,
-      filter: ['has', 'point_count'],
-      paint: {
-        'circle-radius': [
-          'step',
-          ['get', 'point_count'],
-          20,  // radius for clusters with < 10 points
-          10,
-          25,  // radius for clusters with 10-100 points
-          100,
-          30   // radius for clusters with > 100 points
-        ],
-        'circle-color': [
-          'step',
-          ['get', 'point_count'],
-          '#3b82f6', // blue for small clusters
-          10,
-          '#2563eb', // darker blue for medium clusters
-          100,
-          '#1e40af'  // darkest blue for large clusters
-        ],
-        'circle-stroke-width': 2,
-        'circle-stroke-color': '#ffffff',
-      },
-    });
-
-      // Add cluster count labels
-      map.current.addLayer({
-        id: 'company-cluster-count',
-        type: 'symbol',
-        source: sourceId,
-        filter: ['has', 'point_count'],
-        layout: {
-          'text-field': '{point_count_abbreviated}',
-          'text-font': ['DIN Offc Pro Medium', 'Arial Unicode MS Bold'],
-          'text-size': 12,
-        },
-        paint: {
-          'text-color': '#ffffff',
-        },
-      });
-
-      // Add unclustered point layer (individual companies)
+      // Add company markers (individual dots for each company)
       map.current.addLayer({
         id: circleLayerId,
         type: 'circle',
@@ -279,28 +231,6 @@ export default function MapView({
         });
       }
     } // Close the else block
-
-    // Add click handler for clusters (zoom in on click) - works for both click and touch
-    const clusterClickHandler = (e: mapboxgl.MapMouseEvent | mapboxgl.MapTouchEvent) => {
-      console.log('[MapView] Cluster clicked, features:', e.features?.length);
-      if (!e.features || e.features.length === 0) return;
-      const feature = e.features[0];
-      const clusterId = feature.properties?.cluster_id;
-      console.log('[MapView] Cluster ID:', clusterId);
-      
-      if (clusterId && map.current) {
-        const source = map.current.getSource(sourceId) as mapboxgl.GeoJSONSource;
-        source.getClusterExpansionZoom(clusterId, (err, zoom) => {
-          if (err || !map.current) return;
-          
-          const coordinates = (feature.geometry as GeoJSON.Point).coordinates as [number, number];
-          map.current.easeTo({
-            center: coordinates,
-            zoom: zoom || map.current.getZoom() + 2,
-          });
-        });
-      }
-    };
 
     // Add click handler for individual company markers - works for both click and touch
     let lastClickTime = 0;
@@ -355,12 +285,6 @@ export default function MapView({
       }
     };
 
-    // Attach cluster handlers (both click and touch)
-    map.current.on('click', 'company-clusters', clusterClickHandler);
-    map.current.on('touchend', 'company-clusters', clusterClickHandler);
-    map.current.on('mouseenter', 'company-clusters', mouseEnterHandler);
-    map.current.on('mouseleave', 'company-clusters', mouseLeaveHandler);
-
     // Attach handlers to both circle and label layers for individual companies (both click and touch)
     map.current.on('click', circleLayerId, clickHandler);
     map.current.on('touchend', circleLayerId, clickHandler);
@@ -380,11 +304,6 @@ export default function MapView({
     // Cleanup
     return () => {
       if (map.current) {
-        map.current.off('click', 'company-clusters', clusterClickHandler);
-        map.current.off('touchend', 'company-clusters', clusterClickHandler);
-        map.current.off('mouseenter', 'company-clusters', mouseEnterHandler);
-        map.current.off('mouseleave', 'company-clusters', mouseLeaveHandler);
-        
         map.current.off('click', circleLayerId, clickHandler);
         map.current.off('touchend', circleLayerId, clickHandler);
         map.current.off('mouseenter', circleLayerId, mouseEnterHandler);
