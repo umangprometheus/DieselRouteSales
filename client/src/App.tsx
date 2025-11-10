@@ -10,6 +10,7 @@ import PlanPage from "@/pages/plan";
 import RoutePage from "@/pages/route";
 import SummaryPage from "@/pages/summary";
 import HistoryPage from "@/pages/history";
+import CheckInSubmitPage from "@/pages/check-in-submit";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -45,6 +46,9 @@ function Router() {
       <Route path="/history">
         {isAuthenticated ? <HistoryPage /> : <Redirect to="/login" />}
       </Route>
+      <Route path="/check-in/submit">
+        {isAuthenticated ? <CheckInSubmitPage /> : <Redirect to="/login" />}
+      </Route>
       
       {/* Fallback to 404 */}
       <Route component={NotFound} />
@@ -56,9 +60,10 @@ function BottomNavWrapper() {
   const { isAuthenticated } = useAuth();
   const [location] = useLocation();
 
-  // Hide bottom nav on login/public routes
+  // Hide bottom nav on login/public routes and check-in submit flow
   const isPublicRoute = location === "/" || location === "/login";
-  const showBottomNav = isAuthenticated && !isPublicRoute;
+  const isCheckInFlow = location.startsWith("/check-in");
+  const showBottomNav = isAuthenticated && !isPublicRoute && !isCheckInFlow;
 
   if (!showBottomNav) return null;
   return <BottomNav />;

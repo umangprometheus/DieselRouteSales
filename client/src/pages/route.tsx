@@ -239,7 +239,18 @@ export default function RoutePage() {
 
   const handleCheckIn = () => {
     setShowProximityAlert(false);
-    setShowCheckInForm(true);
+    
+    // Navigate to check-in submit page with company data
+    if (nearbyStopIndex !== null && userLocation) {
+      const stop = routeStops[nearbyStopIndex];
+      const params = new URLSearchParams({
+        companyId: stop.companyId,
+        companyName: stop.name,
+        lat: userLocation.lat.toString(),
+        lng: userLocation.lng.toString(),
+      });
+      navigate(`/check-in/submit?${params.toString()}`);
+    }
   };
 
   const handleSubmitCheckIn = async (note: string) => {

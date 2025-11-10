@@ -186,11 +186,31 @@ export async function createFieldVisitCheckIn(
   } catch (error: any) {
     console.error("Error creating check-in record:", error);
 
-    if (error?.body?.category === "OBJECT_NOT_FOUND" || error?.statusCode === 404) {
+    // Handle various HubSpot API error scenarios
+    const errorCategory = error?.body?.category || error?.response?.data?.category;
+    const statusCode = error?.statusCode || error?.response?.status;
+    
+    if (errorCategory === "OBJECT_NOT_FOUND" || statusCode === 404) {
       console.log("Custom check-in object not found, falling back to Note creation");
       return await createHubSpotNote(companyId, companyName, username, lat, lng, note, timestamp);
     }
+    
+    // Handle missing/invalid properties (VALIDATION_ERROR with PROPERTY_DOESNT_EXIST)
+    if (errorCategory === "VALIDATION_ERROR" || statusCode === 400) {
+      const errorMessage = error?.body?.message || error?.response?.data?.message || "";
+      if (errorMessage.includes("PROPERTY_DOESNT_EXIST") || errorMessage.includes("Property values were not valid")) {
+        console.warn("⚠️  HubSpot properties not configured yet. Create properties in HubSpot portal:");
+        console.warn("   Settings → Objects → Field Visit Check-Ins → Properties");
+        console.warn("   Required properties: machinery_types, engine_types, current_suppliers, customer_needs, next_steps, visit_duration_min");
+        console.log("   Falling back to simplified Note creation");
+        return await createHubSpotNote(companyId, companyName, username, lat, lng, note, timestamp);
+      }
+    }
 
+    // For other errors, still throw but log details
+    if (error?.response?.data) {
+      console.error("   HubSpot API error details:", JSON.stringify(error.response.data, null, 2));
+    }
     throw error;
   }
 }
