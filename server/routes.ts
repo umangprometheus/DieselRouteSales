@@ -354,6 +354,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get route by ID
+  app.get("/api/route/:id", requireAuth, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const route = await storage.getRoute(id);
+      
+      if (!route) {
+        return res.status(404).json({ error: { code: "NOT_FOUND", message: "Route not found" } });
+      }
+      
+      // Verify the route belongs to the current user
+      if (route.userId !== (req as any).session.userId) {
+        return res.status(403).json({ error: { code: "FORBIDDEN", message: "Access denied" } });
+      }
+      
+      res.json(route);
+    } catch (error) {
+      console.error("Error fetching route:", error);
+      res.status(500).json({ error: { code: "SERVER_ERROR", message: "Failed to fetch route" } });
+    }
+  });
+
   // Get active route
   app.get("/api/route/active", requireAuth, async (req, res) => {
     try {
