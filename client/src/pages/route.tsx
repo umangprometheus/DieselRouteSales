@@ -42,24 +42,7 @@ export default function RoutePage() {
 
   useEffect(() => {
     const loadRoute = async () => {
-      // First, check localStorage
-      const stored = localStorage.getItem("activeRoute");
-      if (stored) {
-        const data: BuildRouteResponse = JSON.parse(stored);
-        setRouteData(data);
-        
-        // Mark route as active in database
-        if (data.routeId) {
-          fetch(`/api/route/${data.routeId}`, {
-            method: 'PATCH',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ status: 'active' }),
-          }).catch(err => console.error('Failed to mark route as active:', err));
-        }
-        return;
-      }
-
-      // If no localStorage, check database for active route
+      // ALWAYS fetch fresh data from database to avoid stale localStorage
       try {
         const response = await fetch('/api/route/active', {
           credentials: 'include',
@@ -81,16 +64,11 @@ export default function RoutePage() {
             routeGeometry, // Simple geometry from stop coordinates
           };
           
-          // Save to localStorage for performance
+          // Update localStorage with fresh data
           localStorage.setItem("activeRoute", JSON.stringify(routeResponse));
           setRouteData(routeResponse);
-          
-          toast({
-            title: "Route resumed",
-            description: "Continuing your active route from another device",
-          });
         } else {
-          // No active route in localStorage or database
+          // No active route in database
           toast({
             variant: "destructive",
             title: "No active route",
