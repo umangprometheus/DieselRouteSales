@@ -275,7 +275,9 @@ export default function PlanPage() {
             selectedCompanyIds={selectedCompanyIds}
             onCompanyClick={(id) => {
               console.log('[Plan] onCompanyClick called with:', id, 'Currently selected:', selectedCompanyIds);
-              if (!selectedCompanyIds.includes(id)) {
+              const wasSelected = selectedCompanyIds.includes(id);
+              
+              if (!wasSelected) {
                 console.log('[Plan] Adding company to selection');
                 setSelectedCompanyIds([...selectedCompanyIds, id]);
               } else {
@@ -291,7 +293,7 @@ export default function PlanPage() {
               }
             }}
             onCompanyInfo={(id) => {
-              // Only update if we're adding to selection or switching companies
+              // MapView only calls this when selecting (not deselecting)
               setClickedCompanyId(id);
             }}
           />

@@ -255,16 +255,21 @@ export default function MapView({
       }
 
       if (companyId) {
+        // Check if this company is already selected (deselecting scenario)
+        const isAlreadySelected = selectedCompanyIds.includes(companyId);
+        
         // Toggle selection
         if (onCompanyClick) {
           console.log('[MapView] Calling onCompanyClick for:', companyId);
           onCompanyClick(companyId);
         }
         
-        // Show info in bottom sheet
-        if (onCompanyInfo) {
+        // Show info in bottom sheet ONLY if we're selecting (not deselecting)
+        if (onCompanyInfo && !isAlreadySelected) {
           console.log('[MapView] Calling onCompanyInfo for:', companyId);
           onCompanyInfo(companyId);
+        } else if (isAlreadySelected) {
+          console.log('[MapView] Skipping onCompanyInfo - company being deselected');
         }
       }
     };
