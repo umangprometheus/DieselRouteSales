@@ -407,6 +407,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // ============================================================================
+  // AI Voice-to-Text Routes
+  // ============================================================================
+
+  // Transcribe audio and extract structured data
+  app.post("/api/transcribe", requireAuth, async (req, res) => {
+    try {
+      const { transcribeRequestSchema } = await import("@shared/schema");
+      const { transcribeAndParse } = await import("./services/ai");
+      
+      const { audioData, mimeType } = transcribeRequestSchema.parse(req.body);
+      
+      console.log(`🎤 Processing audio transcription (${mimeType})`);
+      
+      const result = await transcribeAndParse(audioData, mimeType);
+      
+      res.json(result);
+    } catch (error) {
+      console.error("Transcription error:", error);
+      res.status(500).json({ 
+        error: { 
+          code: "TRANSCRIPTION_ERROR", 
+          message: error instanceof Error ? error.message : "Failed to transcribe audio" 
+        } 
+      });
+    }
+  });
+
+  // ============================================================================
   // Check-In Routes
   // ============================================================================
 
@@ -428,14 +456,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ error: { code: "NOT_FOUND", message: "User not found" } });
       }
 
-      // Create local check-in record
+      // Create local check-in record with structured visit data
       const checkIn = await storage.createCheckIn({
         userId: (req as any).session.userId,
         companyId: checkInData.companyId,
         lat: checkInData.lat,
         lng: checkInData.lng,
         note: checkInData.note || null,
+        voiceTranscript: checkInData.voiceTranscript || null,
+        machineryTypes: checkInData.machineryTypes || null,
+        engineTypes: checkInData.engineTypes || null,
+        fleetMakeup: checkInData.fleetMakeup || null,
+        currentSuppliers: checkInData.currentSuppliers || null,
+        competitorData: checkInData.competitorData || null,
+        pricingInfo: checkInData.pricingInfo || null,
+        productModels: checkInData.productModels || null,
+        availabilityGaps: checkInData.availabilityGaps || null,
+        customerNeeds: checkInData.customerNeeds || null,
+        competitivePosition: checkInData.competitivePosition || null,
+        insideSalesIssues: checkInData.insideSalesIssues || null,
+        nextSteps: checkInData.nextSteps || null,
+        miscNotes: checkInData.miscNotes || null,
+        visitDurationMin: checkInData.visitDurationMin || null,
       });
+      
+      // Update with submission timestamp
+      await storage.updateCheckIn(checkIn.id, { submittedAt: new Date() });
 
       // Mark route_stop as completed if there's an active route
       const activeRoute = await storage.getActiveRoute((req as any).session.userId);
@@ -471,7 +517,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
         checkInData.lat,
         checkInData.lng,
         checkInData.note || null,
-        checkIn.timestamp.toISOString()
+        checkIn.timestamp.toISOString(),
+        {
+          voiceTranscript: checkInData.voiceTranscript || null,
+          machineryTypes: checkInData.machineryTypes || null,
+          engineTypes: checkInData.engineTypes || null,
+          fleetMakeup: checkInData.fleetMakeup || null,
+          currentSuppliers: checkInData.currentSuppliers || null,
+          competitorData: checkInData.competitorData || null,
+          pricingInfo: checkInData.pricingInfo || null,
+          productModels: checkInData.productModels || null,
+          availabilityGaps: checkInData.availabilityGaps || null,
+          customerNeeds: checkInData.customerNeeds || null,
+          competitivePosition: checkInData.competitivePosition || null,
+          insideSalesIssues: checkInData.insideSalesIssues || null,
+          nextSteps: checkInData.nextSteps || null,
+          miscNotes: checkInData.miscNotes || null,
+          visitDurationMin: checkInData.visitDurationMin || null,
+        }
       )
         .then((recordId) => {
           // Update check-in with HubSpot record ID

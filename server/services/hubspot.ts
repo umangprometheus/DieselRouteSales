@@ -75,7 +75,24 @@ export async function createFieldVisitCheckIn(
   lat: number,
   lng: number,
   note: string | null,
-  timestamp: string
+  timestamp: string,
+  visitData?: {
+    voiceTranscript?: string | null;
+    machineryTypes?: string | null;
+    engineTypes?: string | null;
+    fleetMakeup?: string | null;
+    currentSuppliers?: string | null;
+    competitorData?: string | null;
+    pricingInfo?: string | null;
+    productModels?: string | null;
+    availabilityGaps?: string | null;
+    customerNeeds?: string | null;
+    competitivePosition?: string | null;
+    insideSalesIssues?: string | null;
+    nextSteps?: string | null;
+    miscNotes?: string | null;
+    visitDurationMin?: number | null;
+  }
 ) {
   const client = getHubSpotClient();
 
@@ -83,7 +100,7 @@ export async function createFieldVisitCheckIn(
   const customObjectTypeId = "2-175854274";
 
   try {
-    // Create check-in record with just the timestamp as the name
+    // Create check-in record with timestamp as the name
     // Use CST timezone (America/Chicago)
     const checkInDate = new Date(timestamp);
     const recordName = checkInDate.toLocaleString('en-US', {
@@ -96,10 +113,34 @@ export async function createFieldVisitCheckIn(
       timeZone: 'America/Chicago'  // CST timezone
     });
 
+    // Build properties object with all structured visit data
+    const properties: Record<string, string> = {
+      check_in_name: recordName,
+    };
+
+    // Add structured visit data if provided
+    if (visitData) {
+      if (visitData.voiceTranscript) properties.voice_transcript = visitData.voiceTranscript;
+      if (visitData.machineryTypes) properties.machinery_types = visitData.machineryTypes;
+      if (visitData.engineTypes) properties.engine_types = visitData.engineTypes;
+      if (visitData.fleetMakeup) properties.fleet_makeup = visitData.fleetMakeup;
+      if (visitData.currentSuppliers) properties.current_suppliers = visitData.currentSuppliers;
+      if (visitData.competitorData) properties.competitor_data = visitData.competitorData;
+      if (visitData.pricingInfo) properties.pricing_info = visitData.pricingInfo;
+      if (visitData.productModels) properties.product_models = visitData.productModels;
+      if (visitData.availabilityGaps) properties.availability_gaps = visitData.availabilityGaps;
+      if (visitData.customerNeeds) properties.customer_needs = visitData.customerNeeds;
+      if (visitData.competitivePosition) properties.competitive_position = visitData.competitivePosition;
+      if (visitData.insideSalesIssues) properties.inside_sales_issues = visitData.insideSalesIssues;
+      if (visitData.nextSteps) properties.next_steps = visitData.nextSteps;
+      if (visitData.miscNotes) properties.misc_notes = visitData.miscNotes;
+      if (visitData.visitDurationMin !== null && visitData.visitDurationMin !== undefined) {
+        properties.visit_duration_min = String(visitData.visitDurationMin);
+      }
+    }
+
     const customObjectResponse = await client.crm.objects.basicApi.create(customObjectTypeId, {
-      properties: {
-        check_in_name: recordName, // Use timestamp as record name
-      },
+      properties,
     });
 
     console.log(`✅ Created check-in record ${customObjectResponse.id}: "${recordName}"`);

@@ -58,7 +58,7 @@ export type Company = typeof companies.$inferSelect;
 export type InsertCompany = z.infer<typeof insertCompanySchema>;
 
 // ============================================================================
-// Check-Ins Table - Field visit records
+// Check-Ins Table - Field visit records with structured data
 // ============================================================================
 export const checkIns = pgTable("check_ins", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
@@ -70,6 +70,30 @@ export const checkIns = pgTable("check_ins", {
   timestamp: timestamp("timestamp").notNull().defaultNow(),
   hubspotNoteId: varchar("hubspot_note_id", { length: 100 }),
   hubspotCustomObjectId: varchar("hubspot_custom_object_id", { length: 100 }),
+  
+  // Voice-to-text and AI parsing
+  voiceTranscript: text("voice_transcript"),
+  
+  // Structured visit data (all required per requirements)
+  machineryTypes: text("machinery_types"),
+  engineTypes: text("engine_types"),
+  fleetMakeup: text("fleet_makeup"),
+  currentSuppliers: text("current_suppliers"),
+  competitorData: text("competitor_data"),
+  pricingInfo: text("pricing_info"),
+  productModels: text("product_models"),
+  availabilityGaps: text("availability_gaps"),
+  customerNeeds: text("customer_needs"),
+  competitivePosition: text("competitive_position"),
+  insideSalesIssues: text("inside_sales_issues"),
+  nextSteps: text("next_steps"),
+  miscNotes: text("misc_notes"),
+  
+  // Visit duration (in minutes)
+  visitDurationMin: integer("visit_duration_min"),
+  
+  // Submission timestamp
+  submittedAt: timestamp("submitted_at"),
 });
 
 export const insertCheckInSchema = createInsertSchema(checkIns).omit({
@@ -77,6 +101,7 @@ export const insertCheckInSchema = createInsertSchema(checkIns).omit({
   timestamp: true,
   hubspotNoteId: true,
   hubspotCustomObjectId: true,
+  submittedAt: true,
 });
 
 export type CheckIn = typeof checkIns.$inferSelect;
@@ -238,6 +263,27 @@ export const checkInRequestSchema = z.object({
   lat: z.number(),
   lng: z.number(),
   note: z.string().optional(),
+  
+  // Voice transcript
+  voiceTranscript: z.string().optional(),
+  
+  // Structured visit data (all required per requirements)
+  machineryTypes: z.string().min(1, "Machinery types are required"),
+  engineTypes: z.string().min(1, "Engine types are required"),
+  fleetMakeup: z.string().optional(),
+  currentSuppliers: z.string().min(1, "Current suppliers are required"),
+  competitorData: z.string().optional(),
+  pricingInfo: z.string().optional(),
+  productModels: z.string().optional(),
+  availabilityGaps: z.string().optional(),
+  customerNeeds: z.string().min(1, "Customer needs assessment is required"),
+  competitivePosition: z.string().optional(),
+  insideSalesIssues: z.string().optional(),
+  nextSteps: z.string().min(1, "Next steps are required"),
+  miscNotes: z.string().optional(),
+  
+  // Visit duration
+  visitDurationMin: z.number().int().positive().optional(),
 });
 
 export type CheckInRequest = z.infer<typeof checkInRequestSchema>;
@@ -277,3 +323,39 @@ export const summaryResponseSchema = z.object({
 });
 
 export type SummaryResponse = z.infer<typeof summaryResponseSchema>;
+
+// ============================================================================
+// Voice-to-Text & AI Parsing Schemas
+// ============================================================================
+
+export const structuredVisitDataSchema = z.object({
+  machineryTypes: z.string(),
+  engineTypes: z.string(),
+  fleetMakeup: z.string(),
+  currentSuppliers: z.string(),
+  competitorData: z.string(),
+  pricingInfo: z.string(),
+  productModels: z.string(),
+  availabilityGaps: z.string(),
+  customerNeeds: z.string(),
+  competitivePosition: z.string(),
+  insideSalesIssues: z.string(),
+  nextSteps: z.string(),
+  miscNotes: z.string(),
+});
+
+export type StructuredVisitData = z.infer<typeof structuredVisitDataSchema>;
+
+export const transcribeRequestSchema = z.object({
+  audioData: z.string(),
+  mimeType: z.string(),
+});
+
+export type TranscribeRequest = z.infer<typeof transcribeRequestSchema>;
+
+export const transcribeResponseSchema = z.object({
+  transcript: z.string(),
+  parsedData: structuredVisitDataSchema,
+});
+
+export type TranscribeResponse = z.infer<typeof transcribeResponseSchema>;
