@@ -369,6 +369,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         currentStopIndex: 0,
         status: "active", // Mark as active so GET /api/route/active can find it
         routeGeometry: optimizedRoute.routeGeometry as any, // Save full driving route path
+        customEndpoint: optimizedRoute.customEndpoint as any, // Save custom endpoint location
       });
       
       // Create route_stops records for better analytics
@@ -515,6 +516,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         totalDistanceMi: totalDistMi,
         totalEtaMin: Math.round(totalEtaMin),
         routeGeometry: routeGeometry as any,
+        customEndpoint: customEndpoint as any,
       });
 
       // Build navigation URL (include custom endpoint if provided)

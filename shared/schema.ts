@@ -139,6 +139,7 @@ export const routes = pgTable("routes", {
   currentStopIndex: integer("current_stop_index").notNull().default(0),
   status: varchar("status", { length: 20 }).notNull().default("planning"),
   routeGeometry: jsonb("route_geometry"), // Full driving route path from Mapbox
+  customEndpoint: jsonb("custom_endpoint"), // Custom endpoint location { label, lat, lng }
   createdAt: timestamp("created_at").notNull().defaultNow(),
   completedAt: timestamp("completed_at"),
 });
