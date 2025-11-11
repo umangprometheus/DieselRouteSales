@@ -1,6 +1,7 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -66,6 +67,26 @@ export function VisitDataForm({ defaultValues, onSubmit, isSubmitting = false }:
       miscNotes: defaultValues?.miscNotes || "",
     },
   });
+
+  useEffect(() => {
+    if (defaultValues) {
+      form.reset({
+        machineryTypes: defaultValues.machineryTypes || "",
+        engineTypes: defaultValues.engineTypes || "",
+        fleetMakeup: defaultValues.fleetMakeup || "",
+        currentSuppliers: defaultValues.currentSuppliers || "",
+        competitorData: defaultValues.competitorData || "",
+        pricingInfo: defaultValues.pricingInfo || "",
+        productModels: defaultValues.productModels || "",
+        availabilityGaps: defaultValues.availabilityGaps || "",
+        customerNeeds: defaultValues.customerNeeds || "",
+        competitivePosition: defaultValues.competitivePosition || "",
+        insideSalesIssues: defaultValues.insideSalesIssues || "",
+        nextSteps: defaultValues.nextSteps || "",
+        miscNotes: defaultValues.miscNotes || "",
+      });
+    }
+  }, [defaultValues, form]);
 
   return (
     <Form {...form}>

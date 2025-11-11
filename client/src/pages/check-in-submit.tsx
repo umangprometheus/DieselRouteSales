@@ -5,9 +5,8 @@ import { VoiceRecorder } from "@/components/VoiceRecorder";
 import { VisitDataForm } from "@/components/VisitDataForm";
 import { useCheckIn } from "@/lib/api";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, Mic, Keyboard } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 
 interface VisitData {
   machineryTypes?: string;
@@ -38,17 +37,15 @@ export default function CheckInSubmitPage() {
   
   const [transcript, setTranscript] = useState("");
   const [visitData, setVisitData] = useState<VisitData | null>(null);
-  const [inputMode, setInputMode] = useState<"voice" | "manual">("voice");
   const [checkInTimestamp] = useState(new Date());
 
   const handleTranscriptionComplete = (newTranscript: string, parsedData: any) => {
     setTranscript(newTranscript);
     setVisitData(parsedData);
-    setInputMode("manual");
     
     toast({
       title: "Transcription Complete",
-      description: "Review and edit the information before submitting.",
+      description: "The form has been populated with your voice note.",
     });
   };
 
@@ -145,58 +142,27 @@ export default function CheckInSubmitPage() {
       </header>
 
       <main className="p-4 pb-24 max-w-2xl mx-auto space-y-4">
-        <div className="flex justify-center">
-          <ToggleGroup 
-            type="single" 
-            value={inputMode} 
-            onValueChange={(value) => value && setInputMode(value as "voice" | "manual")}
-            className="bg-muted p-1 rounded-lg"
-            data-testid="toggle-input-mode"
-          >
-            <ToggleGroupItem 
-              value="voice" 
-              className="gap-2 data-[state=on]:bg-background data-[state=on]:shadow-sm"
-              data-testid="toggle-voice"
-            >
-              <Mic className="h-4 w-4" />
-              Record Voice
-            </ToggleGroupItem>
-            <ToggleGroupItem 
-              value="manual"
-              className="gap-2 data-[state=on]:bg-background data-[state=on]:shadow-sm"
-              data-testid="toggle-manual"
-            >
-              <Keyboard className="h-4 w-4" />
-              Type Manually
-            </ToggleGroupItem>
-          </ToggleGroup>
-        </div>
-
-        {inputMode === "voice" ? (
-          <div className="space-y-4">
-            <VoiceRecorder
-              onTranscriptionComplete={handleTranscriptionComplete}
-              disabled={checkInMutation.isPending}
-            />
-            
-            {transcript && (
-              <Card data-testid="card-transcript">
-                <CardHeader>
-                  <CardTitle className="text-sm">Transcript</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-sm whitespace-pre-wrap">{transcript}</p>
-                </CardContent>
-              </Card>
-            )}
-          </div>
-        ) : (
-          <VisitDataForm
-            defaultValues={visitData || undefined}
-            onSubmit={handleFormSubmit}
-            isSubmitting={checkInMutation.isPending}
-          />
+        <VoiceRecorder
+          onTranscriptionComplete={handleTranscriptionComplete}
+          disabled={checkInMutation.isPending}
+        />
+        
+        {transcript && (
+          <Card data-testid="card-transcript">
+            <CardHeader>
+              <CardTitle className="text-sm">Transcript</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm whitespace-pre-wrap">{transcript}</p>
+            </CardContent>
+          </Card>
         )}
+
+        <VisitDataForm
+          defaultValues={visitData || undefined}
+          onSubmit={handleFormSubmit}
+          isSubmitting={checkInMutation.isPending}
+        />
       </main>
     </div>
   );
