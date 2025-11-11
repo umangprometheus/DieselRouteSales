@@ -76,78 +76,106 @@ export function RouteEditDrawer({
     }
   }, [route]);
 
-  // Prevent viewport scrolling during drag operations
+  // Prevent all scrolling during drag operations
   useEffect(() => {
     if (!activeId) return;
 
-    // Save current scroll position
-    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+    // Capture all scrollable elements
+    const scrollableElements = new Set<HTMLElement>();
     
-    // Save original styles
-    const originalBodyOverflow = document.body.style.overflow;
-    const originalBodyPosition = document.body.style.position;
-    const originalBodyTop = document.body.style.top;
-    const originalBodyWidth = document.body.style.width;
-    const originalBodyTouchAction = document.body.style.touchAction;
-    const originalHtmlOverflow = document.documentElement.style.overflow;
-    const originalHtmlOverscroll = document.documentElement.style.overscrollBehavior;
-
-    // Lock viewport completely
+    // Find all potentially scrollable elements
+    const findScrollableElements = (element: Element) => {
+      const computedStyle = window.getComputedStyle(element);
+      const overflowY = computedStyle.overflowY;
+      const overflowX = computedStyle.overflowX;
+      
+      if (overflowY === 'auto' || overflowY === 'scroll' || overflowX === 'auto' || overflowX === 'scroll') {
+        scrollableElements.add(element as HTMLElement);
+      }
+      
+      // Recursively check children
+      for (const child of element.children) {
+        findScrollableElements(child);
+      }
+    };
+    
+    findScrollableElements(document.body);
+    
+    // Save original styles and lock everything
+    const originalStyles = new Map<HTMLElement, {
+      overflow: string;
+      overflowX: string;
+      overflowY: string;
+      touchAction: string;
+      overscrollBehavior: string;
+      position: string;
+      top: string;
+    }>();
+    
+    // Lock all scrollable elements
+    scrollableElements.forEach((el) => {
+      originalStyles.set(el, {
+        overflow: el.style.overflow,
+        overflowX: el.style.overflowX,
+        overflowY: el.style.overflowY,
+        touchAction: el.style.touchAction,
+        overscrollBehavior: el.style.overscrollBehavior,
+        position: el.style.position,
+        top: el.style.top,
+      });
+      
+      el.style.overflow = 'hidden !important';
+      el.style.overflowX = 'hidden !important';
+      el.style.overflowY = 'hidden !important';
+      el.style.touchAction = 'none';
+      el.style.overscrollBehavior = 'none';
+    });
+    
+    // Also lock body and html
+    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
     document.body.style.overflow = 'hidden';
     document.body.style.position = 'fixed';
     document.body.style.top = `-${scrollTop}px`;
     document.body.style.width = '100%';
     document.body.style.touchAction = 'none';
     document.documentElement.style.overflow = 'hidden';
-    document.documentElement.style.overscrollBehavior = 'none';
+    document.documentElement.style.touchAction = 'none';
 
-    // Also lock any scrollable drawer containers
-    const drawerContents = document.querySelectorAll('[data-scroll-lock-target]');
-    const originalScrollStyles: Array<{ el: Element; overflow: string; touchAction: string; overscroll: string }> = [];
-    
-    drawerContents.forEach((el) => {
-      const htmlEl = el as HTMLElement;
-      originalScrollStyles.push({
-        el,
-        overflow: htmlEl.style.overflow,
-        touchAction: htmlEl.style.touchAction,
-        overscroll: htmlEl.style.overscrollBehavior,
-      });
-      htmlEl.style.overflow = 'hidden';
-      htmlEl.style.touchAction = 'none';
-      htmlEl.style.overscrollBehavior = 'none';
-    });
-
-    // Prevent all touch scrolling with non-passive listener
-    const preventScroll = (e: TouchEvent) => {
+    // Prevent all scrolling events
+    const preventAllScroll = (e: Event) => {
       e.preventDefault();
+      e.stopPropagation();
+      return false;
     };
-    document.addEventListener('touchmove', preventScroll, { passive: false });
+    
+    // Add listeners to multiple event types
+    document.addEventListener('wheel', preventAllScroll, { passive: false, capture: true });
+    document.addEventListener('touchmove', preventAllScroll, { passive: false, capture: true });
+    document.addEventListener('scroll', preventAllScroll, { passive: false, capture: true });
 
-    // Cleanup function
+    // Cleanup
     return () => {
-      // Restore viewport
-      document.body.style.overflow = originalBodyOverflow;
-      document.body.style.position = originalBodyPosition;
-      document.body.style.top = originalBodyTop;
-      document.body.style.width = originalBodyWidth;
-      document.body.style.touchAction = originalBodyTouchAction;
-      document.documentElement.style.overflow = originalHtmlOverflow;
-      document.documentElement.style.overscrollBehavior = originalHtmlOverscroll;
-
-      // Restore drawer containers
-      originalScrollStyles.forEach(({ el, overflow, touchAction, overscroll }) => {
-        const htmlEl = el as HTMLElement;
-        htmlEl.style.overflow = overflow;
-        htmlEl.style.touchAction = touchAction;
-        htmlEl.style.overscrollBehavior = overscroll;
+      // Restore all original styles
+      originalStyles.forEach((styles, el) => {
+        Object.assign(el.style, styles);
       });
-
+      
+      // Restore body
+      document.body.style.overflow = '';
+      document.body.style.position = '';
+      document.body.style.top = '';
+      document.body.style.width = '';
+      document.body.style.touchAction = '';
+      document.documentElement.style.overflow = '';
+      document.documentElement.style.touchAction = '';
+      
       // Restore scroll position
       window.scrollTo(0, scrollTop);
-
-      // Remove event listener
-      document.removeEventListener('touchmove', preventScroll);
+      
+      // Remove all event listeners
+      document.removeEventListener('wheel', preventAllScroll, { capture: true } as any);
+      document.removeEventListener('touchmove', preventAllScroll, { capture: true } as any);
+      document.removeEventListener('scroll', preventAllScroll, { capture: true } as any);
     };
   }, [activeId]);
 
@@ -306,6 +334,7 @@ export function RouteEditDrawer({
               onDragStart={handleDragStart}
               onDragEnd={handleDragEnd}
               modifiers={[restrictToVerticalAxis, restrictToWindowEdges]}
+              autoScroll={false}
             >
               <SortableContext
                 items={editedStops.map(s => getSortableId(s))}
