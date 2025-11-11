@@ -264,6 +264,11 @@ export const buildRouteRequestSchema = z.object({
   ]),
   companyIds: z.array(z.string()).min(1),
   optimize: z.boolean().default(true),
+  customEndpoint: z.object({
+    label: z.string(),
+    lat: z.number(),
+    lng: z.number(),
+  }).optional(),
 });
 
 export type BuildRouteRequest = z.infer<typeof buildRouteRequestSchema>;

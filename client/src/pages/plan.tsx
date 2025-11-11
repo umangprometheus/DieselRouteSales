@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
@@ -18,9 +19,11 @@ import MapView from "@/components/map-view";
 import RadiusPicker from "@/components/radius-picker";
 import CompanyList from "@/components/company-list";
 import LocationSearch from "@/components/location-search";
+import { RouteEditDrawer } from "@/components/RouteEditDrawer";
+import { EndpointSearchDrawer } from "@/components/EndpointSearchDrawer";
 import { useCompanies, useSyncCompanies, useBuildRoute } from "@/lib/api";
 import { useToast } from "@/hooks/use-toast";
-import { MapIcon, List, Route, Loader2, RefreshCw } from "lucide-react";
+import { MapIcon, List, Route, Loader2, RefreshCw, MapPin, X } from "lucide-react";
 import type { BuildRouteResponse } from "@shared/schema";
 
 export default function PlanPage() {
@@ -33,6 +36,10 @@ export default function PlanPage() {
   const [showResumeDialog, setShowResumeDialog] = useState(false);
   const [activeRouteData, setActiveRouteData] = useState<any | null>(null);
   const [clickedCompanyId, setClickedCompanyId] = useState<string | null>(null);
+  const [customEndpoint, setCustomEndpoint] = useState<{ label: string; lat: number; lng: number } | null>(null);
+  const [showEndpointDrawer, setShowEndpointDrawer] = useState(false);
+  const [showEditRouteDrawer, setShowEditRouteDrawer] = useState(false);
+  const [pendingRoute, setPendingRoute] = useState<BuildRouteResponse | null>(null);
 
   const { data, isLoading, refetch } = useCompanies({
     lat: userLocation?.lat,
@@ -168,6 +175,45 @@ export default function PlanPage() {
     setActiveRouteData(null);
   };
 
+  // Handler for confirming route edits
+  const handleConfirmRouteEdits = async (editedRoute: BuildRouteResponse) => {
+    // TODO: Call backend PATCH endpoint when implemented
+    // For now, just save to localStorage and navigate
+    localStorage.setItem("activeRoute", JSON.stringify(editedRoute));
+    setShowEditRouteDrawer(false);
+    setPendingRoute(null);
+    
+    toast({
+      title: "Route confirmed!",
+      description: "Your route has been saved with your custom order.",
+    });
+    
+    navigate("/route");
+  };
+
+  // Handler for canceling route edits
+  const handleCancelRouteEdits = () => {
+    setShowEditRouteDrawer(false);
+    setPendingRoute(null);
+  };
+
+  // Handler for setting custom endpoint
+  const handleSetEndpoint = (endpoint: { label: string; lat: number; lng: number }) => {
+    setCustomEndpoint(endpoint);
+    setShowEndpointDrawer(false);
+    
+    toast({
+      title: "Endpoint set!",
+      description: `Your route will end at ${endpoint.label}`,
+    });
+  };
+
+  // Handler for removing custom endpoint
+  const handleRemoveEndpoint = () => {
+    setCustomEndpoint(null);
+    setShowEndpointDrawer(false);
+  };
+
   const handleBuildRoute = async () => {
     if (selectedCompanyIds.length === 0) {
       toast({
@@ -216,6 +262,7 @@ export default function PlanPage() {
         origin: userLocation,
         companyIds: selectedCompanyIds,
         optimize: true,
+        customEndpoint: customEndpoint || undefined,
       });
 
       console.log('[Plan] Route built successfully:', result);
@@ -225,15 +272,14 @@ export default function PlanPage() {
         throw new Error('Invalid route response format');
       }
 
-      // Store route in localStorage for route page
-      localStorage.setItem("activeRoute", JSON.stringify(result));
+      // Set pending route for editing instead of navigating directly
+      setPendingRoute(result);
+      setShowEditRouteDrawer(true);
       
       toast({
         title: "Route created!",
         description: `${result.stops.length} stops • ${result.totalDistMi.toFixed(1)} mi • ${Math.round(result.totalEtaMin)} min`,
       });
-
-      navigate("/route");
     } catch (error: any) {
       console.error('[Plan] Route building failed:', error);
       toast({
@@ -410,24 +456,50 @@ export default function PlanPage() {
             {/* Start Route Button - Top of List View */}
             {selectedCompanyIds.length >= 2 && (
               <div className="sticky top-0 z-20 -mx-4 -mt-4 px-4 pt-4 pb-3 bg-background/95 backdrop-blur border-b">
-                <Button
-                  onClick={handleBuildRoute}
-                  className="w-full h-14 text-base font-semibold shadow-lg"
-                  disabled={buildRouteMutation.isPending}
-                  data-testid="button-start-route-top"
-                >
-                  {buildRouteMutation.isPending ? (
-                    <>
-                      <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                      Building Route...
-                    </>
-                  ) : (
-                    <>
-                      <Route className="w-5 h-5 mr-2" />
-                      Start Route ({selectedCompanyIds.length} stops)
-                    </>
-                  )}
-                </Button>
+                <div className="space-y-2">
+                  {/* Custom Endpoint Selector */}
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setShowEndpointDrawer(true)}
+                    className="w-full justify-between"
+                    data-testid="button-set-endpoint"
+                  >
+                    <span className="flex items-center gap-2">
+                      <MapPin className="h-4 w-4" />
+                      {customEndpoint ? customEndpoint.label : "End Route At..."}
+                    </span>
+                    {customEndpoint && (
+                      <X 
+                        className="h-4 w-4 ml-2"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setCustomEndpoint(null);
+                        }}
+                      />
+                    )}
+                  </Button>
+                  
+                  {/* Build Route Button */}
+                  <Button
+                    onClick={handleBuildRoute}
+                    className="w-full h-14 text-base font-semibold shadow-lg"
+                    disabled={buildRouteMutation.isPending}
+                    data-testid="button-start-route-top"
+                  >
+                    {buildRouteMutation.isPending ? (
+                      <>
+                        <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                        Building Route...
+                      </>
+                    ) : (
+                      <>
+                        <Route className="w-5 h-5 mr-2" />
+                        Start Route ({selectedCompanyIds.length} stops)
+                      </>
+                    )}
+                  </Button>
+                </div>
               </div>
             )}
 
@@ -539,6 +611,26 @@ export default function PlanPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Route Edit Drawer */}
+      <RouteEditDrawer
+        open={showEditRouteDrawer}
+        onOpenChange={setShowEditRouteDrawer}
+        route={pendingRoute}
+        onConfirm={handleConfirmRouteEdits}
+        onCancel={handleCancelRouteEdits}
+        customEndpoint={customEndpoint}
+      />
+
+      {/* Endpoint Search Drawer */}
+      <EndpointSearchDrawer
+        open={showEndpointDrawer}
+        onOpenChange={setShowEndpointDrawer}
+        onConfirm={handleSetEndpoint}
+        onRemove={handleRemoveEndpoint}
+        currentEndpoint={customEndpoint}
+        userLocation={userLocation}
+      />
     </div>
   );
 }

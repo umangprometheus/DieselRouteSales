@@ -280,7 +280,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Note: if origin is "gps", we'll optimize without a fixed start (any starting point)
 
       // Optimize route using Mapbox with user's location as starting point
-      const optimizedRoute = await optimizeRoute(coordinates, origin);
+      const optimizedRoute = await optimizeRoute(coordinates, origin, request.customEndpoint);
 
       // Map optimized waypoints back to companies for API response
       const stopsForApi: RouteStopApi[] = optimizedRoute.waypoints.map((waypoint, index) => {
@@ -348,10 +348,139 @@ export async function registerRoutes(app: Express): Promise<Server> {
         totalEtaMin: optimizedRoute.totalEtaMin,
         navUrl,
         routeGeometry: optimizedRoute.routeGeometry,
+        customEndpoint: optimizedRoute.customEndpoint,
       });
     } catch (error) {
       console.error("Route planning error:", error);
       res.status(500).json({ error: { code: "ROUTE_ERROR", message: "Failed to build route" } });
+    }
+  });
+
+  // Update route order and recalculate
+  app.patch("/api/routes/:id/stops", requireAuth, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { orderedStopIds, customEndpoint } = req.body;
+
+      // Validate request
+      if (!orderedStopIds || !Array.isArray(orderedStopIds)) {
+        return res.status(400).json({ error: { code: "INVALID_REQUEST", message: "orderedStopIds array required" } });
+      }
+
+      // Get existing route
+      const route = await storage.getRoute(id);
+      if (!route) {
+        return res.status(404).json({ error: { code: "NOT_FOUND", message: "Route not found" } });
+      }
+
+      // Verify ownership
+      if (route.userId !== (req as any).session.userId) {
+        return res.status(403).json({ error: { code: "FORBIDDEN", message: "Access denied" } });
+      }
+
+      // Get companies for the reordered IDs
+      const companies = await Promise.all(
+        orderedStopIds.map((companyId: string) => storage.getCompany(companyId))
+      );
+
+      const validCompanies = companies.filter((c) => c !== undefined && c.lat !== null && c.lng !== null);
+      
+      if (validCompanies.length < 2) {
+        return res.status(400).json({ 
+          error: { code: "INVALID_REQUEST", message: "Need at least 2 valid companies" } 
+        });
+      }
+
+      // Build coordinates in new order - DON'T RE-OPTIMIZE, keep user's order
+      const coordinates = validCompanies.map((c) => ({ lat: c!.lat!, lng: c!.lng! }));
+      
+      // Add custom endpoint if provided
+      const allCoords = customEndpoint 
+        ? [...coordinates, customEndpoint]
+        : coordinates;
+
+      // Call Mapbox directly to get distances for exact order (no optimization)
+      const { getRoute } = await import("./services/mapbox");
+      const MAPBOX_TOKEN = process.env.MAPBOX_TOKEN;
+      const MAPBOX_API = "https://api.mapbox.com";
+      
+      const coordsString = allCoords.map(c => `${c.lng},${c.lat}`).join(';');
+      const url = `${MAPBOX_API}/directions/v5/mapbox/driving/${coordsString}`;
+      
+      const axios = (await import("axios")).default;
+      const response = await axios.get(url, {
+        params: {
+          access_token: MAPBOX_TOKEN,
+          geometries: 'geojson',
+          overview: 'full',
+          steps: false,
+        },
+      });
+
+      if (!response.data.routes || response.data.routes.length === 0) {
+        throw new Error('No route found');
+      }
+
+      const routeData = response.data.routes[0];
+      const routeGeometry: Array<{ lat: number; lng: number }> = [];
+      
+      if (routeData.geometry && routeData.geometry.coordinates) {
+        routeData.geometry.coordinates.forEach((coord: [number, number]) => {
+          routeGeometry.push({ lng: coord[0], lat: coord[1] });
+        });
+      }
+
+      const totalDistMi = routeData.distance ? routeData.distance * 0.000621371 : 0;
+      const totalEtaMin = routeData.duration ? routeData.duration / 60 : 0;
+
+      // Rebuild stops array with new metrics from route legs
+      const stopsForApi: RouteStopApi[] = validCompanies.map((company, index) => {
+        const leg = index > 0 ? routeData.legs?.[index - 1] : null;
+        
+        return {
+          companyId: company!.id,
+          name: company!.name,
+          lat: company!.lat!,
+          lng: company!.lng!,
+          distanceFromPrevMi: leg ? leg.distance * 0.000621371 : null,
+          etaFromPrevMin: leg ? leg.duration / 60 : null,
+          completed: false,
+          street: company!.street,
+          city: company!.city,
+          state: company!.state,
+          postalCode: company!.postalCode,
+        };
+      });
+
+      // Update route in storage with new geometry and metrics
+      await storage.updateRoute(id, {
+        stops: stopsForApi as any,
+        totalDistanceMi: totalDistMi,
+        totalEtaMin: Math.round(totalEtaMin),
+        routeGeometry: routeGeometry as any,
+      });
+
+      // Build navigation URL (include custom endpoint if provided)
+      let waypointCoords = stopsForApi.map((stop) => `${stop.lat},${stop.lng}`);
+      if (customEndpoint) {
+        waypointCoords.push(`${customEndpoint.lat},${customEndpoint.lng}`);
+      }
+      const waypointsParam = waypointCoords.join("|");
+      const navUrl = `https://www.google.com/maps/dir/?api=1&waypoints=${waypointsParam}&travelmode=driving`;
+
+      // Return updated route
+      res.json({
+        routeId: id,
+        stops: stopsForApi,
+        totalDistMi: totalDistMi,
+        totalEtaMin: totalEtaMin,
+        navUrl,
+        routeGeometry: routeGeometry,
+        customEndpoint: customEndpoint,
+      });
+    } catch (error) {
+      console.error("Route update error:", error);
+      res.status(500).json({ error: { code: "UPDATE_ERROR", message: "Failed to update route" } });
     }
   });
 

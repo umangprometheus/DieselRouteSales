@@ -99,7 +99,8 @@ function greedyOptimize(
 
 export async function optimizeRoute(
   coordinates: Array<{ lat: number; lng: number }>,
-  origin?: { lat: number; lng: number }
+  origin?: { lat: number; lng: number },
+  customEndpoint?: { label: string; lat: number; lng: number }
 ): Promise<{
   waypoints: Array<{
     waypointIndex: number;
@@ -109,6 +110,7 @@ export async function optimizeRoute(
   totalDistMi: number;
   totalEtaMin: number;
   routeGeometry: Array<{ lat: number; lng: number }>;
+  customEndpoint?: { label: string; lat: number; lng: number };
 }> {
   if (!MAPBOX_TOKEN) {
     throw new Error("MAPBOX_TOKEN not configured");
@@ -124,6 +126,7 @@ export async function optimizeRoute(
       totalDistMi: 0,
       totalEtaMin: 0,
       routeGeometry: coordinates,
+      customEndpoint,
     };
   }
 
@@ -133,10 +136,15 @@ export async function optimizeRoute(
       ? [origin, ...optimizedOrder.map(idx => coordinates[idx])]
       : optimizedOrder.map(idx => coordinates[idx]);
 
-    const coordsString = orderedCoords.map(c => `${c.lng},${c.lat}`).join(';');
+    // Add custom endpoint if provided
+    const finalCoords = customEndpoint 
+      ? [...orderedCoords, customEndpoint]
+      : orderedCoords;
+
+    const coordsString = finalCoords.map(c => `${c.lng},${c.lat}`).join(';');
     const url = `${MAPBOX_API}/directions/v5/mapbox/driving/${coordsString}`;
 
-    console.log('[Mapbox] Building route with', coordinates.length, 'stops, origin:', origin ? 'YES' : 'NO');
+    console.log('[Mapbox] Building route with', coordinates.length, 'stops, origin:', origin ? 'YES' : 'NO', 'endpoint:', customEndpoint ? customEndpoint.label : 'NONE');
     const response = await axios.get(url, {
       params: {
         access_token: MAPBOX_TOKEN,
@@ -182,6 +190,7 @@ export async function optimizeRoute(
         totalDistMi,
         totalEtaMin,
         routeGeometry,
+        customEndpoint,
       };
     }
 
@@ -198,6 +207,7 @@ export async function optimizeRoute(
       totalDistMi: 0,
       totalEtaMin: 0,
       routeGeometry: coordinates,
+      customEndpoint,
     };
   }
 }
