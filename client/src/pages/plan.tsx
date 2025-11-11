@@ -520,50 +520,25 @@ export default function PlanPage() {
             {/* Start Route Button - Top of List View */}
             {selectedCompanyIds.length >= 2 && (
               <div className="sticky top-0 z-20 -mx-4 -mt-4 px-4 pt-4 pb-3 bg-background/95 backdrop-blur border-b">
-                <div className="space-y-2">
-                  {/* Custom Endpoint Selector */}
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setShowEndpointDrawer(true)}
-                    className="w-full justify-between"
-                    data-testid="button-set-endpoint"
-                  >
-                    <span className="flex items-center gap-2">
-                      <MapPin className="h-4 w-4" />
-                      {customEndpoint ? customEndpoint.label : "End Route At..."}
-                    </span>
-                    {customEndpoint && (
-                      <X 
-                        className="h-4 w-4 ml-2"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setCustomEndpoint(null);
-                        }}
-                      />
-                    )}
-                  </Button>
-                  
-                  {/* Build Route Button */}
-                  <Button
-                    onClick={handleBuildRoute}
-                    className="w-full h-14 text-base font-semibold shadow-lg"
-                    disabled={buildRouteMutation.isPending}
-                    data-testid="button-start-route-top"
-                  >
-                    {buildRouteMutation.isPending ? (
-                      <>
-                        <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                        Building Route...
-                      </>
-                    ) : (
-                      <>
-                        <Route className="w-5 h-5 mr-2" />
-                        Start Route ({selectedCompanyIds.length} stops)
-                      </>
-                    )}
-                  </Button>
-                </div>
+                {/* Build Route Button */}
+                <Button
+                  onClick={handleBuildRoute}
+                  className="w-full h-14 text-base font-semibold shadow-lg"
+                  disabled={buildRouteMutation.isPending}
+                  data-testid="button-start-route-top"
+                >
+                  {buildRouteMutation.isPending ? (
+                    <>
+                      <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                      Building Route...
+                    </>
+                  ) : (
+                    <>
+                      <Route className="w-5 h-5 mr-2" />
+                      Start Route ({selectedCompanyIds.length} stops)
+                    </>
+                  )}
+                </Button>
               </div>
             )}
 
