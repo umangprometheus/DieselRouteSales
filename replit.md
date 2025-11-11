@@ -83,9 +83,13 @@ Preferred communication style: Simple, everyday language.
 **Route Building Algorithm**:
 1. Filter companies by radius from starting location
 2. User selects companies to visit
-3. Nearest-neighbor greedy algorithm orders stops
-4. Mapbox Directions API calculates optimized driving route
-5. Route geometry and ETA stored for navigation
+3. User optionally selects custom endpoint (any address via Mapbox geocoding)
+4. Endpoint-aware greedy algorithm orders stops:
+   - Without endpoint: Nearest-neighbor optimization from origin
+   - With endpoint: Weighted scoring balances proximity to current position (70%) and proximity to endpoint (30%)
+   - Last 3 stops heavily prioritize endpoint proximity (30% current, 70% endpoint) to ensure efficient final approach
+5. Mapbox Directions API calculates optimized driving route with custom endpoint as final destination
+6. Route geometry and ETA stored for navigation
 
 **Route Editing Experience**:
 - Full-screen overlay (RouteReorderView) for drag-and-drop stop reordering
