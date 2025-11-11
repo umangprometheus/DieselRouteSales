@@ -108,50 +108,59 @@ function greedyOptimizeWithEndpoint(
   origin: { lat: number; lng: number },
   endpoint: { lat: number; lng: number }
 ): number[] {
-  // Strategy: Build route from origin, but when choosing next stop,
-  // consider both distance from current position AND distance to endpoint
-  // This biases the route toward stops that are "on the way" to the endpoint
+  // Strategy: 
+  // 1. First, identify the stop closest to the endpoint - this should be last
+  // 2. Build route from origin to that stop using normal greedy algorithm
+  // 3. This ensures we end near the endpoint
   
+  const totalStops = coordinates.length;
   const unvisited = new Set(coordinates.map((_, idx) => idx));
   const order: number[] = [];
+  
+  // Find stop closest to endpoint - this will be our last stop
+  let lastStopIdx = -1;
+  let minDistToEndpoint = Infinity;
+  
+  for (const idx of Array.from(unvisited)) {
+    const coord = coordinates[idx];
+    const distToEndpoint = Math.sqrt(
+      Math.pow(endpoint.lat - coord.lat, 2) + Math.pow(endpoint.lng - coord.lng, 2)
+    );
+    
+    if (distToEndpoint < minDistToEndpoint) {
+      minDistToEndpoint = distToEndpoint;
+      lastStopIdx = idx;
+    }
+  }
+  
+  // Remove the last stop from unvisited set
+  unvisited.delete(lastStopIdx);
+  
+  // Now build route from origin through remaining stops using greedy nearest-neighbor
   let current = origin;
-
+  
   while (unvisited.size > 0) {
-    let best = -1;
-    let bestScore = Infinity;
+    let nearest = -1;
+    let nearestDist = Infinity;
 
     for (const idx of Array.from(unvisited)) {
       const coord = coordinates[idx];
-      
-      // Distance from current position to this stop
-      const distFromCurrent = Math.sqrt(
+      const dist = Math.sqrt(
         Math.pow(coord.lat - current.lat, 2) + Math.pow(coord.lng - current.lng, 2)
       );
-      
-      // Distance from this stop to the endpoint
-      const distToEndpoint = Math.sqrt(
-        Math.pow(endpoint.lat - coord.lat, 2) + Math.pow(endpoint.lng - coord.lng, 2)
-      );
-      
-      // For the last few stops, heavily weight proximity to endpoint
-      // For earlier stops, weight distance from current more heavily
-      const remainingStops = unvisited.size;
-      const endpointWeight = remainingStops <= 3 ? 0.7 : 0.3;
-      const currentWeight = 1 - endpointWeight;
-      
-      // Combined score: prefer stops close to current position that are also closer to endpoint
-      const score = (currentWeight * distFromCurrent) + (endpointWeight * distToEndpoint);
-      
-      if (score < bestScore) {
-        bestScore = score;
-        best = idx;
+      if (dist < nearestDist) {
+        nearestDist = dist;
+        nearest = idx;
       }
     }
 
-    order.push(best);
-    unvisited.delete(best);
-    current = coordinates[best];
+    order.push(nearest);
+    unvisited.delete(nearest);
+    current = coordinates[nearest];
   }
+  
+  // Add the last stop at the end
+  order.push(lastStopIdx);
 
   return order;
 }

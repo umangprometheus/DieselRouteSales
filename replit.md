@@ -86,8 +86,7 @@ Preferred communication style: Simple, everyday language.
 3. User optionally selects custom endpoint (any address via Mapbox geocoding)
 4. Endpoint-aware greedy algorithm orders stops:
    - Without endpoint: Nearest-neighbor optimization from origin
-   - With endpoint: Weighted scoring balances proximity to current position (70%) and proximity to endpoint (30%)
-   - Last 3 stops heavily prioritize endpoint proximity (30% current, 70% endpoint) to ensure efficient final approach
+   - With endpoint: Identifies stop closest to endpoint as final stop, then optimizes remaining stops from origin to reach it
 5. Mapbox Directions API calculates optimized driving route with custom endpoint as final destination
 6. Route geometry and ETA stored for navigation
 
