@@ -162,6 +162,8 @@ export const routeStops = pgTable("route_stops", {
   routeId: varchar("route_id").notNull().references(() => routes.id, { onDelete: "cascade" }),
   companyId: varchar("company_id").notNull().references(() => companies.id),
   stopIndex: integer("stop_index").notNull(),
+  name: text("name"),
+  customerNumber: varchar("customer_number", { length: 100 }),
   lat: real("lat").notNull(),
   lng: real("lng").notNull(),
   street: text("street"),

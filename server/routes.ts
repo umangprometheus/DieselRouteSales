@@ -345,6 +345,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return {
           companyId: company!.id,
           name: company!.name,
+          customerNumber: company!.customerNumber,
           lat: company!.lat!,
           lng: company!.lng!,
           distanceFromPrevMi: waypoint.distanceFromPrevMi,
@@ -377,6 +378,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         routeId: route.id,
         companyId: stop.companyId,
         stopIndex: index,
+        name: stop.name,
+        customerNumber: stop.customerNumber || null,
         lat: stop.lat,
         lng: stop.lng,
         street: stop.street || null,
@@ -498,6 +501,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return {
           companyId: company!.id,
           name: company!.name,
+          customerNumber: company!.customerNumber,
           lat: company!.lat!,
           lng: company!.lng!,
           distanceFromPrevMi: leg ? leg.distance * 0.000621371 : null,
