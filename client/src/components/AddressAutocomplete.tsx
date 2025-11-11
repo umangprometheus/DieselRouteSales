@@ -58,7 +58,7 @@ export default function AddressAutocomplete({
       const response = await fetch(
         `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(
           query
-        )}.json?access_token=${token}&limit=5&autocomplete=true`
+        )}.json?access_token=${token}&limit=5&autocomplete=true&country=US`
       );
       
       const data = await response.json();
