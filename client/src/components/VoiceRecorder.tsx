@@ -7,16 +7,23 @@ import { useToast } from "@/hooks/use-toast";
 interface VoiceRecorderProps {
   onTranscriptionComplete: (transcript: string, parsedData: any) => void;
   disabled?: boolean;
+  onProcessingChange?: (isProcessing: boolean) => void;
 }
 
-export function VoiceRecorder({ onTranscriptionComplete, disabled = false }: VoiceRecorderProps) {
+export function VoiceRecorder({ onTranscriptionComplete, disabled = false, onProcessingChange }: VoiceRecorderProps) {
   const [isRecording, setIsRecording] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [processingStatus, setProcessingStatus] = useState("");
   const [recordingTime, setRecordingTime] = useState(0);
   const mediaRecorder = useRef<MediaRecorder | null>(null);
   const audioChunks = useRef<Blob[]>([]);
   const timerInterval = useRef<number | null>(null);
   const { toast } = useToast();
+
+  // Notify parent component of processing state changes
+  useEffect(() => {
+    onProcessingChange?.(isProcessing);
+  }, [isProcessing, onProcessingChange]);
 
   useEffect(() => {
     return () => {
@@ -85,6 +92,7 @@ export function VoiceRecorder({ onTranscriptionComplete, disabled = false }: Voi
 
   const processAudio = async (audioBlob: Blob) => {
     setIsProcessing(true);
+    setProcessingStatus("Preparing audio...");
     
     try {
       const reader = new FileReader();
@@ -94,6 +102,7 @@ export function VoiceRecorder({ onTranscriptionComplete, disabled = false }: Voi
         const base64Audio = (reader.result as string).split(',')[1];
         
         console.log(`🔄 Sending audio for transcription (${audioBlob.size} bytes)`);
+        setProcessingStatus("Transcribing your voice note...");
         
         const response = await fetch('/api/transcribe', {
           method: 'POST',
@@ -110,6 +119,7 @@ export function VoiceRecorder({ onTranscriptionComplete, disabled = false }: Voi
           throw new Error('Transcription failed');
         }
         
+        setProcessingStatus("Extracting visit details with AI...");
         const result = await response.json();
         
         console.log("✅ Transcription complete");
@@ -129,6 +139,7 @@ export function VoiceRecorder({ onTranscriptionComplete, disabled = false }: Voi
       });
     } finally {
       setIsProcessing(false);
+      setProcessingStatus("");
     }
   };
 
@@ -181,11 +192,21 @@ export function VoiceRecorder({ onTranscriptionComplete, disabled = false }: Voi
           )}
           
           {isProcessing && (
-            <div className="flex flex-col items-center gap-2">
-              <Loader2 className="h-8 w-8 animate-spin text-primary" />
-              <p className="text-sm text-muted-foreground">
-                Processing and transcribing...
-              </p>
+            <div className="flex flex-col items-center gap-4 py-4">
+              <div className="relative">
+                <Loader2 className="h-12 w-12 animate-spin text-primary" />
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="h-8 w-8 rounded-full bg-primary/10" />
+                </div>
+              </div>
+              <div className="text-center space-y-1">
+                <p className="text-base font-medium">
+                  {processingStatus}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  This may take a few moments
+                </p>
+              </div>
             </div>
           )}
         </div>

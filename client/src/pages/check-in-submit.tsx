@@ -37,6 +37,7 @@ export default function CheckInSubmitPage() {
   
   const [transcript, setTranscript] = useState("");
   const [visitData, setVisitData] = useState<VisitData | null>(null);
+  const [isProcessingVoice, setIsProcessingVoice] = useState(false);
   const [checkInTimestamp] = useState(new Date());
 
   const handleTranscriptionComplete = (newTranscript: string, parsedData: any) => {
@@ -144,7 +145,8 @@ export default function CheckInSubmitPage() {
       <main className="p-4 pb-24 max-w-2xl mx-auto space-y-4">
         <VoiceRecorder
           onTranscriptionComplete={handleTranscriptionComplete}
-          disabled={checkInMutation.isPending}
+          onProcessingChange={setIsProcessingVoice}
+          disabled={checkInMutation.isPending || isProcessingVoice}
         />
         
         {transcript && (
@@ -161,7 +163,7 @@ export default function CheckInSubmitPage() {
         <VisitDataForm
           defaultValues={visitData || undefined}
           onSubmit={handleFormSubmit}
-          isSubmitting={checkInMutation.isPending}
+          isSubmitting={checkInMutation.isPending || isProcessingVoice}
         />
       </main>
     </div>
