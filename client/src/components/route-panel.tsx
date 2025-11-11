@@ -34,6 +34,7 @@ export default function RoutePanel({
     const query = searchQuery.toLowerCase();
     return (
       stop.name.toLowerCase().includes(query) ||
+      stop.customerNumber?.toLowerCase().includes(query) ||
       stop.street?.toLowerCase().includes(query) ||
       stop.city?.toLowerCase().includes(query) ||
       stop.state?.toLowerCase().includes(query)

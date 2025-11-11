@@ -58,12 +58,13 @@ export default function PlanPage() {
 
   const companies = data?.companies || [];
   
-  // Filter companies based on search query
+  // Filter companies based on search query (name, customer number, address)
   const filteredCompanies = companies.filter((company) => {
     if (!searchQuery.trim()) return true;
     const query = searchQuery.toLowerCase();
     return (
       company.name.toLowerCase().includes(query) ||
+      (company.customerNumber ?? "").toLowerCase().includes(query) ||
       (company.street ?? "").toLowerCase().includes(query) ||
       (company.city ?? "").toLowerCase().includes(query) ||
       (company.state ?? "").toLowerCase().includes(query)

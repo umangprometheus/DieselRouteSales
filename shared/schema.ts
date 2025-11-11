@@ -220,6 +220,7 @@ export type InsertSyncLog = z.infer<typeof insertSyncLogSchema>;
 export const routeStopApiSchema = z.object({
   companyId: z.string(),
   name: z.string(),
+  customerNumber: z.string().nullable(),
   lat: z.number(),
   lng: z.number(),
   distanceFromPrevMi: z.number().nullable(),
@@ -246,6 +247,7 @@ export type CompaniesQuery = z.infer<typeof companiesQuerySchema>;
 export const companyWithDistanceSchema = z.object({
   id: z.string(),
   name: z.string(),
+  customerNumber: z.string().nullable(),
   street: z.string().nullable(),
   city: z.string().nullable(),
   state: z.string().nullable(),
