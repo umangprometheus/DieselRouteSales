@@ -175,20 +175,25 @@ export default function PlanPage() {
     setActiveRouteData(null);
   };
 
-  // Handler for confirming route edits
-  const handleConfirmRouteEdits = async (editedRoute: BuildRouteResponse) => {
-    // TODO: Call backend PATCH endpoint when implemented
-    // For now, just save to localStorage and navigate
+  // Handler for building route from edit view
+  const handleBuildRouteFromEdit = async (editedRoute: BuildRouteResponse) => {
     localStorage.setItem("activeRoute", JSON.stringify(editedRoute));
     setShowEditRouteDrawer(false);
     setPendingRoute(null);
     
     toast({
-      title: "Route confirmed!",
-      description: "Your route has been saved with your custom order.",
+      title: "Route started!",
+      description: "Your route has been saved. Let's go!",
     });
     
     navigate("/route");
+  };
+
+  // Handler for adding more stops
+  const handleAddStops = () => {
+    setShowEditRouteDrawer(false);
+    // Keep pendingRoute so user can see selected companies on map
+    // When they build route again, it will include new selections
   };
 
   // Handler for canceling route edits
@@ -617,7 +622,8 @@ export default function PlanPage() {
         open={showEditRouteDrawer}
         onClose={() => setShowEditRouteDrawer(false)}
         route={pendingRoute}
-        onConfirm={handleConfirmRouteEdits}
+        onBuildRoute={handleBuildRouteFromEdit}
+        onAddStops={handleAddStops}
         onCancel={handleCancelRouteEdits}
         customEndpoint={customEndpoint}
       />

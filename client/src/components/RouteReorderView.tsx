@@ -21,10 +21,8 @@ import {
 import { restrictToVerticalAxis } from "@dnd-kit/modifiers";
 import { SortableItem } from "./SortableItem";
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
-import { MapIcon, List, Navigation, MapPin, Clock, Route as RouteIcon, GripVertical, X } from "lucide-react";
-import MapView from "./map-view";
+import { Navigation, MapPin, Clock, Route as RouteIcon, GripVertical, X, Plus } from "lucide-react";
 import { useBodyScrollLock } from "@/hooks/useBodyScrollLock";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import type { BuildRouteResponse } from "@shared/schema";
@@ -33,7 +31,8 @@ interface RouteReorderViewProps {
   open: boolean;
   onClose: () => void;
   route: BuildRouteResponse | null;
-  onConfirm: (route: BuildRouteResponse) => void;
+  onBuildRoute: (route: BuildRouteResponse) => void;
+  onAddStops: () => void;
   onCancel: () => void;
   customEndpoint?: { label: string; lat: number; lng: number } | null;
 }
@@ -42,11 +41,11 @@ export function RouteReorderView({
   open,
   onClose,
   route,
-  onConfirm,
+  onBuildRoute,
+  onAddStops,
   onCancel,
   customEndpoint
 }: RouteReorderViewProps) {
-  const [activeTab, setActiveTab] = useState<"list" | "map">("list");
   const [editedStops, setEditedStops] = useState(route?.stops || []);
   const [isDirty, setIsDirty] = useState(false);
   const [activeId, setActiveId] = useState<string | null>(null);
@@ -160,10 +159,10 @@ export function RouteReorderView({
     setIsDirty(true);
   };
 
-  const handleConfirm = () => {
+  const handleBuildRoute = () => {
     if (!route) return;
     const updatedRoute = { ...route, stops: editedStops };
-    onConfirm(updatedRoute);
+    onBuildRoute(updatedRoute);
   };
 
   const handleCancel = () => {
@@ -232,27 +231,11 @@ export function RouteReorderView({
           </Card>
         </div>
 
-        {/* View Toggle */}
-        <div className="px-4 pb-2">
-          <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "list" | "map")}>
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="list" className="text-xs gap-1">
-                <List className="h-3 w-3" />
-                List View
-              </TabsTrigger>
-              <TabsTrigger value="map" className="text-xs gap-1">
-                <MapIcon className="h-3 w-3" />
-                Map View
-              </TabsTrigger>
-            </TabsList>
-          </Tabs>
-        </div>
       </div>
 
       {/* Content Area - Fixed Height */}
       <div className="flex-1 overflow-hidden">
-        {activeTab === "list" ? (
-          <ScrollArea ref={scrollAreaRef} className="h-full px-4">
+        <ScrollArea ref={scrollAreaRef} className="h-full px-4">
             <DndContext
               sensors={sensors}
               collisionDetection={closestCenter}
@@ -304,39 +287,39 @@ export function RouteReorderView({
                 ) : null}
               </DragOverlay>
             </DndContext>
-          </ScrollArea>
-        ) : (
-          <div className="h-full">
-            <MapView
-              companies={[]}
-              selectedCompanyIds={editedStops.map(s => s.companyId).filter(Boolean) as string[]}
-              routeGeometry={route.routeGeometry}
-              userLocation={null}
-              className="h-full w-full"
-            />
-          </div>
-        )}
+        </ScrollArea>
       </div>
 
       {/* Footer */}
       <div className="flex-shrink-0 border-t p-4 bg-background">
-        <div className="flex gap-2">
+        <div className="flex flex-col gap-2">
           <Button
             variant="outline"
-            onClick={handleCancel}
-            className="flex-1"
-            data-testid="button-cancel-route-edit"
+            onClick={onAddStops}
+            className="w-full"
+            data-testid="button-add-stops"
           >
-            Cancel
+            <Plus className="h-4 w-4 mr-2" />
+            Add Stops
           </Button>
-          <Button
-            onClick={handleConfirm}
-            disabled={!isDirty}
-            className="flex-1"
-            data-testid="button-confirm-route-edit"
-          >
-            {isDirty ? 'Save Changes' : 'No Changes'}
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              onClick={handleCancel}
+              className="flex-1"
+              data-testid="button-cancel-route-edit"
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleBuildRoute}
+              className="flex-1"
+              data-testid="button-build-route"
+            >
+              <RouteIcon className="h-4 w-4 mr-2" />
+              Build Route
+            </Button>
+          </div>
         </div>
       </div>
     </div>
