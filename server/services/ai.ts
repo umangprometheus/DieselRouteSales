@@ -77,28 +77,59 @@ Extract structured data from this sales visit transcript. The rep visited a cust
 TRANSCRIPT:
 ${transcript}
 
+FIELD CONTEXT AND OPTIONS:
+Below are the predefined options for each field. When possible, match the transcript content to these options. If something doesn't match exactly but is similar, use the closest match. For items not in the list, note them separately.
+
+MACHINERY TYPES (single selection):
+- Light duty trucks
+- Medium duty trucks
+- Heavy duty trucks
+- Light & Medium duty
+- Medium & Heavy duty
+- All duty types
+
+ENGINE TYPES (multiple selections possible):
+Common options: CAT C15, CAT C13, CAT 3406, Cummins ISX, Cummins X15, Cummins N14, Detroit Series 60, Detroit DD15, Detroit DD13, PACCAR MX-13, Volvo D13, Mack MP8, International MaxxForce
+Return as array of strings. If other engines mentioned, include them.
+
+FLEET MAKEUP (multiple selections possible):
+Common brands: Freightliner, Peterbilt, Kenworth, Volvo, Mack, International, Ford, Chevrolet, RAM, GMC, Isuzu, Hino
+Return as array of strings. If other brands mentioned, include them.
+
+CURRENT SUPPLIERS (multiple selections possible):
+Known suppliers: NAPA, FleetPride, OEM Dealer, O'Reilly, AutoZone, Advance Auto Parts, TruckPro, Rush Truck Centers, Penske, Ryder, Love's, TA/Petro
+Return as array of strings. If other suppliers mentioned, include them.
+
+COMPETITORS (multiple selections possible):
+Known competitors: Bosch, Denso, Delphi, Stanadyne, Diesel X, Industrial Injection, S&S Diesel, Dynomite Diesel, DIPACO, Pure Power, Alliant Power
+Return as array of strings. If other competitors mentioned, include them with any pricing info.
+
+PRODUCT MODELS (multiple selections possible):
+Common products: 55-75 Injectors, Remanufactured Injectors, New Injectors, High Pressure Pumps, Lift Pumps, Remanufactured Turbos, New Turbos, DPF Filters, EGR Valves, NOx Sensors, Pressure Sensors, Complete Overhaul Kits
+Return as array of strings. If other products mentioned, include them.
+
 INSTRUCTIONS:
 - Extract all relevant information into the appropriate fields
-- For fields with no information mentioned, use "Not mentioned" or "N/A"
-- Be specific with machinery/engine types (e.g., "CAT C15, Cummins ISX" not just "diesel engines")
-- Capture competitor names and pricing details when mentioned
-- Identify clear next steps (e.g., "Send quote for injectors", "Follow up on pricing", "Schedule site visit")
-- Preserve specific product model numbers (e.g., "55-75 injectors" not "injectors")
+- For multi-select fields (marked above), return as arrays of strings
+- For fields with no information mentioned, use empty array [] for multi-select or "Not mentioned" for text fields
+- Be specific and preserve exact model numbers when mentioned
+- Identify clear next steps (e.g., "Send quote for injectors", "Follow up on pricing")
+- If something doesn't exactly match predefined options but is similar, use the closest match
 
 Return JSON with these exact fields:
-- machineryTypes: Types of machinery customer works on (Light duty trucks / Medium duty / Heavy duty)
-- engineTypes: Specific engine models in their shop
-- fleetMakeup: Truck or equipment brands in their fleet
-- currentSuppliers: Current parts/service vendors
-- competitorData: Competitors used and what they're paying
-- pricingInfo: Current pricing customer pays for products
-- productModels: Specific product model numbers mentioned
-- availabilityGaps: Stock/supply issues with current suppliers
-- customerNeeds: What the customer needs help with
-- competitivePosition: How MSP can compete or add value
-- insideSalesIssues: Any issues with MSP's inside sales team
-- nextSteps: Follow-up actions required
-- miscNotes: Any other relevant context`;
+- machineryTypes: (string) Types of machinery customer works on
+- engineTypes: (array of strings) Specific engine models in their shop
+- fleetMakeup: (array of strings) Truck or equipment brands in their fleet  
+- currentSuppliers: (array of strings) Current parts/service vendors
+- competitorData: (array of strings) Competitors used and pricing if mentioned
+- pricingInfo: (string) Current pricing customer pays for products
+- productModels: (array of strings) Specific product models mentioned
+- availabilityGaps: (string) Stock/supply issues with current suppliers
+- customerNeeds: (string) What the customer needs help with
+- competitivePosition: (string) How MSP can compete or add value
+- insideSalesIssues: (string) Any issues with MSP's inside sales team
+- nextSteps: (string) Follow-up actions required
+- miscNotes: (string) Any other relevant context`;
 
     const response = await ai.models.generateContent({
       model: "gemini-2.5-flash",
@@ -114,12 +145,27 @@ Return JSON with these exact fields:
           type: Type.OBJECT,
           properties: {
             machineryTypes: { type: Type.STRING },
-            engineTypes: { type: Type.STRING },
-            fleetMakeup: { type: Type.STRING },
-            currentSuppliers: { type: Type.STRING },
-            competitorData: { type: Type.STRING },
+            engineTypes: { 
+              type: Type.ARRAY,
+              items: { type: Type.STRING }
+            },
+            fleetMakeup: { 
+              type: Type.ARRAY,
+              items: { type: Type.STRING }
+            },
+            currentSuppliers: { 
+              type: Type.ARRAY,
+              items: { type: Type.STRING }
+            },
+            competitorData: { 
+              type: Type.ARRAY,
+              items: { type: Type.STRING }
+            },
             pricingInfo: { type: Type.STRING },
-            productModels: { type: Type.STRING },
+            productModels: { 
+              type: Type.ARRAY,
+              items: { type: Type.STRING }
+            },
             availabilityGaps: { type: Type.STRING },
             customerNeeds: { type: Type.STRING },
             competitivePosition: { type: Type.STRING },

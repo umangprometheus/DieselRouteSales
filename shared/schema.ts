@@ -351,12 +351,12 @@ export type SummaryResponse = z.infer<typeof summaryResponseSchema>;
 
 export const structuredVisitDataSchema = z.object({
   machineryTypes: z.string(),
-  engineTypes: z.string(),
-  fleetMakeup: z.string(),
-  currentSuppliers: z.string(),
-  competitorData: z.string(),
+  engineTypes: z.array(z.string()),
+  fleetMakeup: z.array(z.string()),
+  currentSuppliers: z.array(z.string()),
+  competitorData: z.array(z.string()),
   pricingInfo: z.string(),
-  productModels: z.string(),
+  productModels: z.array(z.string()),
   availabilityGaps: z.string(),
   customerNeeds: z.string(),
   competitivePosition: z.string(),
