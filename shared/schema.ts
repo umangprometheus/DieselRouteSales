@@ -38,6 +38,7 @@ export type LoginCredentials = z.infer<typeof loginSchema>;
 export const companies = pgTable("companies", {
   id: varchar("id").primaryKey(),
   name: text("name").notNull(),
+  customerNumber: varchar("customer_number", { length: 100 }),
   street: text("street"),
   city: varchar("city", { length: 100 }),
   state: varchar("state", { length: 50 }),
