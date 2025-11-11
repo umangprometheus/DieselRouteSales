@@ -26,18 +26,18 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Loader2 } from "lucide-react";
 
 const visitDataSchema = z.object({
-  machineryTypes: z.string().optional(),
+  machineryTypes: z.string().min(1, "Machinery type is required"),
   engineTypes: z.array(z.string()).optional(),
   fleetMakeup: z.array(z.string()).optional(),
   currentSuppliers: z.array(z.string()).optional(),
-  competitorData: z.array(z.string()).optional(),
+  competitorData: z.array(z.string()).min(1, "At least one competitor is required"),
   pricingInfo: z.string().optional(),
   productModels: z.array(z.string()).optional(),
   availabilityGaps: z.string().optional(),
-  customerNeeds: z.string().optional(),
+  customerNeeds: z.string().min(1, "Customer needs assessment is required"),
   competitivePosition: z.string().optional(),
   insideSalesIssues: z.string().optional(),
-  nextSteps: z.string().optional(),
+  nextSteps: z.string().min(1, "Next steps are required"),
   miscNotes: z.string().optional(),
 });
 
@@ -216,7 +216,7 @@ export function VisitDataForm({ defaultValues, onSubmit, isSubmitting = false }:
           <CardHeader>
             <CardTitle>Visit Details</CardTitle>
             <CardDescription>
-              Review and edit the information from your visit. All fields are optional.
+              Review and edit the information from your visit. Fields marked with * are required.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -225,7 +225,9 @@ export function VisitDataForm({ defaultValues, onSubmit, isSubmitting = false }:
               name="machineryTypes"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Machinery Types</FormLabel>
+                  <FormLabel>
+                    Machinery Types <span className="text-destructive">*</span>
+                  </FormLabel>
                   <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl>
                       <SelectTrigger data-testid="select-machinery-types">
@@ -335,7 +337,9 @@ export function VisitDataForm({ defaultValues, onSubmit, isSubmitting = false }:
               name="competitorData"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Competitors</FormLabel>
+                  <FormLabel>
+                    Competitors <span className="text-destructive">*</span>
+                  </FormLabel>
                   <FormControl>
                     <MultiSelect
                       options={competitorOptions}
@@ -433,7 +437,9 @@ export function VisitDataForm({ defaultValues, onSubmit, isSubmitting = false }:
               name="customerNeeds"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Customer Needs Assessment</FormLabel>
+                  <FormLabel>
+                    Customer Needs Assessment <span className="text-destructive">*</span>
+                  </FormLabel>
                   <FormControl>
                     <Textarea
                       {...field}
@@ -499,7 +505,9 @@ export function VisitDataForm({ defaultValues, onSubmit, isSubmitting = false }:
               name="nextSteps"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Next Steps</FormLabel>
+                  <FormLabel>
+                    Next Steps <span className="text-destructive">*</span>
+                  </FormLabel>
                   <FormControl>
                     <Textarea
                       {...field}
