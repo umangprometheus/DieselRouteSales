@@ -98,6 +98,10 @@ export function VoiceRecorder({ onTranscriptionComplete, disabled = false, onPro
     // Processing state already set when stopping recording
     setProcessingStatus("Preparing audio...");
     
+    // Ensure minimum visible time for loading indicator
+    const startTime = Date.now();
+    const MIN_PROCESSING_TIME = 2500; // 2.5 seconds minimum
+    
     try {
       const reader = new FileReader();
       reader.readAsDataURL(audioBlob);
@@ -126,6 +130,12 @@ export function VoiceRecorder({ onTranscriptionComplete, disabled = false, onPro
         setProcessingStatus("Extracting visit details with AI...");
         const result = await response.json();
         
+        // Ensure minimum processing time has elapsed
+        const elapsedTime = Date.now() - startTime;
+        if (elapsedTime < MIN_PROCESSING_TIME) {
+          await new Promise(resolve => setTimeout(resolve, MIN_PROCESSING_TIME - elapsedTime));
+        }
+        
         console.log("✅ Transcription complete");
         toast({
           title: "Transcription Complete",
@@ -133,6 +143,8 @@ export function VoiceRecorder({ onTranscriptionComplete, disabled = false, onPro
         });
         
         onTranscriptionComplete(result.transcript, result.parsedData);
+        setIsProcessing(false);
+        setProcessingStatus("");
       };
     } catch (error) {
       console.error("Error processing audio:", error);
@@ -141,7 +153,6 @@ export function VoiceRecorder({ onTranscriptionComplete, disabled = false, onPro
         description: "Failed to transcribe audio. Please try again.",
         variant: "destructive",
       });
-    } finally {
       setIsProcessing(false);
       setProcessingStatus("");
     }
@@ -212,49 +223,31 @@ export function VoiceRecorder({ onTranscriptionComplete, disabled = false, onPro
         </CardContent>
       </Card>
 
-      {/* MASSIVE LOADING BANNER - IMPOSSIBLE TO MISS */}
+      {/* AI Processing Indicator - Clean and Clear */}
       {isProcessing && (
-        <div className="relative">
-          <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-blue-600 opacity-10 animate-pulse rounded-lg" />
-          <Card className="relative border-4 border-blue-500 shadow-2xl bg-gradient-to-br from-blue-50 to-white dark:from-blue-950 dark:to-background" data-testid="card-ai-processing-banner">
-            <CardContent className="py-8">
-              <div className="flex flex-col items-center gap-6">
-                {/* Giant spinner */}
-                <div className="relative">
-                  <Loader2 className="h-24 w-24 animate-spin text-blue-600 dark:text-blue-400" strokeWidth={3} />
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="h-16 w-16 rounded-full bg-blue-500/20 animate-ping" />
-                  </div>
-                </div>
-                
-                {/* Big warning text */}
-                <div className="text-center space-y-3">
-                  <h2 className="text-2xl font-black text-blue-600 dark:text-blue-400">
-                    🤖 AI IS PROCESSING
-                  </h2>
-                  <p className="text-xl font-bold text-foreground">
-                    DO NOT FILL OUT THE FORM YET
-                  </p>
-                  <p className="text-base font-medium text-muted-foreground">
-                    {processingStatus || "Transcribing your voice note..."}
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    Please wait - this usually takes 3-5 seconds
-                  </p>
-                </div>
-                
-                {/* Animated dots */}
-                <div className="flex justify-center gap-2">
-                  <div className="h-3 w-3 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-                  <div className="h-3 w-3 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '200ms' }} />
-                  <div className="h-3 w-3 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '400ms' }} />
-                  <div className="h-3 w-3 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '600ms' }} />
-                  <div className="h-3 w-3 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '800ms' }} />
-                </div>
+        <Card className="border-primary bg-primary/5" data-testid="card-ai-processing">
+          <CardContent className="py-6">
+            <div className="flex items-center gap-4">
+              {/* Spinner on the left */}
+              <div className="flex-shrink-0">
+                <Loader2 className="h-10 w-10 animate-spin text-primary" />
               </div>
-            </CardContent>
-          </Card>
-        </div>
+              
+              {/* Text content on the right */}
+              <div className="flex-1 space-y-1">
+                <p className="font-semibold text-foreground">
+                  AI is processing your voice note
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  {processingStatus || "Transcribing and extracting visit details..."}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  Please wait before filling out the form
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       )}
     </div>
   );
