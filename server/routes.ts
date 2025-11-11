@@ -167,15 +167,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const searchLower = search.toLowerCase();
         companies = companies.filter((c) =>
           c.name.toLowerCase().includes(searchLower) ||
+          (c.customerNumber ?? "").toLowerCase().includes(searchLower) ||
           c.city?.toLowerCase().includes(searchLower) ||
           c.state?.toLowerCase().includes(searchLower)
         );
       }
 
-      // Filter by radius if location provided
+      // Filter by radius if location provided (skip radius filter when searching)
       let companiesWithDistance: CompanyWithDistance[];
-      if (lat !== null && lng !== null) {
+      if (!search && lat !== null && lng !== null) {
         companiesWithDistance = filterByRadius(companies, lat, lng, radiusMi) as CompanyWithDistance[];
+      } else if (search && lat !== null && lng !== null) {
+        // When searching, return all matching companies with distance calculated
+        companiesWithDistance = companies
+          .filter((c) => c.lat !== null && c.lng !== null)
+          .map((c) => {
+            const distanceMi = calculateDistanceMiles(
+              lat,
+              lng,
+              c.lat!,
+              c.lng!
+            );
+            return { ...c, distanceMi };
+          }) as CompanyWithDistance[];
       } else {
         // No location - return all with distance 0
         companiesWithDistance = companies

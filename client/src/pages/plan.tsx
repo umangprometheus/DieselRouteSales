@@ -51,6 +51,7 @@ export default function PlanPage() {
     lng: userLocation?.lng,
     radiusMi,
     ownerOnly: true,
+    search: searchQuery.trim() || undefined,
   });
 
   const syncMutation = useSyncCompanies();
@@ -58,18 +59,8 @@ export default function PlanPage() {
 
   const companies = data?.companies || [];
   
-  // Filter companies based on search query (name, customer number, address)
-  const filteredCompanies = companies.filter((company) => {
-    if (!searchQuery.trim()) return true;
-    const query = searchQuery.toLowerCase();
-    return (
-      company.name.toLowerCase().includes(query) ||
-      (company.customerNumber ?? "").toLowerCase().includes(query) ||
-      (company.street ?? "").toLowerCase().includes(query) ||
-      (company.city ?? "").toLowerCase().includes(query) ||
-      (company.state ?? "").toLowerCase().includes(query)
-    );
-  });
+  // No need for local filtering - API handles search
+  const filteredCompanies = companies;
 
   // Try to get GPS location on mount
   useEffect(() => {
@@ -391,41 +382,42 @@ export default function PlanPage() {
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col md:flex-row overflow-hidden">
-        {/* Map Section */}
-        <div className="flex-1 relative">
-          <MapView
-            companies={filteredCompanies}
-            userLocation={userLocation}
-            selectedCompanyIds={selectedCompanyIds}
-            customEndpoint={customEndpoint}
-            onCompanyClick={(id) => {
-              console.log('[Plan] onCompanyClick called with:', id, 'Currently selected:', selectedCompanyIds);
-              const wasSelected = selectedCompanyIds.includes(id);
-              
-              if (!wasSelected) {
-                console.log('[Plan] Adding company to selection');
-                setSelectedCompanyIds([...selectedCompanyIds, id]);
-              } else {
-                console.log('[Plan] Company already selected, toggling off');
-                const newSelection = selectedCompanyIds.filter(cid => cid !== id);
-                setSelectedCompanyIds(newSelection);
-                // When deselecting, show the last remaining company or clear the sheet
-                if (newSelection.length > 0) {
-                  setClickedCompanyId(newSelection[newSelection.length - 1]);
+        {/* Map Section - Only show when there are companies */}
+        {filteredCompanies.length > 0 && (
+          <div className="flex-1 relative">
+            <MapView
+              companies={filteredCompanies}
+              userLocation={userLocation}
+              selectedCompanyIds={selectedCompanyIds}
+              customEndpoint={customEndpoint}
+              onCompanyClick={(id) => {
+                console.log('[Plan] onCompanyClick called with:', id, 'Currently selected:', selectedCompanyIds);
+                const wasSelected = selectedCompanyIds.includes(id);
+                
+                if (!wasSelected) {
+                  console.log('[Plan] Adding company to selection');
+                  setSelectedCompanyIds([...selectedCompanyIds, id]);
                 } else {
-                  setClickedCompanyId(null);
+                  console.log('[Plan] Company already selected, toggling off');
+                  const newSelection = selectedCompanyIds.filter(cid => cid !== id);
+                  setSelectedCompanyIds(newSelection);
+                  // When deselecting, show the last remaining company or clear the sheet
+                  if (newSelection.length > 0) {
+                    setClickedCompanyId(newSelection[newSelection.length - 1]);
+                  } else {
+                    setClickedCompanyId(null);
+                  }
                 }
-              }
-            }}
-            onCompanyInfo={(id) => {
-              // MapView only calls this when selecting (not deselecting)
-              setClickedCompanyId(id);
-            }}
-          />
+              }}
+              onCompanyInfo={(id) => {
+                // MapView only calls this when selecting (not deselecting)
+                setClickedCompanyId(id);
+              }}
+            />
 
-          {/* Bottom Sheet - Company Info */}
-          {clickedCompanyId && (() => {
-            const company = companies.find(c => c.id === clickedCompanyId);
+            {/* Bottom Sheet - Company Info */}
+            {clickedCompanyId && (() => {
+            const company = filteredCompanies.find(c => c.id === clickedCompanyId);
             if (!company) return null;
             
             return (
@@ -482,10 +474,10 @@ export default function PlanPage() {
                 </div>
               </div>
             );
-          })()}
+            })()}
 
-          {/* Floating Controls - Mobile */}
-          <div className="md:hidden absolute top-4 left-4 right-4 z-10">
+            {/* Floating Controls - Mobile */}
+            <div className="md:hidden absolute top-4 left-4 right-4 z-10">
             <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "map" | "list")} className="w-full">
               <TabsList className="grid w-full grid-cols-2 bg-background/90 backdrop-blur min-h-[48px]">
                 <TabsTrigger value="map" data-testid="tab-map" className="min-h-[44px] text-base">
@@ -526,11 +518,12 @@ export default function PlanPage() {
                 )}
               </Button>
             </div>
-          )}
-        </div>
+            )}
+          </div>
+        )}
 
         {/* Controls Panel - Desktop or Mobile Sheet */}
-        <div className={`${activeTab === "list" || window.innerWidth >= 768 ? "block" : "hidden"} md:block md:w-96 bg-background border-l overflow-y-auto`}>
+        <div className={`${activeTab === "list" || window.innerWidth >= 768 ? "block" : "hidden"} md:block ${filteredCompanies.length > 0 ? 'md:w-96' : 'md:flex-1'} bg-background border-l overflow-y-auto`}>
           <div className="p-4 space-y-6">
             {/* Start Route Button - Top of List View */}
             {selectedCompanyIds.length >= 2 && (
