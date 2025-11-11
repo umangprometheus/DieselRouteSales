@@ -1,12 +1,30 @@
 import { useState, useEffect } from "react";
-import { DndContext, closestCenter, KeyboardSensor, PointerSensor, TouchSensor, useSensor, useSensors, DragEndEvent } from "@dnd-kit/core";
-import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy } from "@dnd-kit/sortable";
+import { 
+  DndContext, 
+  closestCenter, 
+  KeyboardSensor, 
+  PointerSensor, 
+  TouchSensor, 
+  useSensor, 
+  useSensors, 
+  DragEndEvent,
+  DragOverlay,
+  DragStartEvent,
+  defaultDropAnimationSideEffects
+} from "@dnd-kit/core";
+import { 
+  arrayMove, 
+  SortableContext, 
+  sortableKeyboardCoordinates, 
+  verticalListSortingStrategy 
+} from "@dnd-kit/sortable";
+import { restrictToVerticalAxis, restrictToParentElement } from "@dnd-kit/modifiers";
 import { SortableItem } from "./SortableItem";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerDescription, DrawerFooter } from "@/components/ui/drawer";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
-import { MapIcon, List, Navigation, GripVertical, MapPin, Clock, Route as RouteIcon } from "lucide-react";
+import { MapIcon, List, Navigation, MapPin, Clock, Route as RouteIcon, GripVertical } from "lucide-react";
 import MapView from "./map-view";
 import type { BuildRouteResponse } from "@shared/schema";
 
@@ -30,6 +48,7 @@ export function RouteEditDrawer({
   const [activeTab, setActiveTab] = useState<"list" | "map">("list");
   const [editedStops, setEditedStops] = useState(route?.stops || []);
   const [isDirty, setIsDirty] = useState(false);
+  const [activeId, setActiveId] = useState<string | null>(null);
 
   // Touch-friendly drag sensors with long-press activation for mobile
   const sensors = useSensors(
@@ -60,8 +79,14 @@ export function RouteEditDrawer({
   // Get sortable ID for each stop
   const getSortableId = (stop: any) => stop.routeStopId || stop.companyId;
 
+  const handleDragStart = (event: DragStartEvent) => {
+    setActiveId(event.active.id as string);
+  };
+
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
+    
+    setActiveId(null);
 
     if (active.id !== over?.id) {
       setEditedStops((items) => {
@@ -199,7 +224,9 @@ export function RouteEditDrawer({
             <DndContext
               sensors={sensors}
               collisionDetection={closestCenter}
+              onDragStart={handleDragStart}
               onDragEnd={handleDragEnd}
+              modifiers={[restrictToVerticalAxis, restrictToParentElement]}
             >
               <SortableContext
                 items={editedStops.map(s => getSortableId(s))}
@@ -226,6 +253,23 @@ export function RouteEditDrawer({
                   })}
                 </div>
               </SortableContext>
+              <DragOverlay
+                dropAnimation={{
+                  sideEffects: defaultDropAnimationSideEffects({
+                    styles: {
+                      active: {
+                        opacity: '0.5',
+                      },
+                    },
+                  }),
+                }}
+              >
+                {activeId ? (
+                  <div className="bg-white border rounded-lg shadow-xl p-2 opacity-90">
+                    <GripVertical className="h-4 w-4" />
+                  </div>
+                ) : null}
+              </DragOverlay>
             </DndContext>
           ) : (
             <div className="h-[400px] rounded-lg overflow-hidden border">
