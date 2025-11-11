@@ -6,7 +6,7 @@ import {
   createFieldVisitCheckIn 
 } from "./services/hubspot";
 import { hashPassword, verifyPassword } from "./services/auth";
-import { geocodeAddress, optimizeRoute, getRoute } from "./services/mapbox";
+import { geocodeAddress, reverseGeocode, optimizeRoute, getRoute } from "./services/mapbox";
 import { 
   calculateDistanceMiles, 
   calculateDistanceMeters,
@@ -198,6 +198,63 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Sync error:", error);
       res.status(500).json({ error: { code: "SYNC_ERROR", message: "Failed to sync companies" } });
+    }
+  });
+
+  // Geocode an address to get lat/lng
+  app.get("/api/geocode", requireAuth, async (req, res) => {
+    try {
+      const address = req.query.address as string;
+      
+      if (!address) {
+        return res.status(400).json({ 
+          error: { code: "INVALID_REQUEST", message: "Address parameter required" } 
+        });
+      }
+
+      const coords = await geocodeAddress(address);
+      
+      if (!coords) {
+        return res.status(404).json({ 
+          error: { code: "NOT_FOUND", message: "Address not found" } 
+        });
+      }
+
+      res.json({ ...coords, address });
+    } catch (error) {
+      console.error("Geocoding error:", error);
+      res.status(500).json({ 
+        error: { code: "GEOCODING_ERROR", message: "Failed to geocode address" } 
+      });
+    }
+  });
+
+  // Reverse geocode coordinates to get an address
+  app.get("/api/geocode/reverse", requireAuth, async (req, res) => {
+    try {
+      const lat = parseFloat(req.query.lat as string);
+      const lng = parseFloat(req.query.lng as string);
+      
+      if (isNaN(lat) || isNaN(lng)) {
+        return res.status(400).json({ 
+          error: { code: "INVALID_REQUEST", message: "Valid lat and lng parameters required" } 
+        });
+      }
+
+      const address = await reverseGeocode(lat, lng);
+      
+      if (!address) {
+        return res.status(404).json({ 
+          error: { code: "NOT_FOUND", message: "Address not found for coordinates" } 
+        });
+      }
+
+      res.json({ address, lat, lng });
+    } catch (error) {
+      console.error("Reverse geocoding error:", error);
+      res.status(500).json({ 
+        error: { code: "GEOCODING_ERROR", message: "Failed to reverse geocode coordinates" } 
+      });
     }
   });
 

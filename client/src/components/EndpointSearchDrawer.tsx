@@ -1,10 +1,9 @@
-import { useState, useCallback } from "react";
+import { useState } from "react";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerDescription, DrawerFooter } from "@/components/ui/drawer";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
-import { MapPin, Navigation2, X, Loader2, Home, Search } from "lucide-react";
-import LocationSearch from "./location-search";
+import { MapPin, Navigation2, X, Loader2 } from "lucide-react";
+import AddressAutocomplete from "./AddressAutocomplete";
 import MapView from "./map-view";
 import { useToast } from "@/hooks/use-toast";
 
@@ -41,7 +40,7 @@ export function EndpointSearchDrawer({
     onOpenChange(newOpen);
   };
 
-  const handleSelectPlace = (place: { description: string; lat: number; lng: number }) => {
+  const handleSelectPlace = (place: { id: string; description: string; lat: number; lng: number }) => {
     setSelectedPlace({
       label: place.description,
       lat: place.lat,
@@ -120,7 +119,7 @@ export function EndpointSearchDrawer({
         <div className="flex-1 overflow-y-auto px-4 py-3 space-y-3">
           {/* Search Input */}
           <div className="space-y-2">
-            <LocationSearch
+            <AddressAutocomplete
               value={searchQuery}
               onChange={setSearchQuery}
               onSelect={handleSelectPlace}
