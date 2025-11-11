@@ -21,6 +21,7 @@ import CompanyList from "@/components/company-list";
 import LocationSearch from "@/components/location-search";
 import { RouteReorderView } from "@/components/RouteReorderView";
 import { EndpointSearchDrawer } from "@/components/EndpointSearchDrawer";
+import { EndpointConfirmationDrawer } from "@/components/EndpointConfirmationDrawer";
 import { useCompanies, useSyncCompanies, useBuildRoute } from "@/lib/api";
 import { useToast } from "@/hooks/use-toast";
 import { MapIcon, List, Route, Loader2, RefreshCw, MapPin, X } from "lucide-react";
@@ -40,6 +41,8 @@ export default function PlanPage() {
   const [showEndpointDrawer, setShowEndpointDrawer] = useState(false);
   const [showEditRouteDrawer, setShowEditRouteDrawer] = useState(false);
   const [pendingRoute, setPendingRoute] = useState<BuildRouteResponse | null>(null);
+  const [showEndpointConfirmation, setShowEndpointConfirmation] = useState(false);
+  const [pendingRouteForEndpoint, setPendingRouteForEndpoint] = useState<BuildRouteResponse | null>(null);
 
   const { data, isLoading, refetch } = useCompanies({
     lat: userLocation?.lat,
@@ -177,9 +180,21 @@ export default function PlanPage() {
 
   // Handler for building route from edit view
   const handleBuildRouteFromEdit = async (editedRoute: BuildRouteResponse) => {
-    localStorage.setItem("activeRoute", JSON.stringify(editedRoute));
+    // Show endpoint confirmation instead of immediately navigating
+    setPendingRouteForEndpoint(editedRoute);
     setShowEditRouteDrawer(false);
+    setShowEndpointConfirmation(true);
+  };
+
+  // Handler for confirming the last stop as endpoint
+  const handleConfirmLastStop = () => {
+    if (!pendingRouteForEndpoint) return;
+    
+    // Save route and navigate
+    localStorage.setItem("activeRoute", JSON.stringify(pendingRouteForEndpoint));
+    setShowEndpointConfirmation(false);
     setPendingRoute(null);
+    setPendingRouteForEndpoint(null);
     
     toast({
       title: "Route started!",
@@ -187,6 +202,12 @@ export default function PlanPage() {
     });
     
     navigate("/route");
+  };
+
+  // Handler for choosing a different endpoint
+  const handleChooseDifferentEndpoint = () => {
+    setShowEndpointConfirmation(false);
+    setShowEndpointDrawer(true);
   };
 
   // Handler for adding more stops
@@ -203,14 +224,51 @@ export default function PlanPage() {
   };
 
   // Handler for setting custom endpoint
-  const handleSetEndpoint = (endpoint: { label: string; lat: number; lng: number }) => {
-    setCustomEndpoint(endpoint);
+  const handleSetEndpoint = async (endpoint: { label: string; lat: number; lng: number }) => {
     setShowEndpointDrawer(false);
     
-    toast({
-      title: "Endpoint set!",
-      description: `Your route will end at ${endpoint.label}`,
-    });
+    // If we're in the endpoint confirmation flow, rebuild route with custom endpoint
+    if (pendingRouteForEndpoint && userLocation) {
+      try {
+        // Extract company IDs from pending route stops
+        const companyIds = pendingRouteForEndpoint.stops.map(stop => stop.companyId);
+        
+        // Rebuild route with custom endpoint
+        const result = await buildRouteMutation.mutateAsync({
+          origin: userLocation,
+          companyIds,
+          optimize: true,
+          customEndpoint: endpoint,
+        });
+        
+        // Save and navigate
+        localStorage.setItem("activeRoute", JSON.stringify(result));
+        setPendingRoute(null);
+        setPendingRouteForEndpoint(null);
+        setCustomEndpoint(null); // Clear for next time
+        
+        toast({
+          title: "Route started!",
+          description: `Your route will end at ${endpoint.label}`,
+        });
+        
+        navigate("/route");
+      } catch (error: any) {
+        toast({
+          variant: "destructive",
+          title: "Route building failed",
+          description: error?.message || "Unable to rebuild route with custom endpoint",
+        });
+      }
+    } else {
+      // Regular endpoint setting (not in confirmation flow)
+      setCustomEndpoint(endpoint);
+      
+      toast({
+        title: "Endpoint set!",
+        description: `Your route will end at ${endpoint.label}`,
+      });
+    }
   };
 
   // Handler for removing custom endpoint
@@ -626,6 +684,15 @@ export default function PlanPage() {
         onAddStops={handleAddStops}
         onCancel={handleCancelRouteEdits}
         customEndpoint={customEndpoint}
+      />
+
+      {/* Endpoint Confirmation Drawer */}
+      <EndpointConfirmationDrawer
+        open={showEndpointConfirmation}
+        onOpenChange={setShowEndpointConfirmation}
+        lastStop={pendingRouteForEndpoint?.stops?.[pendingRouteForEndpoint.stops.length - 1] || null}
+        onConfirmLastStop={handleConfirmLastStop}
+        onChooseDifferent={handleChooseDifferentEndpoint}
       />
 
       {/* Endpoint Search Drawer */}
