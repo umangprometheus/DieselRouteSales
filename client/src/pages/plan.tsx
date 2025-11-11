@@ -28,6 +28,25 @@ import { MapIcon, List, Route, Loader2, RefreshCw, MapPin, X, Search } from "luc
 import type { BuildRouteResponse } from "@shared/schema";
 import { Input } from "@/components/ui/input";
 
+function useMediaQuery(query: string) {
+  const [matches, setMatches] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return window.matchMedia(query).matches;
+    }
+    return false;
+  });
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia(query);
+    const handler = (e: MediaQueryListEvent) => setMatches(e.matches);
+    
+    mediaQuery.addEventListener('change', handler);
+    return () => mediaQuery.removeEventListener('change', handler);
+  }, [query]);
+
+  return matches;
+}
+
 export default function PlanPage() {
   const [, navigate] = useLocation();
   const { toast } = useToast();
@@ -45,6 +64,7 @@ export default function PlanPage() {
   const [showEndpointConfirmation, setShowEndpointConfirmation] = useState(false);
   const [pendingRouteForEndpoint, setPendingRouteForEndpoint] = useState<BuildRouteResponse | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const isDesktop = useMediaQuery('(min-width: 768px)');
 
   const { data, isLoading, refetch } = useCompanies({
     lat: userLocation?.lat,
@@ -382,8 +402,8 @@ export default function PlanPage() {
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col md:flex-row overflow-hidden">
-        {/* Map Section - Only show when there are companies */}
-        {filteredCompanies.length > 0 && (
+        {/* Map Section - Only show when there are companies and (on desktop or map tab on mobile) */}
+        {filteredCompanies.length > 0 && (isDesktop || activeTab === "map") && (
           <div className="flex-1 relative">
             <MapView
               companies={filteredCompanies}
@@ -523,7 +543,7 @@ export default function PlanPage() {
         )}
 
         {/* Controls Panel - Desktop or Mobile Sheet */}
-        <div className={`${activeTab === "list" || window.innerWidth >= 768 ? "block" : "hidden"} md:block ${filteredCompanies.length > 0 ? 'md:w-96' : 'md:flex-1'} bg-background border-l overflow-y-auto`}>
+        <div className={`${activeTab === "list" || isDesktop ? "block" : "hidden"} md:block ${filteredCompanies.length > 0 ? 'md:w-96' : 'md:flex-1'} bg-background border-l overflow-y-auto`}>
           <div className="p-4 space-y-6">
             {/* Start Route Button - Top of List View */}
             {selectedCompanyIds.length >= 2 && (
