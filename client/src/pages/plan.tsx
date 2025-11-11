@@ -394,7 +394,7 @@ export default function PlanPage() {
         {/* Map Section */}
         <div className="flex-1 relative">
           <MapView
-            companies={companies}
+            companies={filteredCompanies}
             userLocation={userLocation}
             selectedCompanyIds={selectedCompanyIds}
             customEndpoint={customEndpoint}
