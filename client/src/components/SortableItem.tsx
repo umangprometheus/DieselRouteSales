@@ -61,21 +61,21 @@ export function SortableItem({
     <div ref={setNodeRef} style={style}>
       <Card
         className={`${
-          isDragging ? "opacity-50 shadow-lg" : ""
+          isDragging ? "opacity-50 shadow-lg scale-105" : ""
         } ${disabled ? "opacity-75" : ""} ${
           isEndpoint ? "border-primary bg-primary/5" : ""
-        }`}
+        } ${!disabled ? "cursor-grab active:cursor-grabbing hover:shadow-md hover:border-primary/30 transition-all" : ""}`}
         data-testid={`stop-card-${index}`}
+        {...(!disabled ? attributes : {})}
+        {...(!disabled ? listeners : {})}
       >
         <CardContent className="p-3">
           <div className="flex items-start gap-2">
-            {/* Drag Handle - Hidden for endpoints */}
+            {/* Visual Drag Indicator - Just visual, not the actual handle */}
             {!disabled && (
               <div
-                {...attributes}
-                {...listeners}
-                className="touch-none flex-shrink-0 cursor-grab active:cursor-grabbing p-1 -ml-1 hover:bg-accent rounded"
-                data-testid={`drag-handle-${index}`}
+                className="touch-none flex-shrink-0 p-1 -ml-1 pointer-events-none"
+                data-testid={`drag-indicator-${index}`}
               >
                 <GripVertical className="h-4 w-4 text-muted-foreground" />
               </div>
