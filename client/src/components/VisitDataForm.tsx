@@ -1,7 +1,7 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -145,6 +145,19 @@ export function VisitDataForm({ defaultValues, onSubmit, isSubmitting = false }:
     },
   });
 
+  // State for "Other" text fields
+  const [otherValues, setOtherValues] = useState({
+    engineTypes: "",
+    fleetMakeup: "",
+    currentSuppliers: "",
+    competitorData: "",
+    productModels: "",
+  });
+
+  const handleOtherChange = (field: string, value: string) => {
+    setOtherValues(prev => ({ ...prev, [field]: value }));
+  };
+
   useEffect(() => {
     if (defaultValues) {
       form.reset({
@@ -164,10 +177,41 @@ export function VisitDataForm({ defaultValues, onSubmit, isSubmitting = false }:
       });
     }
   }, [defaultValues, form]);
+  
+  // Custom submit handler to combine multi-select values with "other" text
+  const handleSubmit = (data: VisitDataFormValues) => {
+    const processedData = {
+      ...data,
+      engineTypes: data.engineTypes?.filter(v => v !== "other") || [],
+      fleetMakeup: data.fleetMakeup?.filter(v => v !== "other") || [],
+      currentSuppliers: data.currentSuppliers?.filter(v => v !== "other") || [],
+      competitorData: data.competitorData?.filter(v => v !== "other") || [],
+      productModels: data.productModels?.filter(v => v !== "other") || [],
+    };
+    
+    // Add "other" text values if they exist
+    if (data.engineTypes?.includes("other") && otherValues.engineTypes) {
+      processedData.engineTypes = [...processedData.engineTypes, otherValues.engineTypes];
+    }
+    if (data.fleetMakeup?.includes("other") && otherValues.fleetMakeup) {
+      processedData.fleetMakeup = [...processedData.fleetMakeup, otherValues.fleetMakeup];
+    }
+    if (data.currentSuppliers?.includes("other") && otherValues.currentSuppliers) {
+      processedData.currentSuppliers = [...processedData.currentSuppliers, otherValues.currentSuppliers];
+    }
+    if (data.competitorData?.includes("other") && otherValues.competitorData) {
+      processedData.competitorData = [...processedData.competitorData, otherValues.competitorData];
+    }
+    if (data.productModels?.includes("other") && otherValues.productModels) {
+      processedData.productModels = [...processedData.productModels, otherValues.productModels];
+    }
+    
+    onSubmit(processedData);
+  };
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
         <Card data-testid="card-visit-data-form">
           <CardHeader>
             <CardTitle>Visit Details</CardTitle>
@@ -219,6 +263,9 @@ export function VisitDataForm({ defaultValues, onSubmit, isSubmitting = false }:
                       placeholder="Select engine types..."
                       searchPlaceholder="Search engines..."
                       emptyMessage="No engine type found."
+                      allowOther={true}
+                      otherValue={otherValues.engineTypes}
+                      onOtherChange={(value) => handleOtherChange("engineTypes", value)}
                     />
                   </FormControl>
                   <FormDescription>
@@ -243,6 +290,9 @@ export function VisitDataForm({ defaultValues, onSubmit, isSubmitting = false }:
                       placeholder="Select truck/equipment brands..."
                       searchPlaceholder="Search brands..."
                       emptyMessage="No brand found."
+                      allowOther={true}
+                      otherValue={otherValues.fleetMakeup}
+                      onOtherChange={(value) => handleOtherChange("fleetMakeup", value)}
                     />
                   </FormControl>
                   <FormDescription>
@@ -267,6 +317,9 @@ export function VisitDataForm({ defaultValues, onSubmit, isSubmitting = false }:
                       placeholder="Select current suppliers..."
                       searchPlaceholder="Search suppliers..."
                       emptyMessage="No supplier found."
+                      allowOther={true}
+                      otherValue={otherValues.currentSuppliers}
+                      onOtherChange={(value) => handleOtherChange("currentSuppliers", value)}
                     />
                   </FormControl>
                   <FormDescription>
@@ -291,6 +344,9 @@ export function VisitDataForm({ defaultValues, onSubmit, isSubmitting = false }:
                       placeholder="Select competitors..."
                       searchPlaceholder="Search competitors..."
                       emptyMessage="No competitor found."
+                      allowOther={true}
+                      otherValue={otherValues.competitorData}
+                      onOtherChange={(value) => handleOtherChange("competitorData", value)}
                     />
                   </FormControl>
                   <FormDescription>
@@ -337,6 +393,9 @@ export function VisitDataForm({ defaultValues, onSubmit, isSubmitting = false }:
                       placeholder="Select product models..."
                       searchPlaceholder="Search products..."
                       emptyMessage="No product model found."
+                      allowOther={true}
+                      otherValue={otherValues.productModels}
+                      onOtherChange={(value) => handleOtherChange("productModels", value)}
                     />
                   </FormControl>
                   <FormDescription>
