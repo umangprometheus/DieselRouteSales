@@ -17,6 +17,7 @@ interface MapViewProps {
   routeGeometry?: Array<{ lat: number; lng: number }>; // Actual driving route
   currentStopIndex?: number;
   selectedCompanyIds?: string[]; // IDs of selected companies to highlight in green
+  customEndpoint?: { label: string; lat: number; lng: number } | null; // Custom endpoint location
   className?: string;
 }
 
@@ -29,11 +30,13 @@ export default function MapView({
   routeGeometry,
   currentStopIndex = 0,
   selectedCompanyIds = [],
+  customEndpoint,
   className = "",
 }: MapViewProps) {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
   const userMarker = useRef<mapboxgl.Marker | null>(null);
+  const endpointMarker = useRef<mapboxgl.Marker | null>(null);
   const popup = useRef<mapboxgl.Popup | null>(null);
   const hasInitiallyCentered = useRef(false); // Track if we've done the initial centering
   const [mapLoaded, setMapLoaded] = useState(false);
@@ -103,7 +106,7 @@ export default function MapView({
     // Create marker if it doesn't exist
     if (!userMarker.current) {
       const el = document.createElement("div");
-      el.className = "w-4 h-4 bg-green-500 rounded-full border-2 border-white shadow-lg animate-pulse";
+      el.className = "w-6 h-6 bg-green-500 rounded-full border-2 border-white shadow-lg animate-pulse";
 
       userMarker.current = new mapboxgl.Marker({ 
         element: el, 
@@ -124,6 +127,37 @@ export default function MapView({
       userMarker.current.setLngLat([userLocation.lng, userLocation.lat]);
     }
   }, [userLocation, mapLoaded]);
+
+  // Update endpoint marker (red dot)
+  useEffect(() => {
+    if (!map.current || !mapLoaded) return;
+
+    // Remove existing endpoint marker if customEndpoint is null
+    if (!customEndpoint) {
+      if (endpointMarker.current) {
+        endpointMarker.current.remove();
+        endpointMarker.current = null;
+      }
+      return;
+    }
+
+    // Create or update endpoint marker
+    if (!endpointMarker.current) {
+      const el = document.createElement("div");
+      el.className = "w-5 h-5 bg-red-500 rounded-full border-2 border-white shadow-lg";
+      el.title = customEndpoint.label;
+
+      endpointMarker.current = new mapboxgl.Marker({ 
+        element: el, 
+        anchor: 'center',
+      })
+        .setLngLat([customEndpoint.lng, customEndpoint.lat])
+        .addTo(map.current);
+    } else {
+      // Update position if endpoint changed
+      endpointMarker.current.setLngLat([customEndpoint.lng, customEndpoint.lat]);
+    }
+  }, [customEndpoint, mapLoaded]);
 
   // Update company markers using native Mapbox layers (no DOM markers = no zoom jitter)
   useEffect(() => {

@@ -577,6 +577,7 @@ export default function RoutePage() {
             routeCoordinates={routeStops.map((s) => ({ lat: s.lat, lng: s.lng }))}
             routeGeometry={routeData?.routeGeometry}
             currentStopIndex={currentStopIndex}
+            customEndpoint={routeData?.customEndpoint}
           />
 
           {/* Distance indicator overlay */}

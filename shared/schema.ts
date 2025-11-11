@@ -280,6 +280,11 @@ export const buildRouteResponseSchema = z.object({
   totalEtaMin: z.number(),
   navUrl: z.string(),
   routeGeometry: z.array(z.object({ lat: z.number(), lng: z.number() })),
+  customEndpoint: z.object({
+    label: z.string(),
+    lat: z.number(),
+    lng: z.number(),
+  }).optional(),
 });
 
 export type BuildRouteResponse = z.infer<typeof buildRouteResponseSchema>;

@@ -382,6 +382,7 @@ export default function PlanPage() {
             companies={companies}
             userLocation={userLocation}
             selectedCompanyIds={selectedCompanyIds}
+            customEndpoint={customEndpoint}
             onCompanyClick={(id) => {
               console.log('[Plan] onCompanyClick called with:', id, 'Currently selected:', selectedCompanyIds);
               const wasSelected = selectedCompanyIds.includes(id);
