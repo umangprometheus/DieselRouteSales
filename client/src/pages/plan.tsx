@@ -24,8 +24,9 @@ import { EndpointSearchDrawer } from "@/components/EndpointSearchDrawer";
 import { EndpointConfirmationDrawer } from "@/components/EndpointConfirmationDrawer";
 import { useCompanies, useSyncCompanies, useBuildRoute } from "@/lib/api";
 import { useToast } from "@/hooks/use-toast";
-import { MapIcon, List, Route, Loader2, RefreshCw, MapPin, X } from "lucide-react";
+import { MapIcon, List, Route, Loader2, RefreshCw, MapPin, X, Search } from "lucide-react";
 import type { BuildRouteResponse } from "@shared/schema";
+import { Input } from "@/components/ui/input";
 
 export default function PlanPage() {
   const [, navigate] = useLocation();
@@ -43,6 +44,7 @@ export default function PlanPage() {
   const [pendingRoute, setPendingRoute] = useState<BuildRouteResponse | null>(null);
   const [showEndpointConfirmation, setShowEndpointConfirmation] = useState(false);
   const [pendingRouteForEndpoint, setPendingRouteForEndpoint] = useState<BuildRouteResponse | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
 
   const { data, isLoading, refetch } = useCompanies({
     lat: userLocation?.lat,
@@ -55,6 +57,18 @@ export default function PlanPage() {
   const buildRouteMutation = useBuildRoute();
 
   const companies = data?.companies || [];
+  
+  // Filter companies based on search query
+  const filteredCompanies = companies.filter((company) => {
+    if (!searchQuery.trim()) return true;
+    const query = searchQuery.toLowerCase();
+    return (
+      company.name.toLowerCase().includes(query) ||
+      (company.street ?? "").toLowerCase().includes(query) ||
+      (company.city ?? "").toLowerCase().includes(query) ||
+      (company.state ?? "").toLowerCase().includes(query)
+    );
+  });
 
   // Try to get GPS location on mount
   useEffect(() => {
@@ -575,15 +589,43 @@ export default function PlanPage() {
                 )}
               </div>
 
+              {/* Search Input */}
+              <div className="relative mb-4">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Input
+                  type="text"
+                  placeholder="Search companies..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-9 pr-9"
+                  data-testid="input-search-companies"
+                />
+                {searchQuery && (
+                  <button
+                    onClick={() => setSearchQuery("")}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                    data-testid="button-clear-search"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                )}
+              </div>
+
               {isLoading ? (
                 <div className="space-y-3">
                   {[1, 2, 3].map((i) => (
                     <Skeleton key={i} className="h-20 w-full" />
                   ))}
                 </div>
+              ) : filteredCompanies.length === 0 ? (
+                <Card className="p-8">
+                  <div className="text-center text-muted-foreground">
+                    <p className="text-sm">No companies match your search</p>
+                  </div>
+                </Card>
               ) : (
                 <CompanyList
-                  companies={companies}
+                  companies={filteredCompanies}
                   selectedIds={selectedCompanyIds}
                   onToggle={handleToggleCompany}
                   onCompanyClick={(id) => {
