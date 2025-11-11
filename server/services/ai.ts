@@ -70,6 +70,32 @@ export async function parseVisitData(
   try {
     console.log(`🔍 Parsing visit data from transcript (${transcript.length} characters)...`);
 
+    // Check if transcript is too short or contains only noise/meaningless content
+    const cleanedTranscript = transcript.trim().toLowerCase();
+    const isNoise = cleanedTranscript.length < 20 || 
+                   cleanedTranscript.match(/^\[.*\]$/) || // Just bracketed sounds like [Bell sound]
+                   cleanedTranscript.match(/^(oh|um|uh|ah|hmm|okay|alright|yeah|yes|no|test|testing|hello|hi)+\.?$/);
+    
+    if (isNoise) {
+      console.log(`✅ Transcript too short or contains only noise - returning empty form`);
+      // Return completely empty data for manual entry
+      return {
+        machineryTypes: "",
+        engineTypes: [],
+        fleetMakeup: [],
+        currentSuppliers: [],
+        competitorData: [],
+        pricingInfo: "",
+        productModels: [],
+        availabilityGaps: "",
+        customerNeeds: "",
+        competitivePosition: "",
+        insideSalesIssues: "",
+        nextSteps: "",
+        miscNotes: ""
+      };
+    }
+
     const prompt = `You are analyzing a field sales representative's visit notes for a diesel parts and service company (MSP Diesel Solutions).
 
 Extract structured data from this sales visit transcript. The rep visited a customer and is providing insights about their business.
