@@ -29,7 +29,9 @@ Preferred communication style: Simple, everyday language.
 
 **Key Design Decisions**:
 - Bottom navigation pattern for mobile-first UX
-- Fixed bottom sheets for interactive overlays
+- Full-screen overlay pattern for route editing (replaces drawer to solve nested scroll issues)
+- Touch-optimized drag-and-drop with entire card as grab area
+- Body scroll locking during route editing to prevent viewport movement
 - Touch-optimized with 800-foot proximity threshold for check-ins
 - Outdoor-readable typography (minimum 16px body text)
 
@@ -84,6 +86,17 @@ Preferred communication style: Simple, everyday language.
 3. Nearest-neighbor greedy algorithm orders stops
 4. Mapbox Directions API calculates optimized driving route
 5. Route geometry and ETA stored for navigation
+
+**Route Editing Experience**:
+- Full-screen overlay (RouteReorderView) for drag-and-drop stop reordering
+- Body scroll lock prevents viewport movement during drag operations
+- Touch-optimized with long-press activation (250ms delay)
+- Three key actions:
+  - **Add Stops**: Returns to plan page to select additional companies
+  - **Cancel**: Discards edits and closes editor
+  - **Build Route**: Saves edited route and navigates to active route page
+- Manual edge-triggered auto-scroll when dragging near viewport edges
+- Custom endpoint (last stop) is locked and cannot be reordered
 
 **GPS Proximity Detection**:
 - Continuous location tracking during active route
