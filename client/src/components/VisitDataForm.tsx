@@ -21,17 +21,18 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { MultiSelect, type MultiSelectOption } from "@/components/ui/multi-select";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2 } from "lucide-react";
 
 const visitDataSchema = z.object({
   machineryTypes: z.string().optional(),
-  engineTypes: z.string().optional(),
-  fleetMakeup: z.string().optional(),
-  currentSuppliers: z.string().optional(),
-  competitorData: z.string().optional(),
+  engineTypes: z.array(z.string()).optional(),
+  fleetMakeup: z.array(z.string()).optional(),
+  currentSuppliers: z.array(z.string()).optional(),
+  competitorData: z.array(z.string()).optional(),
   pricingInfo: z.string().optional(),
-  productModels: z.string().optional(),
+  productModels: z.array(z.string()).optional(),
   availabilityGaps: z.string().optional(),
   customerNeeds: z.string().optional(),
   competitivePosition: z.string().optional(),
@@ -39,6 +40,82 @@ const visitDataSchema = z.object({
   nextSteps: z.string().optional(),
   miscNotes: z.string().optional(),
 });
+
+// Define options for multi-select fields
+const engineTypeOptions: MultiSelectOption[] = [
+  { value: "cat-c15", label: "CAT C15" },
+  { value: "cat-c13", label: "CAT C13" },
+  { value: "cat-3406", label: "CAT 3406" },
+  { value: "cummins-isx", label: "Cummins ISX" },
+  { value: "cummins-x15", label: "Cummins X15" },
+  { value: "cummins-n14", label: "Cummins N14" },
+  { value: "detroit-series-60", label: "Detroit Series 60" },
+  { value: "detroit-dd15", label: "Detroit DD15" },
+  { value: "detroit-dd13", label: "Detroit DD13" },
+  { value: "paccar-mx13", label: "PACCAR MX-13" },
+  { value: "volvo-d13", label: "Volvo D13" },
+  { value: "mack-mp8", label: "Mack MP8" },
+  { value: "international-maxxforce", label: "International MaxxForce" },
+];
+
+const fleetMakeupOptions: MultiSelectOption[] = [
+  { value: "freightliner", label: "Freightliner" },
+  { value: "peterbilt", label: "Peterbilt" },
+  { value: "kenworth", label: "Kenworth" },
+  { value: "volvo", label: "Volvo" },
+  { value: "mack", label: "Mack" },
+  { value: "international", label: "International" },
+  { value: "ford", label: "Ford" },
+  { value: "chevrolet", label: "Chevrolet" },
+  { value: "ram", label: "RAM" },
+  { value: "gmc", label: "GMC" },
+  { value: "isuzu", label: "Isuzu" },
+  { value: "hino", label: "Hino" },
+];
+
+const supplierOptions: MultiSelectOption[] = [
+  { value: "napa", label: "NAPA" },
+  { value: "fleetpride", label: "FleetPride" },
+  { value: "oem-dealer", label: "OEM Dealer" },
+  { value: "oreilly", label: "O'Reilly" },
+  { value: "autozone", label: "AutoZone" },
+  { value: "advance-auto", label: "Advance Auto Parts" },
+  { value: "truckpro", label: "TruckPro" },
+  { value: "rush-truck", label: "Rush Truck Centers" },
+  { value: "penske", label: "Penske" },
+  { value: "ryder", label: "Ryder" },
+  { value: "loves", label: "Love's" },
+  { value: "ta-petro", label: "TA/Petro" },
+];
+
+const competitorOptions: MultiSelectOption[] = [
+  { value: "bosch", label: "Bosch" },
+  { value: "denso", label: "Denso" },
+  { value: "delphi", label: "Delphi" },
+  { value: "stanadyne", label: "Stanadyne" },
+  { value: "diesel-x", label: "Diesel X" },
+  { value: "industrial-injection", label: "Industrial Injection" },
+  { value: "s-s-diesel", label: "S&S Diesel" },
+  { value: "dynomite-diesel", label: "Dynomite Diesel" },
+  { value: "dipaco", label: "DIPACO" },
+  { value: "pure-power", label: "Pure Power" },
+  { value: "alliant-power", label: "Alliant Power" },
+];
+
+const productModelOptions: MultiSelectOption[] = [
+  { value: "injector-55-75", label: "55-75 Injectors" },
+  { value: "injector-reman", label: "Remanufactured Injectors" },
+  { value: "injector-new", label: "New Injectors" },
+  { value: "pump-hp", label: "High Pressure Pumps" },
+  { value: "pump-lift", label: "Lift Pumps" },
+  { value: "turbo-reman", label: "Remanufactured Turbos" },
+  { value: "turbo-new", label: "New Turbos" },
+  { value: "dpf-filters", label: "DPF Filters" },
+  { value: "egr-valves", label: "EGR Valves" },
+  { value: "sensors-nox", label: "NOx Sensors" },
+  { value: "sensors-pressure", label: "Pressure Sensors" },
+  { value: "complete-kits", label: "Complete Overhaul Kits" },
+];
 
 type VisitDataFormValues = z.infer<typeof visitDataSchema>;
 
@@ -53,12 +130,12 @@ export function VisitDataForm({ defaultValues, onSubmit, isSubmitting = false }:
     resolver: zodResolver(visitDataSchema),
     defaultValues: {
       machineryTypes: defaultValues?.machineryTypes || "",
-      engineTypes: defaultValues?.engineTypes || "",
-      fleetMakeup: defaultValues?.fleetMakeup || "",
-      currentSuppliers: defaultValues?.currentSuppliers || "",
-      competitorData: defaultValues?.competitorData || "",
+      engineTypes: defaultValues?.engineTypes || [],
+      fleetMakeup: defaultValues?.fleetMakeup || [],
+      currentSuppliers: defaultValues?.currentSuppliers || [],
+      competitorData: defaultValues?.competitorData || [],
       pricingInfo: defaultValues?.pricingInfo || "",
-      productModels: defaultValues?.productModels || "",
+      productModels: defaultValues?.productModels || [],
       availabilityGaps: defaultValues?.availabilityGaps || "",
       customerNeeds: defaultValues?.customerNeeds || "",
       competitivePosition: defaultValues?.competitivePosition || "",
@@ -72,12 +149,12 @@ export function VisitDataForm({ defaultValues, onSubmit, isSubmitting = false }:
     if (defaultValues) {
       form.reset({
         machineryTypes: defaultValues.machineryTypes || "",
-        engineTypes: defaultValues.engineTypes || "",
-        fleetMakeup: defaultValues.fleetMakeup || "",
-        currentSuppliers: defaultValues.currentSuppliers || "",
-        competitorData: defaultValues.competitorData || "",
+        engineTypes: defaultValues.engineTypes || [],
+        fleetMakeup: defaultValues.fleetMakeup || [],
+        currentSuppliers: defaultValues.currentSuppliers || [],
+        competitorData: defaultValues.competitorData || [],
         pricingInfo: defaultValues.pricingInfo || "",
-        productModels: defaultValues.productModels || "",
+        productModels: defaultValues.productModels || [],
         availabilityGaps: defaultValues.availabilityGaps || "",
         customerNeeds: defaultValues.customerNeeds || "",
         competitivePosition: defaultValues.competitivePosition || "",
@@ -135,15 +212,17 @@ export function VisitDataForm({ defaultValues, onSubmit, isSubmitting = false }:
                 <FormItem>
                   <FormLabel>Engine Types</FormLabel>
                   <FormControl>
-                    <Textarea
-                      {...field}
-                      placeholder="e.g., CAT C15, Cummins ISX, Detroit Series 60"
-                      data-testid="input-engine-types"
-                      rows={2}
+                    <MultiSelect
+                      options={engineTypeOptions}
+                      selected={field.value || []}
+                      onChange={field.onChange}
+                      placeholder="Select engine types..."
+                      searchPlaceholder="Search engines..."
+                      emptyMessage="No engine type found."
                     />
                   </FormControl>
                   <FormDescription>
-                    List specific engine models currently in their shop
+                    Select specific engine models currently in their shop
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
@@ -157,11 +236,13 @@ export function VisitDataForm({ defaultValues, onSubmit, isSubmitting = false }:
                 <FormItem>
                   <FormLabel>Fleet Makeup</FormLabel>
                   <FormControl>
-                    <Textarea
-                      {...field}
-                      placeholder="e.g., Freightliner, Ford, Chevrolet, Mack, Volvo"
-                      data-testid="input-fleet-makeup"
-                      rows={2}
+                    <MultiSelect
+                      options={fleetMakeupOptions}
+                      selected={field.value || []}
+                      onChange={field.onChange}
+                      placeholder="Select truck/equipment brands..."
+                      searchPlaceholder="Search brands..."
+                      emptyMessage="No brand found."
                     />
                   </FormControl>
                   <FormDescription>
@@ -179,11 +260,13 @@ export function VisitDataForm({ defaultValues, onSubmit, isSubmitting = false }:
                 <FormItem>
                   <FormLabel>Current Suppliers</FormLabel>
                   <FormControl>
-                    <Textarea
-                      {...field}
-                      placeholder="e.g., NAPA, FleetPride, OEM dealer"
-                      data-testid="input-current-suppliers"
-                      rows={2}
+                    <MultiSelect
+                      options={supplierOptions}
+                      selected={field.value || []}
+                      onChange={field.onChange}
+                      placeholder="Select current suppliers..."
+                      searchPlaceholder="Search suppliers..."
+                      emptyMessage="No supplier found."
                     />
                   </FormControl>
                   <FormDescription>
@@ -199,17 +282,19 @@ export function VisitDataForm({ defaultValues, onSubmit, isSubmitting = false }:
               name="competitorData"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Competitor Data</FormLabel>
+                  <FormLabel>Competitors</FormLabel>
                   <FormControl>
-                    <Textarea
-                      {...field}
-                      placeholder="e.g., Uses Diesel X for injectors at $450 each"
-                      data-testid="input-competitor-data"
-                      rows={2}
+                    <MultiSelect
+                      options={competitorOptions}
+                      selected={field.value || []}
+                      onChange={field.onChange}
+                      placeholder="Select competitors..."
+                      searchPlaceholder="Search competitors..."
+                      emptyMessage="No competitor found."
                     />
                   </FormControl>
                   <FormDescription>
-                    Which competitors they use and what they're paying
+                    Which competitors are they currently using
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
@@ -243,17 +328,19 @@ export function VisitDataForm({ defaultValues, onSubmit, isSubmitting = false }:
               name="productModels"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Specific Product Models</FormLabel>
+                  <FormLabel>Product Models</FormLabel>
                   <FormControl>
-                    <Textarea
-                      {...field}
-                      placeholder="e.g., 55-75 injectors (be specific, not generic)"
-                      data-testid="input-product-models"
-                      rows={2}
+                    <MultiSelect
+                      options={productModelOptions}
+                      selected={field.value || []}
+                      onChange={field.onChange}
+                      placeholder="Select product models..."
+                      searchPlaceholder="Search products..."
+                      emptyMessage="No product model found."
                     />
                   </FormControl>
                   <FormDescription>
-                    Capture precise model numbers rather than generic names
+                    Select specific product models they need or use
                   </FormDescription>
                   <FormMessage />
                 </FormItem>

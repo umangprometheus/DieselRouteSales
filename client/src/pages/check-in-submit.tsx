@@ -10,12 +10,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 
 interface VisitData {
   machineryTypes?: string;
-  engineTypes?: string;
-  fleetMakeup?: string;
-  currentSuppliers?: string;
-  competitorData?: string;
+  engineTypes?: string[];
+  fleetMakeup?: string[];
+  currentSuppliers?: string[];
+  competitorData?: string[];
   pricingInfo?: string;
-  productModels?: string;
+  productModels?: string[];
   availabilityGaps?: string;
   customerNeeds?: string;
   competitivePosition?: string;
@@ -70,12 +70,12 @@ export default function CheckInSubmitPage() {
         note: `Visit to ${companyName}`,
         voiceTranscript: transcript,
         machineryTypes: formData.machineryTypes,
-        engineTypes: formData.engineTypes,
-        fleetMakeup: formData.fleetMakeup || undefined,
-        currentSuppliers: formData.currentSuppliers,
-        competitorData: formData.competitorData || undefined,
+        engineTypes: formData.engineTypes?.join(", "),
+        fleetMakeup: formData.fleetMakeup?.join(", ") || undefined,
+        currentSuppliers: formData.currentSuppliers?.join(", "),
+        competitorData: formData.competitorData?.join(", ") || undefined,
         pricingInfo: formData.pricingInfo || undefined,
-        productModels: formData.productModels || undefined,
+        productModels: formData.productModels?.join(", ") || undefined,
         availabilityGaps: formData.availabilityGaps || undefined,
         customerNeeds: formData.customerNeeds,
         competitivePosition: formData.competitivePosition || undefined,
