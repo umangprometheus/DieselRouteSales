@@ -192,21 +192,9 @@ export function VoiceRecorder({ onTranscriptionComplete, disabled = false, onPro
           )}
           
           {isProcessing && (
-            <div className="flex flex-col items-center gap-4 py-4">
-              <div className="relative">
-                <Loader2 className="h-12 w-12 animate-spin text-primary" />
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="h-8 w-8 rounded-full bg-primary/10" />
-                </div>
-              </div>
-              <div className="text-center space-y-1">
-                <p className="text-base font-medium">
-                  {processingStatus}
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  This may take a few moments
-                </p>
-              </div>
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <Loader2 className="h-4 w-4 animate-spin" />
+              Processing...
             </div>
           )}
         </div>
