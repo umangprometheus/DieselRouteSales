@@ -42,6 +42,7 @@ export async function syncCompanies(ownerId?: string): Promise<number> {
       companiesToCache.push({
         id: hsCompany.id,
         name: props.name || "Unknown Company",
+        customerNumber: props.customer_number || null,
         street: props.address || props.address2 || null,
         city: props.city || null,
         state: props.state || null,
