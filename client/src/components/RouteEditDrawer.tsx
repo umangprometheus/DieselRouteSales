@@ -18,7 +18,7 @@ import {
   sortableKeyboardCoordinates, 
   verticalListSortingStrategy 
 } from "@dnd-kit/sortable";
-import { restrictToVerticalAxis, restrictToParentElement } from "@dnd-kit/modifiers";
+import { restrictToVerticalAxis, restrictToWindowEdges } from "@dnd-kit/modifiers";
 import { SortableItem } from "./SortableItem";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerDescription, DrawerFooter } from "@/components/ui/drawer";
 import { Button } from "@/components/ui/button";
@@ -81,12 +81,18 @@ export function RouteEditDrawer({
 
   const handleDragStart = (event: DragStartEvent) => {
     setActiveId(event.active.id as string);
+    // Prevent body scrolling during drag
+    document.body.style.overflow = 'hidden';
+    document.body.style.touchAction = 'none';
   };
 
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
     
     setActiveId(null);
+    // Re-enable body scrolling after drag
+    document.body.style.overflow = '';
+    document.body.style.touchAction = '';
 
     if (active.id !== over?.id) {
       setEditedStops((items) => {
@@ -219,14 +225,17 @@ export function RouteEditDrawer({
         </div>
 
         {/* Content Area - Scrollable */}
-        <div className="flex-1 overflow-y-auto px-4 py-2">
+        <div 
+          className={`flex-1 overflow-y-auto px-4 py-2 ${activeId ? 'touch-none overflow-hidden' : ''}`}
+          style={{ touchAction: activeId ? 'none' : 'auto' }}
+        >
           {activeTab === "list" ? (
             <DndContext
               sensors={sensors}
               collisionDetection={closestCenter}
               onDragStart={handleDragStart}
               onDragEnd={handleDragEnd}
-              modifiers={[restrictToVerticalAxis, restrictToParentElement]}
+              modifiers={[restrictToVerticalAxis, restrictToWindowEdges]}
             >
               <SortableContext
                 items={editedStops.map(s => getSortableId(s))}
