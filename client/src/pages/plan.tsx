@@ -19,7 +19,7 @@ import MapView from "@/components/map-view";
 import RadiusPicker from "@/components/radius-picker";
 import CompanyList from "@/components/company-list";
 import LocationSearch from "@/components/location-search";
-import { RouteEditDrawer } from "@/components/RouteEditDrawer";
+import { RouteReorderView } from "@/components/RouteReorderView";
 import { EndpointSearchDrawer } from "@/components/EndpointSearchDrawer";
 import { useCompanies, useSyncCompanies, useBuildRoute } from "@/lib/api";
 import { useToast } from "@/hooks/use-toast";
@@ -612,10 +612,10 @@ export default function PlanPage() {
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* Route Edit Drawer */}
-      <RouteEditDrawer
+      {/* Route Reorder Full-Screen View */}
+      <RouteReorderView
         open={showEditRouteDrawer}
-        onOpenChange={setShowEditRouteDrawer}
+        onClose={() => setShowEditRouteDrawer(false)}
         route={pendingRoute}
         onConfirm={handleConfirmRouteEdits}
         onCancel={handleCancelRouteEdits}
