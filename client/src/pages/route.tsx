@@ -533,24 +533,6 @@ export default function RoutePage() {
           >
             <span className="text-xs font-bold">{testMode ? "TEST" : "GPS"}</span>
           </Button>
-          <Button 
-            variant="ghost" 
-            className="h-11 w-11 sm:hidden"
-            onClick={handleEndRoute}
-            data-testid="button-end-route"
-          >
-            <X className="w-4 h-4" />
-          </Button>
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            onClick={handleEndRoute}
-            data-testid="button-end-route-desktop"
-            className="hidden sm:flex"
-          >
-            <X className="w-4 h-4 mr-2" />
-            End Route
-          </Button>
         </div>
       </header>
 
