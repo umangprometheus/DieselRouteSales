@@ -205,14 +205,10 @@ export function EndpointSearchDrawer({
                   lat: selectedPlace.lat,
                   lng: selectedPlace.lng,
                   ownerId: null,
-                  hubspotId: null,
-                  hubspotUrl: null,
-                  lastUpdated: null,
-                  deleted: false,
                   distanceMi: 0,
                 }]}
                 selectedCompanyIds={["endpoint"]}
-                userLocation={userLocation}
+                userLocation={userLocation || null}
               />
             </div>
           )}
