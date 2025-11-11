@@ -24,6 +24,7 @@ import {
 import { MultiSelect, type MultiSelectOption } from "@/components/ui/multi-select";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2 } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 const visitDataSchema = z.object({
   machineryTypes: z.string().min(1, "Machinery type is required"),
@@ -209,9 +210,28 @@ export function VisitDataForm({ defaultValues, onSubmit, isSubmitting = false }:
     onSubmit(processedData);
   };
 
+  // Handle form submission errors
+  const onInvalid = () => {
+    const errors = form.formState.errors;
+    const missingFields: string[] = [];
+    
+    if (errors.machineryTypes) missingFields.push("Machinery Types");
+    if (errors.competitorData) missingFields.push("Competitors");
+    if (errors.customerNeeds) missingFields.push("Customer Needs");
+    if (errors.nextSteps) missingFields.push("Next Steps");
+    
+    if (missingFields.length > 0) {
+      toast({
+        title: "Required Fields Missing",
+        description: `Please complete the following required fields: ${missingFields.join(", ")}`,
+        variant: "destructive",
+      });
+    }
+  };
+
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
+      <form onSubmit={form.handleSubmit(handleSubmit, onInvalid)} className="space-y-6">
         <Card data-testid="card-visit-data-form">
           <CardHeader>
             <CardTitle>Visit Details</CardTitle>

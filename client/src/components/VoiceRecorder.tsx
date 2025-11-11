@@ -78,6 +78,10 @@ export function VoiceRecorder({ onTranscriptionComplete, disabled = false, onPro
 
   const stopRecording = () => {
     if (mediaRecorder.current && isRecording) {
+      // IMMEDIATELY show loading indicator
+      setIsProcessing(true);
+      setProcessingStatus("Processing your recording...");
+      
       mediaRecorder.current.stop();
       setIsRecording(false);
       
@@ -86,12 +90,12 @@ export function VoiceRecorder({ onTranscriptionComplete, disabled = false, onPro
         timerInterval.current = null;
       }
       
-      console.log("🎤 Recording stopped");
+      console.log("🎤 Recording stopped, processing started");
     }
   };
 
   const processAudio = async (audioBlob: Blob) => {
-    setIsProcessing(true);
+    // Processing state already set when stopping recording
     setProcessingStatus("Preparing audio...");
     
     try {
