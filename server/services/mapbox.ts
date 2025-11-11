@@ -64,10 +64,16 @@ export async function reverseGeocode(lat: number, lng: number): Promise<string |
 
 function greedyOptimize(
   coordinates: Array<{ lat: number; lng: number }>,
-  origin?: { lat: number; lng: number }
+  origin?: { lat: number; lng: number },
+  endpoint?: { lat: number; lng: number }
 ): number[] {
   if (!origin) {
     return coordinates.map((_, idx) => idx);
+  }
+
+  // If we have an endpoint, use a smarter optimization that considers it
+  if (endpoint) {
+    return greedyOptimizeWithEndpoint(coordinates, origin, endpoint);
   }
 
   const unvisited = new Set(coordinates.map((_, idx) => idx));
@@ -92,6 +98,59 @@ function greedyOptimize(
     order.push(nearest);
     unvisited.delete(nearest);
     current = coordinates[nearest];
+  }
+
+  return order;
+}
+
+function greedyOptimizeWithEndpoint(
+  coordinates: Array<{ lat: number; lng: number }>,
+  origin: { lat: number; lng: number },
+  endpoint: { lat: number; lng: number }
+): number[] {
+  // Strategy: Build route from origin, but when choosing next stop,
+  // consider both distance from current position AND distance to endpoint
+  // This biases the route toward stops that are "on the way" to the endpoint
+  
+  const unvisited = new Set(coordinates.map((_, idx) => idx));
+  const order: number[] = [];
+  let current = origin;
+
+  while (unvisited.size > 0) {
+    let best = -1;
+    let bestScore = Infinity;
+
+    for (const idx of Array.from(unvisited)) {
+      const coord = coordinates[idx];
+      
+      // Distance from current position to this stop
+      const distFromCurrent = Math.sqrt(
+        Math.pow(coord.lat - current.lat, 2) + Math.pow(coord.lng - current.lng, 2)
+      );
+      
+      // Distance from this stop to the endpoint
+      const distToEndpoint = Math.sqrt(
+        Math.pow(endpoint.lat - coord.lat, 2) + Math.pow(endpoint.lng - coord.lng, 2)
+      );
+      
+      // For the last few stops, heavily weight proximity to endpoint
+      // For earlier stops, weight distance from current more heavily
+      const remainingStops = unvisited.size;
+      const endpointWeight = remainingStops <= 3 ? 0.7 : 0.3;
+      const currentWeight = 1 - endpointWeight;
+      
+      // Combined score: prefer stops close to current position that are also closer to endpoint
+      const score = (currentWeight * distFromCurrent) + (endpointWeight * distToEndpoint);
+      
+      if (score < bestScore) {
+        bestScore = score;
+        best = idx;
+      }
+    }
+
+    order.push(best);
+    unvisited.delete(best);
+    current = coordinates[best];
   }
 
   return order;
@@ -131,7 +190,8 @@ export async function optimizeRoute(
   }
 
   try {
-    const optimizedOrder = greedyOptimize(coordinates, origin);
+    // Pass endpoint to optimization so route is optimized to end near the endpoint
+    const optimizedOrder = greedyOptimize(coordinates, origin, customEndpoint);
     const orderedCoords = origin
       ? [origin, ...optimizedOrder.map(idx => coordinates[idx])]
       : optimizedOrder.map(idx => coordinates[idx]);
