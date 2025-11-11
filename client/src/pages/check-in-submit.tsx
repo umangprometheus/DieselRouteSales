@@ -149,32 +149,6 @@ export default function CheckInSubmitPage() {
           disabled={checkInMutation.isPending || isProcessingVoice}
         />
         
-        {isProcessingVoice && (
-          <Card className="border-primary/50 bg-primary/5" data-testid="card-ai-processing">
-            <CardContent className="pt-6">
-              <div className="flex flex-col items-center gap-4 py-4">
-                <div className="relative">
-                  <Loader2 className="h-16 w-16 animate-spin text-primary" />
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="h-10 w-10 rounded-full bg-primary/20 animate-pulse" />
-                  </div>
-                </div>
-                <div className="text-center space-y-2">
-                  <p className="text-lg font-semibold text-primary">
-                    AI Processing Your Voice Note
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    Transcribing speech and extracting visit details...
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    This may take a few moments
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        )}
-        
         {transcript && (
           <Card data-testid="card-transcript">
             <CardHeader>
