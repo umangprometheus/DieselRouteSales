@@ -3,7 +3,8 @@ import {
   DndContext, 
   closestCenter, 
   KeyboardSensor, 
-  PointerSensor, 
+  PointerSensor,
+  TouchSensor,
   useSensor, 
   useSensors, 
   DragEndEvent,
@@ -19,7 +20,6 @@ import {
 } from "@dnd-kit/sortable";
 import { restrictToVerticalAxis, restrictToWindowEdges } from "@dnd-kit/modifiers";
 import { SortableItem } from "./SortableItem";
-import { LockedTouchSensor } from "./LockedTouchSensor";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerDescription, DrawerFooter } from "@/components/ui/drawer";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -52,7 +52,7 @@ export function RouteEditDrawer({
 
   // Touch-friendly drag sensors with long-press activation for mobile
   const sensors = useSensors(
-    useSensor(LockedTouchSensor, {
+    useSensor(TouchSensor, {
       activationConstraint: {
         delay: 250, // Long-press delay for mobile
         tolerance: 5,
@@ -75,6 +75,50 @@ export function RouteEditDrawer({
       setIsDirty(false);
     }
   }, [route]);
+
+  // Prevent viewport scrolling during drag operations
+  useEffect(() => {
+    if (!activeId) return;
+
+    // Save current scroll position
+    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+    
+    // Save original styles
+    const originalBodyOverflow = document.body.style.overflow;
+    const originalBodyPosition = document.body.style.position;
+    const originalBodyTop = document.body.style.top;
+    const originalBodyWidth = document.body.style.width;
+    const originalHtmlOverflow = document.documentElement.style.overflow;
+
+    // Lock viewport
+    document.body.style.overflow = 'hidden';
+    document.body.style.position = 'fixed';
+    document.body.style.top = `-${scrollTop}px`;
+    document.body.style.width = '100%';
+    document.documentElement.style.overflow = 'hidden';
+
+    // Prevent all touch scrolling with non-passive listener
+    const preventScroll = (e: TouchEvent) => {
+      e.preventDefault();
+    };
+    document.addEventListener('touchmove', preventScroll, { passive: false });
+
+    // Cleanup function
+    return () => {
+      // Restore viewport
+      document.body.style.overflow = originalBodyOverflow;
+      document.body.style.position = originalBodyPosition;
+      document.body.style.top = originalBodyTop;
+      document.body.style.width = originalBodyWidth;
+      document.documentElement.style.overflow = originalHtmlOverflow;
+
+      // Restore scroll position
+      window.scrollTo(0, scrollTop);
+
+      // Remove event listener
+      document.removeEventListener('touchmove', preventScroll);
+    };
+  }, [activeId]);
 
   // Get sortable ID for each stop
   const getSortableId = (stop: any) => stop.routeStopId || stop.companyId;
