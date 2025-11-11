@@ -15,6 +15,7 @@ export async function fetchHubSpotCompanies(ownerId?: string) {
 
   const properties = [
     "name",
+    "customer_number",
     "address",
     "address2",
     "city",
