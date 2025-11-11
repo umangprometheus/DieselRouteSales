@@ -5,23 +5,23 @@ import { VoiceRecorder } from "@/components/VoiceRecorder";
 import { VisitDataForm } from "@/components/VisitDataForm";
 import { useCheckIn } from "@/lib/api";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Mic, Keyboard } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 
 interface VisitData {
-  machineryTypes: string;
-  engineTypes: string;
+  machineryTypes?: string;
+  engineTypes?: string;
   fleetMakeup?: string;
-  currentSuppliers: string;
+  currentSuppliers?: string;
   competitorData?: string;
   pricingInfo?: string;
   productModels?: string;
   availabilityGaps?: string;
-  customerNeeds: string;
+  customerNeeds?: string;
   competitivePosition?: string;
   insideSalesIssues?: string;
-  nextSteps: string;
+  nextSteps?: string;
   miscNotes?: string;
 }
 
@@ -38,17 +38,17 @@ export default function CheckInSubmitPage() {
   
   const [transcript, setTranscript] = useState("");
   const [visitData, setVisitData] = useState<VisitData | null>(null);
-  const [currentTab, setCurrentTab] = useState("voice");
+  const [inputMode, setInputMode] = useState<"voice" | "manual">("voice");
   const [checkInTimestamp] = useState(new Date());
 
   const handleTranscriptionComplete = (newTranscript: string, parsedData: any) => {
     setTranscript(newTranscript);
     setVisitData(parsedData);
-    setCurrentTab("review");
+    setInputMode("manual");
     
     toast({
-      title: "Ready for Review",
-      description: "Review and edit the extracted information before submitting.",
+      title: "Transcription Complete",
+      description: "Review and edit the information before submitting.",
     });
   };
 
@@ -106,9 +106,6 @@ export default function CheckInSubmitPage() {
     );
   };
 
-  const handleSkipVoice = () => {
-    setCurrentTab("manual");
-  };
 
   if (!companyId || !companyName) {
     return (
@@ -147,17 +144,36 @@ export default function CheckInSubmitPage() {
         </div>
       </header>
 
-      <main className="p-4 pb-24 max-w-2xl mx-auto">
-        <Tabs value={currentTab} onValueChange={setCurrentTab}>
-          <TabsList className="grid w-full grid-cols-3" data-testid="tabs-checkin-method">
-            <TabsTrigger value="voice" data-testid="tab-voice">Voice</TabsTrigger>
-            <TabsTrigger value="review" disabled={!visitData} data-testid="tab-review">
-              Review
-            </TabsTrigger>
-            <TabsTrigger value="manual" data-testid="tab-manual">Manual</TabsTrigger>
-          </TabsList>
+      <main className="p-4 pb-24 max-w-2xl mx-auto space-y-4">
+        <div className="flex justify-center">
+          <ToggleGroup 
+            type="single" 
+            value={inputMode} 
+            onValueChange={(value) => value && setInputMode(value as "voice" | "manual")}
+            className="bg-muted p-1 rounded-lg"
+            data-testid="toggle-input-mode"
+          >
+            <ToggleGroupItem 
+              value="voice" 
+              className="gap-2 data-[state=on]:bg-background data-[state=on]:shadow-sm"
+              data-testid="toggle-voice"
+            >
+              <Mic className="h-4 w-4" />
+              Record Voice
+            </ToggleGroupItem>
+            <ToggleGroupItem 
+              value="manual"
+              className="gap-2 data-[state=on]:bg-background data-[state=on]:shadow-sm"
+              data-testid="toggle-manual"
+            >
+              <Keyboard className="h-4 w-4" />
+              Type Manually
+            </ToggleGroupItem>
+          </ToggleGroup>
+        </div>
 
-          <TabsContent value="voice" className="space-y-4 mt-4">
+        {inputMode === "voice" ? (
+          <div className="space-y-4">
             <VoiceRecorder
               onTranscriptionComplete={handleTranscriptionComplete}
               disabled={checkInMutation.isPending}
@@ -173,36 +189,14 @@ export default function CheckInSubmitPage() {
                 </CardContent>
               </Card>
             )}
-
-            <div className="flex flex-col gap-2 pt-4">
-              <Button
-                variant="outline"
-                onClick={handleSkipVoice}
-                data-testid="button-skip-to-manual"
-              >
-                Skip Voice - Enter Manually
-              </Button>
-            </div>
-          </TabsContent>
-
-          <TabsContent value="review" className="space-y-4 mt-4">
-            {visitData && (
-              <VisitDataForm
-                defaultValues={visitData}
-                onSubmit={handleFormSubmit}
-                isSubmitting={checkInMutation.isPending}
-              />
-            )}
-          </TabsContent>
-
-          <TabsContent value="manual" className="space-y-4 mt-4">
-            <VisitDataForm
-              defaultValues={visitData || undefined}
-              onSubmit={handleFormSubmit}
-              isSubmitting={checkInMutation.isPending}
-            />
-          </TabsContent>
-        </Tabs>
+          </div>
+        ) : (
+          <VisitDataForm
+            defaultValues={visitData || undefined}
+            onSubmit={handleFormSubmit}
+            isSubmitting={checkInMutation.isPending}
+          />
+        )}
       </main>
     </div>
   );
