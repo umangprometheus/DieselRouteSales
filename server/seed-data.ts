@@ -124,11 +124,19 @@ const demoCompanies: InsertCompany[] = [
   },
 ];
 
+let seeded = false;
+
 export async function seedDemoCompanies() {
+  // Skip if already seeded (prevents duplicates during dev server restarts)
+  if (seeded) {
+    return;
+  }
+
   console.log("[Seed] Adding demo companies for testing...");
 
   try {
     await storage.upsertCompanies(demoCompanies);
+    seeded = true;
     console.log(`[Seed] ✅ Added ${demoCompanies.length} demo companies in Memphis, TN`);
   } catch (error) {
     console.error("[Seed] Error seeding demo companies:", error);
