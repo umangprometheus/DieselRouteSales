@@ -574,45 +574,26 @@ export default function PlanPage() {
         <div className={`${activeTab === "list" || isDesktop ? "block" : "hidden"} md:block ${filteredCompanies.length > 0 ? 'md:w-96' : 'md:flex-1'} bg-background border-l overflow-y-auto`}>
           <div className="p-4 space-y-6">
             {/* Start Route Button - Top of List View */}
-            {selectedCompanyIds.length >= 1 && (
+            {selectedCompanyIds.length >= 2 && (
               <div className="sticky top-0 z-20 -mx-4 -mt-4 px-4 pt-4 pb-3 bg-background/95 backdrop-blur border-b">
-                <div className="space-y-2">
-                  {/* Clear Selection Button */}
-                  <Button
-                    variant="outline"
-                    onClick={() => {
-                      setSelectedCompanyIds([]);
-                      setClickedCompanyId(null);
-                    }}
-                    className="w-full h-11 text-base"
-                    data-testid="button-clear-selection-list"
-                  >
-                    <X className="w-5 h-5 mr-2" />
-                    Clear Selection ({selectedCompanyIds.length})
-                  </Button>
-                  
-                  {/* Build Route Button - Only show when 2+ companies selected */}
-                  {selectedCompanyIds.length >= 2 && (
-                    <Button
-                      onClick={handleBuildRoute}
-                      className="w-full h-14 text-base font-semibold shadow-lg"
-                      disabled={buildRouteMutation.isPending}
-                      data-testid="button-start-route-top"
-                    >
-                      {buildRouteMutation.isPending ? (
-                        <>
-                          <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                          Building Route...
-                        </>
-                      ) : (
-                        <>
-                          <Route className="w-5 h-5 mr-2" />
-                          Start Route ({selectedCompanyIds.length} stops)
-                        </>
-                      )}
-                    </Button>
+                <Button
+                  onClick={handleBuildRoute}
+                  className="w-full h-14 text-base font-semibold shadow-lg"
+                  disabled={buildRouteMutation.isPending}
+                  data-testid="button-start-route-top"
+                >
+                  {buildRouteMutation.isPending ? (
+                    <>
+                      <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                      Building Route...
+                    </>
+                  ) : (
+                    <>
+                      <Route className="w-5 h-5 mr-2" />
+                      Start Route ({selectedCompanyIds.length} stops)
+                    </>
                   )}
-                </div>
+                </Button>
               </div>
             )}
 
@@ -641,7 +622,10 @@ export default function PlanPage() {
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => setSelectedCompanyIds([])}
+                    onClick={() => {
+                      setSelectedCompanyIds([]);
+                      setClickedCompanyId(null);
+                    }}
                     data-testid="button-clear-selection"
                   >
                     Clear
