@@ -127,6 +127,7 @@ interface VisitDataFormProps {
 }
 
 export function VisitDataForm({ defaultValues, onSubmit, isSubmitting = false }: VisitDataFormProps) {
+  const { toast } = useToast();
   const form = useForm<VisitDataFormValues>({
     resolver: zodResolver(visitDataSchema),
     defaultValues: {
