@@ -10,6 +10,7 @@ import { MapPin, Route, CheckCircle, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { loginSchema, type LoginCredentials } from "@shared/schema";
+import mspLogo from "@assets/msp_logo_1762965721886.png";
 
 export default function LoginPage() {
   const [, setLocation] = useLocation();
@@ -56,10 +57,13 @@ export default function LoginPage() {
       <div className="w-full max-w-md mx-auto space-y-8">
         {/* Logo/Brand Section */}
         <div className="text-center space-y-3">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 mb-3">
-            <MapPin className="w-8 h-8 text-primary" />
+          <div className="flex justify-center mb-4">
+            <img 
+              src={mspLogo} 
+              alt="MSP Diesel Solutions" 
+              className="h-16 w-auto"
+            />
           </div>
-          <h1 className="text-2xl font-bold text-foreground">MSP Field Sales</h1>
           <p className="text-sm text-muted-foreground">Intelligent route planning for field teams</p>
         </div>
 

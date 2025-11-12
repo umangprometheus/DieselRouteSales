@@ -27,6 +27,7 @@ import { useToast } from "@/hooks/use-toast";
 import { MapIcon, List, Route, Loader2, RefreshCw, MapPin, X, Search } from "lucide-react";
 import type { BuildRouteResponse } from "@shared/schema";
 import { Input } from "@/components/ui/input";
+import mspLogo from "@assets/msp_logo_1762965721886.png";
 
 function useMediaQuery(query: string) {
   const [matches, setMatches] = useState(() => {
@@ -386,7 +387,11 @@ export default function PlanPage() {
     <div className="fixed inset-0 flex flex-col bg-background overflow-hidden">
       {/* Header */}
       <header className="pt-safe px-4 flex items-center justify-between border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 min-h-[56px] flex-shrink-0">
-        <h1 className="text-lg font-semibold text-foreground">MSP</h1>
+        <img 
+          src={mspLogo} 
+          alt="MSP Diesel Solutions" 
+          className="h-8 w-auto"
+        />
         <Button 
           variant="ghost" 
           size="sm" 
