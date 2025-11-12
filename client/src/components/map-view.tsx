@@ -460,6 +460,26 @@ export default function MapView({
   return (
     <div className={`relative w-full h-full ${className}`} data-testid="map-view">
       <div ref={mapContainer} className="absolute inset-0" />
+      
+      {/* Map Legend */}
+      <div className="absolute top-4 left-4 bg-background/95 backdrop-blur-sm border rounded-lg p-3 shadow-lg z-10">
+        <h4 className="text-xs font-semibold mb-2 text-foreground">Map Legend</h4>
+        <div className="space-y-1.5">
+          <div className="flex items-center gap-2">
+            <div className="w-3 h-3 rounded-full bg-blue-500 border border-white"></div>
+            <span className="text-xs text-muted-foreground">Customer</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-3 h-3 rounded-full bg-red-500 border border-white"></div>
+            <span className="text-xs text-muted-foreground">Lead / Other</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-3 h-3 rounded-full bg-green-500 border border-white"></div>
+            <span className="text-xs text-muted-foreground">Selected</span>
+          </div>
+        </div>
+      </div>
+      
       {mapError && (
         <div className="absolute inset-0 flex items-center justify-center bg-muted/90 backdrop-blur-sm z-50">
           <div className="text-center p-6 max-w-md">
