@@ -412,7 +412,7 @@ export default function PlanPage() {
               <TabsTrigger 
                 value="map" 
                 data-testid="tab-map" 
-                className="min-h-[44px] text-base font-semibold data-[state=active]:bg-background data-[state=active]:shadow-sm data-[state=active]:text-foreground"
+                className="min-h-[44px] text-base font-semibold data-[state=active]:bg-background data-[state=active]:shadow-sm data-[state=active]:text-primary"
               >
                 <MapIcon className="w-5 h-5 mr-2" />
                 Map
@@ -420,7 +420,7 @@ export default function PlanPage() {
               <TabsTrigger 
                 value="list" 
                 data-testid="tab-list" 
-                className="min-h-[44px] text-base font-semibold data-[state=active]:bg-background data-[state=active]:shadow-sm data-[state=active]:text-foreground"
+                className="min-h-[44px] text-base font-semibold data-[state=active]:bg-background data-[state=active]:shadow-sm data-[state=active]:text-primary"
               >
                 <List className="w-5 h-5 mr-2" />
                 List
