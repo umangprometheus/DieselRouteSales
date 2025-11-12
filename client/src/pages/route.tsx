@@ -11,7 +11,7 @@ import { useCheckIn } from "@/lib/api";
 import { useToast } from "@/hooks/use-toast";
 import { ArrowLeft, X, Plus, Navigation } from "lucide-react";
 import type { RouteStop, BuildRouteResponse, Company } from "@shared/schema";
-import { PROXIMITY_THRESHOLD_METERS } from "@/lib/distance";
+import { PROXIMITY_THRESHOLD_METERS, formatDistance } from "@/lib/distance";
 
 export default function RoutePage() {
   const [, navigate] = useLocation();
@@ -567,7 +567,7 @@ export default function RoutePage() {
             <div className="absolute top-4 left-1/2 -translate-x-1/2 z-10">
               <div className="bg-background/90 backdrop-blur px-4 py-2 rounded-full shadow-lg">
                 <p className="text-sm font-semibold text-foreground">
-                  {distanceToCurrentStop < 100 ? "< 100" : Math.round(distanceToCurrentStop)}m to {currentStop.name}
+                  {formatDistance(distanceToCurrentStop)} to {currentStop.name}
                 </p>
               </div>
             </div>
