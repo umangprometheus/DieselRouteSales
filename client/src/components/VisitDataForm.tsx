@@ -12,6 +12,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
@@ -22,33 +23,8 @@ import {
 } from "@/components/ui/select";
 import { MultiSelect, type MultiSelectOption } from "@/components/ui/multi-select";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
-import { 
-  Loader2, 
-  Truck, 
-  Wrench, 
-  Package,
-  DollarSign,
-  Users,
-  AlertTriangle,
-  Target,
-  FileText,
-  HelpCircle,
-  Building2,
-  ShoppingCart,
-  TrendingUp,
-  MessageSquare,
-  ClipboardCheck,
-  CheckCircle
-} from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 
 const visitDataSchema = z.object({
   machineryTypes: z.string().min(1, "Machinery type is required"),
@@ -150,28 +126,7 @@ interface VisitDataFormProps {
   isSubmitting?: boolean;
 }
 
-// Helper component for required field badge
-function RequiredBadge() {
-  return <Badge variant="destructive" className="ml-2 text-xs h-5">Required</Badge>;
-}
-
-// Helper component for field tooltip
-function FieldTooltip({ children }: { children: React.ReactNode }) {
-  return (
-    <Tooltip>
-      <TooltipTrigger asChild>
-        <HelpCircle className="w-4 h-4 text-muted-foreground cursor-help ml-2" />
-      </TooltipTrigger>
-      <TooltipContent className="max-w-xs">
-        {children}
-      </TooltipContent>
-    </Tooltip>
-  );
-}
-
 export function VisitDataForm({ defaultValues, onSubmit, isSubmitting = false }: VisitDataFormProps) {
-  const { toast } = useToast();
-  
   const form = useForm<VisitDataFormValues>({
     resolver: zodResolver(visitDataSchema),
     defaultValues: {
@@ -275,557 +230,354 @@ export function VisitDataForm({ defaultValues, onSubmit, isSubmitting = false }:
   };
 
   return (
-    <TooltipProvider>
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(handleSubmit, onInvalid)} className="space-y-6">
-          {/* Header Card with Overview */}
-          <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-primary/10">
-            <CardHeader>
-              <div className="flex items-start justify-between">
-                <div className="space-y-2">
-                  <CardTitle className="flex items-center gap-2 text-xl">
-                    <ClipboardCheck className="w-6 h-6 text-primary" />
-                    Customer Visit Information
-                  </CardTitle>
-                  <CardDescription className="text-sm">
-                    Complete this form to capture valuable insights from your customer visit. 
-                    The more detail you provide, the better we can serve this customer.
-                  </CardDescription>
-                </div>
-                <div className="flex flex-col gap-2 items-end">
-                  <Badge variant="outline" className="text-xs">
-                    ~3 min to complete
-                  </Badge>
-                  <div className="flex gap-1">
-                    <Badge variant="destructive" className="text-xs">4 Required</Badge>
-                    <Badge variant="secondary" className="text-xs">9 Optional</Badge>
-                  </div>
-                </div>
-              </div>
-            </CardHeader>
-          </Card>
-
-          {/* Section 1: Equipment & Fleet */}
-          <Card>
-            <CardHeader className="pb-4">
-              <div className="flex items-center gap-3">
-                <div className="p-2.5 rounded-lg bg-blue-500/10">
-                  <Truck className="w-5 h-5 text-blue-600" />
-                </div>
-                <div>
-                  <CardTitle className="text-lg">Equipment & Fleet Details</CardTitle>
-                  <CardDescription className="text-sm mt-1">
-                    Understanding their equipment helps us recommend the right parts
-                  </CardDescription>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              {/* Machinery Types Field */}
-              <FormField
-                control={form.control}
-                name="machineryTypes"
-                render={({ field }) => (
-                  <FormItem>
-                    <div className="flex items-center mb-2">
-                      <FormLabel>Machinery Types</FormLabel>
-                      <RequiredBadge />
-                      <FieldTooltip>
-                        <p className="font-semibold mb-1">Why this matters:</p>
-                        <p className="text-xs">Different duty classes require different parts specifications. This helps us ensure compatibility.</p>
-                      </FieldTooltip>
-                    </div>
-                    <Select onValueChange={field.onChange} value={field.value}>
-                      <FormControl>
-                        <SelectTrigger data-testid="select-machinery-types">
-                          <SelectValue placeholder="What weight class vehicles do they service?" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="Light duty trucks">
-                          <div>
-                            <div className="font-medium">Light Duty Trucks</div>
-                            <div className="text-xs text-muted-foreground">Class 1-3 (up to 14,000 lbs) - Pickups, vans</div>
-                          </div>
-                        </SelectItem>
-                        <SelectItem value="Medium duty trucks">
-                          <div>
-                            <div className="font-medium">Medium Duty Trucks</div>
-                            <div className="text-xs text-muted-foreground">Class 4-6 (14,001-26,000 lbs) - Box trucks, flatbeds</div>
-                          </div>
-                        </SelectItem>
-                        <SelectItem value="Heavy duty trucks">
-                          <div>
-                            <div className="font-medium">Heavy Duty Trucks</div>
-                            <div className="text-xs text-muted-foreground">Class 7-8 (over 26,000 lbs) - Semi trucks, heavy haulers</div>
-                          </div>
-                        </SelectItem>
-                        <SelectItem value="Light & Medium duty">Light & Medium Combination</SelectItem>
-                        <SelectItem value="Medium & Heavy duty">Medium & Heavy Combination</SelectItem>
-                        <SelectItem value="All duty types">All Duty Types (Full Service)</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormDescription className="text-xs mt-2">
-                      Tip: Most shops specialize in specific weight classes based on their equipment
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              {/* Engine Types Field */}
-              <FormField
-                control={form.control}
-                name="engineTypes"
-                render={({ field }) => (
-                  <FormItem>
-                    <div className="flex items-center mb-2">
-                      <FormLabel>Engine Types in Shop</FormLabel>
-                      <FieldTooltip>
-                        <p className="font-semibold mb-1">Pro tip:</p>
-                        <p className="text-xs">Look for engine model badges on trucks or ask what they're working on today.</p>
-                      </FieldTooltip>
-                    </div>
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(handleSubmit, onInvalid)} className="space-y-6">
+        <Card data-testid="card-visit-data-form">
+          <CardHeader>
+            <CardTitle>Visit Details</CardTitle>
+            <CardDescription>
+              Review and edit the information from your visit. Fields marked with * are required.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <FormField
+              control={form.control}
+              name="machineryTypes"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>
+                    Machinery Types <span className="text-destructive">*</span>
+                  </FormLabel>
+                  <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl>
-                      <MultiSelect
-                        options={engineTypeOptions}
-                        selected={field.value || []}
-                        onChange={field.onChange}
-                        placeholder="Select all engines you saw or discussed..."
-                        searchPlaceholder="Search engine models..."
-                        emptyMessage="No engine type found."
-                        allowOther={true}
-                        otherValue={otherValues.engineTypes}
-                        onOtherChange={(value) => handleOtherChange("engineTypes", value)}
-                      />
+                      <SelectTrigger data-testid="select-machinery-types">
+                        <SelectValue placeholder="Select machinery type" />
+                      </SelectTrigger>
                     </FormControl>
-                    <FormDescription className="text-xs mt-2">
-                      Common engines: CAT C15 (heavy duty), Cummins ISX (versatile), Detroit DD15 (fuel efficient)
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              {/* Fleet Makeup Field */}
-              <FormField
-                control={form.control}
-                name="fleetMakeup"
-                render={({ field }) => (
-                  <FormItem>
-                    <div className="flex items-center mb-2">
-                      <FormLabel>Fleet Brands</FormLabel>
-                      <FieldTooltip>
-                        <p className="font-semibold mb-1">Quick identification:</p>
-                        <p className="text-xs">Check truck badges, look in the parking lot, or ask about their customer base.</p>
-                      </FieldTooltip>
-                    </div>
-                    <FormControl>
-                      <MultiSelect
-                        options={fleetMakeupOptions}
-                        selected={field.value || []}
-                        onChange={field.onChange}
-                        placeholder="Which truck brands do they service?"
-                        searchPlaceholder="Search brands..."
-                        emptyMessage="Brand not found."
-                        allowOther={true}
-                        otherValue={otherValues.fleetMakeup}
-                        onOtherChange={(value) => handleOtherChange("fleetMakeup", value)}
-                      />
-                    </FormControl>
-                    <FormDescription className="text-xs mt-2">
-                      Select all brands you observed in their shop or parking area
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </CardContent>
-          </Card>
-
-          {/* Section 2: Suppliers & Competition */}
-          <Card>
-            <CardHeader className="pb-4">
-              <div className="flex items-center gap-3">
-                <div className="p-2.5 rounded-lg bg-orange-500/10">
-                  <ShoppingCart className="w-5 h-5 text-orange-600" />
-                </div>
-                <div>
-                  <CardTitle className="text-lg">Suppliers & Competition</CardTitle>
-                  <CardDescription className="text-sm mt-1">
-                    Know who we're competing against and current supply chain
-                  </CardDescription>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              {/* Current Suppliers */}
-              <FormField
-                control={form.control}
-                name="currentSuppliers"
-                render={({ field }) => (
-                  <FormItem>
-                    <div className="flex items-center mb-2">
-                      <FormLabel>Current Suppliers</FormLabel>
-                      <FieldTooltip>
-                        <p className="font-semibold mb-1">What to look for:</p>
-                        <p className="text-xs">Check for supplier boxes, invoices on desks, or branded merchandise. Ask "Who do you usually order from?"</p>
-                      </FieldTooltip>
-                    </div>
-                    <FormControl>
-                      <MultiSelect
-                        options={supplierOptions}
-                        selected={field.value || []}
-                        onChange={field.onChange}
-                        placeholder="Who are they buying from now?"
-                        searchPlaceholder="Search suppliers..."
-                        emptyMessage="Supplier not found."
-                        allowOther={true}
-                        otherValue={otherValues.currentSuppliers}
-                        onOtherChange={(value) => handleOtherChange("currentSuppliers", value)}
-                      />
-                    </FormControl>
-                    <FormDescription className="text-xs mt-2">
-                      Quick win: If they use multiple suppliers, we can consolidate for better pricing
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              {/* Competitors */}
-              <FormField
-                control={form.control}
-                name="competitorData"
-                render={({ field }) => (
-                  <FormItem>
-                    <div className="flex items-center mb-2">
-                      <FormLabel>Competitor Products in Use</FormLabel>
-                      <RequiredBadge />
-                      <FieldTooltip>
-                        <p className="font-semibold mb-1">Critical intel:</p>
-                        <p className="text-xs">Knowing what brands they trust helps us position our products effectively.</p>
-                      </FieldTooltip>
-                    </div>
-                    <FormControl>
-                      <MultiSelect
-                        options={competitorOptions}
-                        selected={field.value || []}
-                        onChange={field.onChange}
-                        placeholder="Which competitor brands are they using?"
-                        searchPlaceholder="Search competitors..."
-                        emptyMessage="Competitor not found."
-                        allowOther={true}
-                        otherValue={otherValues.competitorData}
-                        onOtherChange={(value) => handleOtherChange("competitorData", value)}
-                      />
-                    </FormControl>
-                    <FormDescription className="text-xs mt-2">
-                      Most common: Bosch (OEM quality), Denso (reliability), Delphi (value)
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              {/* Pricing Information */}
-              <FormField
-                control={form.control}
-                name="pricingInfo"
-                render={({ field }) => (
-                  <FormItem>
-                    <div className="flex items-center mb-2">
-                      <FormLabel>Current Pricing</FormLabel>
-                      <FieldTooltip>
-                        <p className="font-semibold mb-1">How to ask:</p>
-                        <p className="text-xs">"What are you paying for injectors?" or "What's your typical spend on diesel parts?"</p>
-                      </FieldTooltip>
-                    </div>
-                    <FormControl>
-                      <Textarea
-                        {...field}
-                        placeholder="Examples:&#10;• Paying $450/injector from Bosch&#10;• Getting 15% fleet discount from NAPA&#10;• Spending $3-5k/month on parts"
-                        data-testid="input-pricing-info"
-                        rows={3}
-                        className="font-mono text-sm"
-                      />
-                    </FormControl>
-                    <FormDescription className="text-xs mt-2">
-                      Include any discounts, bulk pricing, or payment terms mentioned
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              {/* Product Models */}
-              <FormField
-                control={form.control}
-                name="productModels"
-                render={({ field }) => (
-                  <FormItem>
-                    <div className="flex items-center mb-2">
-                      <FormLabel>Specific Products Needed</FormLabel>
-                    </div>
-                    <FormControl>
-                      <MultiSelect
-                        options={productModelOptions}
-                        selected={field.value || []}
-                        onChange={field.onChange}
-                        placeholder="What specific parts do they need?"
-                        searchPlaceholder="Search products..."
-                        emptyMessage="Product not found."
-                        allowOther={true}
-                        otherValue={otherValues.productModels}
-                        onOtherChange={(value) => handleOtherChange("productModels", value)}
-                      />
-                    </FormControl>
-                    <FormDescription className="text-xs mt-2">
-                      High-margin items: Reman injectors, complete kits, sensors
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              {/* Availability Gaps */}
-              <FormField
-                control={form.control}
-                name="availabilityGaps"
-                render={({ field }) => (
-                  <FormItem>
-                    <div className="flex items-center mb-2">
-                      <FormLabel>Supply Chain Problems</FormLabel>
-                      <FieldTooltip>
-                        <p className="font-semibold mb-1">Opportunity finder:</p>
-                        <p className="text-xs">When competitors can't deliver, we can win the business.</p>
-                      </FieldTooltip>
-                    </div>
-                    <FormControl>
-                      <Textarea
-                        {...field}
-                        placeholder="Examples:&#10;• 'Bosch injectors always backordered 2-3 weeks'&#10;• 'Can't find CAT C15 turbos anywhere'&#10;• 'OEM dealer takes forever to get parts'"
-                        data-testid="input-availability-gaps"
-                        rows={3}
-                      />
-                    </FormControl>
-                    <FormDescription className="text-xs mt-2">
-                      These pain points are our best sales opportunities
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </CardContent>
-          </Card>
-
-          {/* Section 3: Customer Intelligence */}
-          <Card>
-            <CardHeader className="pb-4">
-              <div className="flex items-center gap-3">
-                <div className="p-2.5 rounded-lg bg-green-500/10">
-                  <Target className="w-5 h-5 text-green-600" />
-                </div>
-                <div>
-                  <CardTitle className="text-lg">Customer Intelligence</CardTitle>
-                  <CardDescription className="text-sm mt-1">
-                    Critical insights to win and keep this customer
-                  </CardDescription>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              {/* Customer Needs */}
-              <FormField
-                control={form.control}
-                name="customerNeeds"
-                render={({ field }) => (
-                  <FormItem>
-                    <div className="flex items-center mb-2">
-                      <FormLabel>Customer Needs Assessment</FormLabel>
-                      <RequiredBadge />
-                      <FieldTooltip>
-                        <p className="font-semibold mb-1">The most important field:</p>
-                        <p className="text-xs">This drives our entire sales strategy for this customer.</p>
-                      </FieldTooltip>
-                    </div>
-                    <FormControl>
-                      <Textarea
-                        {...field}
-                        placeholder="What to capture:&#10;• Main business focus (e.g., 'Fleet maintenance for 50 trucks')&#10;• Current challenges (e.g., 'Downtime costs them $500/hour')&#10;• Immediate needs (e.g., 'Looking for reliable injector supplier')&#10;• Future plans (e.g., 'Adding 10 more trucks next quarter')"
-                        data-testid="input-customer-needs"
-                        rows={4}
-                      />
-                    </FormControl>
-                    <FormDescription className="text-xs mt-2">
-                      Be specific - this helps inside sales prepare perfect quotes
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              {/* Competitive Position */}
-              <FormField
-                control={form.control}
-                name="competitivePosition"
-                render={({ field }) => (
-                  <FormItem>
-                    <div className="flex items-center mb-2">
-                      <FormLabel>How MSP Can Win</FormLabel>
-                      <FieldTooltip>
-                        <p className="font-semibold mb-1">Your expert opinion:</p>
-                        <p className="text-xs">Based on what you learned, where can MSP beat the competition?</p>
-                      </FieldTooltip>
-                    </div>
-                    <FormControl>
-                      <Textarea
-                        {...field}
-                        placeholder="Examples:&#10;• 'We stock what Bosch doesn't - immediate availability'&#10;• 'Our reman quality exceeds their current supplier'&#10;• 'Can beat their current price by 20% on bulk orders'&#10;• 'Local inventory means same-day delivery'"
-                        data-testid="input-competitive-position"
-                        rows={3}
-                      />
-                    </FormControl>
-                    <FormDescription className="text-xs mt-2">
-                      Focus on our strengths: inventory, price, quality, service
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              {/* Inside Sales Issues */}
-              <FormField
-                control={form.control}
-                name="insideSalesIssues"
-                render={({ field }) => (
-                  <FormItem>
-                    <div className="flex items-center mb-2">
-                      <FormLabel>Internal Issues to Address</FormLabel>
-                      <FieldTooltip>
-                        <p className="font-semibold mb-1">Help us improve:</p>
-                        <p className="text-xs">If our team dropped the ball, we need to know so we can fix it.</p>
-                      </FieldTooltip>
-                    </div>
-                    <FormControl>
-                      <Textarea
-                        {...field}
-                        placeholder="Be honest about problems:&#10;• 'Customer frustrated with slow quote response'&#10;• 'Wrong part shipped last order'&#10;• 'Needs dedicated account manager'&#10;• 'Prefers email over phone calls'"
-                        data-testid="input-inside-sales-issues"
-                        rows={3}
-                      />
-                    </FormControl>
-                    <FormDescription className="text-xs mt-2">
-                      This stays internal - used only to improve our service
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </CardContent>
-          </Card>
-
-          {/* Section 4: Action Items */}
-          <Card>
-            <CardHeader className="pb-4">
-              <div className="flex items-center gap-3">
-                <div className="p-2.5 rounded-lg bg-purple-500/10">
-                  <ClipboardCheck className="w-5 h-5 text-purple-600" />
-                </div>
-                <div>
-                  <CardTitle className="text-lg">Next Steps & Follow-Up</CardTitle>
-                  <CardDescription className="text-sm mt-1">
-                    Clear action items to close the sale
-                  </CardDescription>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              {/* Next Steps */}
-              <FormField
-                control={form.control}
-                name="nextSteps"
-                render={({ field }) => (
-                  <FormItem>
-                    <div className="flex items-center mb-2">
-                      <FormLabel>Action Items</FormLabel>
-                      <RequiredBadge />
-                      <FieldTooltip>
-                        <p className="font-semibold mb-1">Be specific:</p>
-                        <p className="text-xs">Clear next steps = higher close rate. Include WHO does WHAT by WHEN.</p>
-                      </FieldTooltip>
-                    </div>
-                    <FormControl>
-                      <Textarea
-                        {...field}
-                        placeholder="List concrete actions:&#10;1. Send quote for 6 reman injectors by tomorrow&#10;2. Inside sales to call with bulk pricing options&#10;3. Schedule follow-up visit next Tuesday&#10;4. Email spec sheets for CAT C15 turbos"
-                        data-testid="input-next-steps"
-                        rows={4}
-                      />
-                    </FormControl>
-                    <FormDescription className="text-xs mt-2">
-                      Good example: "Send quote by 3pm Friday" | Poor example: "Follow up later"
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              {/* Misc Notes */}
-              <FormField
-                control={form.control}
-                name="miscNotes"
-                render={({ field }) => (
-                  <FormItem>
-                    <div className="flex items-center mb-2">
-                      <FormLabel>Additional Notes</FormLabel>
-                      <FieldTooltip>
-                        <p className="font-semibold mb-1">Anything else?</p>
-                        <p className="text-xs">Personal details, preferred communication style, or other context that helps build the relationship.</p>
-                      </FieldTooltip>
-                    </div>
-                    <FormControl>
-                      <Textarea
-                        {...field}
-                        placeholder="Other helpful info:&#10;• 'Owner is John - prefers texts over calls'&#10;• 'Busy season is March-June'&#10;• 'Decision maker is the shop foreman, not owner'&#10;• 'They sponsor local racing team - good marketing opportunity'"
-                        data-testid="input-misc-notes"
-                        rows={3}
-                      />
-                    </FormControl>
-                    <FormDescription className="text-xs mt-2">
-                      Include anything that helps us serve them better
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </CardContent>
-          </Card>
-
-          {/* Submit Button */}
-          <div className="flex gap-3 pt-4">
-            <Button
-              type="submit"
-              size="lg"
-              className="flex-1 h-12"
-              disabled={isSubmitting}
-              data-testid="button-submit-visit"
-            >
-              {isSubmitting ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Submitting Visit...
-                </>
-              ) : (
-                <>
-                  <CheckCircle className="mr-2 h-5 w-5" />
-                  Submit Visit Report
-                </>
+                    <SelectContent>
+                      <SelectItem value="Light duty trucks">Light duty trucks</SelectItem>
+                      <SelectItem value="Medium duty trucks">Medium duty trucks</SelectItem>
+                      <SelectItem value="Heavy duty trucks">Heavy duty trucks</SelectItem>
+                      <SelectItem value="Light & Medium duty">Light & Medium duty</SelectItem>
+                      <SelectItem value="Medium & Heavy duty">Medium & Heavy duty</SelectItem>
+                      <SelectItem value="All duty types">All duty types</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormDescription>
+                    What type of machinery does the customer work on?
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
               )}
-            </Button>
-          </div>
-        </form>
-      </Form>
-    </TooltipProvider>
+            />
+
+            <FormField
+              control={form.control}
+              name="engineTypes"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Engine Types</FormLabel>
+                  <FormControl>
+                    <MultiSelect
+                      options={engineTypeOptions}
+                      selected={field.value || []}
+                      onChange={field.onChange}
+                      placeholder="Select engine types..."
+                      searchPlaceholder="Search engines..."
+                      emptyMessage="No engine type found."
+                      allowOther={true}
+                      otherValue={otherValues.engineTypes}
+                      onOtherChange={(value) => handleOtherChange("engineTypes", value)}
+                    />
+                  </FormControl>
+                  <FormDescription>
+                    Select specific engine models currently in their shop
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="fleetMakeup"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Fleet Makeup</FormLabel>
+                  <FormControl>
+                    <MultiSelect
+                      options={fleetMakeupOptions}
+                      selected={field.value || []}
+                      onChange={field.onChange}
+                      placeholder="Select truck/equipment brands..."
+                      searchPlaceholder="Search brands..."
+                      emptyMessage="No brand found."
+                      allowOther={true}
+                      otherValue={otherValues.fleetMakeup}
+                      onOtherChange={(value) => handleOtherChange("fleetMakeup", value)}
+                    />
+                  </FormControl>
+                  <FormDescription>
+                    Truck or equipment brands represented in their fleet
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="currentSuppliers"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Current Suppliers</FormLabel>
+                  <FormControl>
+                    <MultiSelect
+                      options={supplierOptions}
+                      selected={field.value || []}
+                      onChange={field.onChange}
+                      placeholder="Select current suppliers..."
+                      searchPlaceholder="Search suppliers..."
+                      emptyMessage="No supplier found."
+                      allowOther={true}
+                      otherValue={otherValues.currentSuppliers}
+                      onOtherChange={(value) => handleOtherChange("currentSuppliers", value)}
+                    />
+                  </FormControl>
+                  <FormDescription>
+                    Vendors currently providing parts or services
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="competitorData"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>
+                    Competitors <span className="text-destructive">*</span>
+                  </FormLabel>
+                  <FormControl>
+                    <MultiSelect
+                      options={competitorOptions}
+                      selected={field.value || []}
+                      onChange={field.onChange}
+                      placeholder="Select competitors..."
+                      searchPlaceholder="Search competitors..."
+                      emptyMessage="No competitor found."
+                      allowOther={true}
+                      otherValue={otherValues.competitorData}
+                      onOtherChange={(value) => handleOtherChange("competitorData", value)}
+                    />
+                  </FormControl>
+                  <FormDescription>
+                    Which competitors are they currently using
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="pricingInfo"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Pricing Information</FormLabel>
+                  <FormControl>
+                    <Textarea
+                      {...field}
+                      placeholder="Per-unit or bulk pricing notes"
+                      data-testid="input-pricing-info"
+                      rows={2}
+                    />
+                  </FormControl>
+                  <FormDescription>
+                    Prices currently paid for relevant products
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="productModels"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Product Models</FormLabel>
+                  <FormControl>
+                    <MultiSelect
+                      options={productModelOptions}
+                      selected={field.value || []}
+                      onChange={field.onChange}
+                      placeholder="Select product models..."
+                      searchPlaceholder="Search products..."
+                      emptyMessage="No product model found."
+                      allowOther={true}
+                      otherValue={otherValues.productModels}
+                      onOtherChange={(value) => handleOtherChange("productModels", value)}
+                    />
+                  </FormControl>
+                  <FormDescription>
+                    Select specific product models they need or use
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="availabilityGaps"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Product Availability Gaps</FormLabel>
+                  <FormControl>
+                    <Textarea
+                      {...field}
+                      placeholder="e.g., Bosch constantly back-ordered on these"
+                      data-testid="input-availability-gaps"
+                      rows={2}
+                    />
+                  </FormControl>
+                  <FormDescription>
+                    Note when suppliers are out of stock or delayed
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="customerNeeds"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>
+                    Customer Needs Assessment <span className="text-destructive">*</span>
+                  </FormLabel>
+                  <FormControl>
+                    <Textarea
+                      {...field}
+                      placeholder="e.g., Needs help finding Cummins reman injectors"
+                      data-testid="input-customer-needs"
+                      rows={3}
+                    />
+                  </FormControl>
+                  <FormDescription>
+                    What the customer does and what they need next
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="competitivePosition"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Our Competitive Position</FormLabel>
+                  <FormControl>
+                    <Textarea
+                      {...field}
+                      placeholder="e.g., We can beat price and lead time on Bosch kits"
+                      data-testid="input-competitive-position"
+                      rows={2}
+                    />
+                  </FormControl>
+                  <FormDescription>
+                    Where MSP can compete or add value
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="insideSalesIssues"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Inside Sales Issues</FormLabel>
+                  <FormControl>
+                    <Textarea
+                      {...field}
+                      placeholder="e.g., Delayed quotes causing frustration"
+                      data-testid="input-inside-sales-issues"
+                      rows={2}
+                    />
+                  </FormControl>
+                  <FormDescription>
+                    Any issues with MSP's inside sales team impacting the relationship
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="nextSteps"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>
+                    Next Steps <span className="text-destructive">*</span>
+                  </FormLabel>
+                  <FormControl>
+                    <Textarea
+                      {...field}
+                      placeholder="e.g., Send quote for injectors, Follow up on pricing, Schedule site visit"
+                      data-testid="input-next-steps"
+                      rows={2}
+                    />
+                  </FormControl>
+                  <FormDescription>
+                    Define follow-up actions required
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="miscNotes"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Miscellaneous Notes</FormLabel>
+                  <FormControl>
+                    <Textarea
+                      {...field}
+                      placeholder="Additional context that doesn't fit elsewhere"
+                      data-testid="input-misc-notes"
+                      rows={3}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </CardContent>
+        </Card>
+
+        <div className="flex gap-3">
+          <Button
+            type="submit"
+            size="lg"
+            className="flex-1"
+            disabled={isSubmitting}
+            data-testid="button-submit-visit"
+          >
+            {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            Submit Visit
+          </Button>
+        </div>
+      </form>
+    </Form>
   );
 }
