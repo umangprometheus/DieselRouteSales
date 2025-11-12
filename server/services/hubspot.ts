@@ -23,6 +23,7 @@ export async function fetchHubSpotCompanies(ownerId?: string) {
     "zip",
     "country",
     "hubspot_owner_id",
+    "lifecyclestage",
     "hs_lastmodifieddate",
   ];
 

@@ -49,6 +49,7 @@ export async function syncCompanies(ownerId?: string): Promise<number> {
         postalCode: props.zip || null,
         country: props.country || null,
         ownerId: props.hubspot_owner_id || null,
+        lifecycleStage: props.lifecyclestage || null,
         lat,
         lng,
       });

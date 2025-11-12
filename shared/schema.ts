@@ -45,6 +45,7 @@ export const companies = pgTable("companies", {
   postalCode: varchar("postal_code", { length: 20 }),
   country: varchar("country", { length: 100 }),
   ownerId: varchar("owner_id", { length: 100 }),
+  lifecycleStage: varchar("lifecycle_stage", { length: 100 }),
   lat: real("lat"),
   lng: real("lng"),
   lastSyncedAt: timestamp("last_synced_at").notNull().defaultNow(),
