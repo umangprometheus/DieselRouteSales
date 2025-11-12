@@ -34,9 +34,13 @@ Preferred communication style: Simple, everyday language.
 - Body scroll locking during route editing to prevent viewport movement
 - Touch-optimized with 800-foot proximity threshold for check-ins
 - Outdoor-readable typography (minimum 16px body text)
-- Toast notifications auto-dismiss after 4 seconds to prevent content obstruction
+- Toast notifications auto-dismiss after 1 second to prevent content obstruction
 - History page uses accordion pattern for route selection (collapsible route entries)
 - Summary page displays two key metrics: Total Stops Completed and Total Distance
+- Application header displays "MSP" branding (not "Plan Route")
+- Company cards in list view are fully clickable for selection (not just checkbox area)
+- Clear Selection button only appears on map view, not in list view sticky header
+- Distance displayed in US units: miles for >0.5mi, feet for <0.5mi
 
 ### Backend Architecture
 

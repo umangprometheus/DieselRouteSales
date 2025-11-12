@@ -40,15 +40,14 @@ export default function CompanyList({
             className={`p-4 hover-elevate transition-all cursor-pointer ${
               isSelected ? "ring-2 ring-primary" : ""
             }`}
-            onClick={() => onCompanyClick?.(company.id)}
+            onClick={() => onToggle(company.id)}
             data-testid={`card-company-${company.id}`}
           >
             <div className="flex items-start gap-3">
               <Checkbox
                 checked={isSelected}
                 onCheckedChange={() => onToggle(company.id)}
-                onClick={(e) => e.stopPropagation()}
-                className="mt-1"
+                className="mt-1 pointer-events-none"
                 data-testid={`checkbox-company-${company.id}`}
               />
               
