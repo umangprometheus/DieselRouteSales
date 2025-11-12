@@ -406,7 +406,7 @@ export default function PlanPage() {
       {/* Main Content */}
       <div className="flex-1 flex flex-col md:flex-row overflow-hidden">
         {/* Mobile Tab Controls - Always visible on mobile */}
-        <div className="md:hidden sticky top-0 left-0 right-0 z-30 p-4 pb-0 bg-background">
+        <div className="md:hidden sticky top-0 left-0 right-0 z-30 p-4 pb-4 bg-background">
           <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "map" | "list")} className="w-full">
             <TabsList className="grid w-full grid-cols-2 bg-muted/50 min-h-[48px] p-1">
               <TabsTrigger 
