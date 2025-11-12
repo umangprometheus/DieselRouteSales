@@ -386,7 +386,7 @@ export default function PlanPage() {
     <div className="fixed inset-0 flex flex-col bg-background overflow-hidden">
       {/* Header */}
       <header className="pt-safe px-4 flex items-center justify-between border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 min-h-[56px] flex-shrink-0">
-        <h1 className="text-lg font-semibold text-foreground">Plan Route</h1>
+        <h1 className="text-lg font-semibold text-foreground">MSP</h1>
         <Button 
           variant="ghost" 
           size="sm" 
