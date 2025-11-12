@@ -197,7 +197,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
           .map((c) => ({ ...c, distanceMi: 0 })) as CompanyWithDistance[];
       }
 
-      res.json({ companies: companiesWithDistance });
+      // Deduplicate companies by name - prefer the one with a customer number
+      const deduplicatedMap = new Map<string, CompanyWithDistance>();
+      for (const company of companiesWithDistance) {
+        const key = company.name.toLowerCase().trim();
+        const existing = deduplicatedMap.get(key);
+        
+        // Keep the company if:
+        // 1. No existing company with this name yet
+        // 2. This one has a customer number and the existing doesn't
+        // 3. Both have customer numbers but this one has a higher ID (more recent)
+        if (!existing || 
+            (company.customerNumber && !existing.customerNumber) ||
+            (company.customerNumber && existing.customerNumber && company.id > existing.id)) {
+          deduplicatedMap.set(key, company);
+        }
+      }
+      
+      // Convert back to array and sort by distance
+      const dedupedCompanies = Array.from(deduplicatedMap.values())
+        .sort((a, b) => a.distanceMi - b.distanceMi);
+
+      res.json({ companies: dedupedCompanies });
     } catch (error) {
       console.error("Error fetching companies:", error);
       res.status(500).json({ error: { code: "SERVER_ERROR", message: "Failed to fetch companies" } });
