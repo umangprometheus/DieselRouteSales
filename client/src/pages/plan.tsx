@@ -500,7 +500,7 @@ export default function PlanPage() {
             })()}
 
             {/* Floating Controls - Mobile */}
-            <div className="md:hidden absolute top-4 left-4 right-4 z-10">
+            <div className="md:hidden sticky top-0 left-0 right-0 z-30 p-4 pb-0">
             <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "map" | "list")} className="w-full">
               <TabsList className="grid w-full grid-cols-2 bg-background/90 backdrop-blur min-h-[48px]">
                 <TabsTrigger value="map" data-testid="tab-map" className="min-h-[44px] text-base">
@@ -550,7 +550,7 @@ export default function PlanPage() {
           <div className="p-4 space-y-6">
             {/* Start Route Button - Top of List View */}
             {selectedCompanyIds.length >= 2 && (
-              <div className="sticky top-0 z-20 -mx-4 -mt-4 px-4 pt-4 pb-3 bg-background/95 backdrop-blur border-b">
+              <div className="md:sticky md:top-0 sticky top-[72px] z-20 -mx-4 -mt-4 px-4 pt-4 pb-3 bg-background/95 backdrop-blur border-b">
                 {/* Build Route Button */}
                 <Button
                   onClick={handleBuildRoute}
