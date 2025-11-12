@@ -251,7 +251,7 @@ export default function MapView({
         layout: {
           'text-field': ['get', 'name'],
           'text-font': ['DIN Offc Pro Medium', 'Arial Unicode MS Bold'],
-          'text-size': 14,
+          'text-size': 16,
           'text-offset': [0, 1.5], // Position below the marker
           'text-anchor': 'top',
           'text-allow-overlap': false, // Prevent cluttering - hide overlapping labels
