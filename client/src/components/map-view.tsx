@@ -241,6 +241,30 @@ export default function MapView({
         },
       });
 
+      // Add company name labels (visible when zoomed in close enough)
+      const companyNameLayerId = 'company-name-labels';
+      map.current.addLayer({
+        id: companyNameLayerId,
+        type: 'symbol',
+        source: sourceId,
+        minzoom: 14.5, // Only show when zoomed in close
+        layout: {
+          'text-field': ['get', 'name'],
+          'text-font': ['DIN Offc Pro Medium', 'Arial Unicode MS Bold'],
+          'text-size': 14,
+          'text-offset': [0, 1.5], // Position below the marker
+          'text-anchor': 'top',
+          'text-allow-overlap': false, // Prevent cluttering - hide overlapping labels
+          'text-optional': true, // Allow labels to be hidden if they don't fit
+        },
+        paint: {
+          'text-color': '#ffffff',
+          'text-halo-color': '#000000',
+          'text-halo-width': 2,
+          'text-halo-blur': 1,
+        },
+      });
+
       // Add symbol layer for route numbers (only if route exists)
       if (routeCoordinates) {
         map.current.addLayer({
