@@ -233,9 +233,7 @@ export default function MapView({
             '#22c55e', // green color for selected companies
             ['==', ['get', 'lifecycleStage'], 'customer'],
             '#3b82f6', // blue for customers
-            ['==', ['get', 'lifecycleStage'], 'lead'],
-            '#ef4444', // red for leads
-            '#f97316', // orange for others/unknown
+            '#ef4444', // red for leads and others
           ],
           'circle-stroke-width': 2, // Thinner stroke for smaller dots
           'circle-stroke-color': '#ffffff',

@@ -60,9 +60,7 @@ export default function CompanyList({
                       className={`w-2 h-2 rounded-full flex-shrink-0 ${
                         company.lifecycleStage === 'customer' 
                           ? 'bg-blue-500' 
-                          : company.lifecycleStage === 'lead' 
-                          ? 'bg-red-500' 
-                          : 'bg-orange-500'
+                          : 'bg-red-500'
                       }`}
                       title={company.lifecycleStage || 'Unknown'}
                     />
