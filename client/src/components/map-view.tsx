@@ -462,20 +462,19 @@ export default function MapView({
       <div ref={mapContainer} className="absolute inset-0" />
       
       {/* Map Legend */}
-      <div className="absolute top-4 left-4 bg-background/95 backdrop-blur-sm border rounded-lg p-3 shadow-lg z-10">
-        <h4 className="text-xs font-semibold mb-2 text-foreground">Map Legend</h4>
-        <div className="space-y-1.5">
+      <div className="absolute top-3 left-3 bg-background/95 backdrop-blur-sm border rounded-md shadow-sm z-10 p-2">
+        <div className="space-y-1">
           <div className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded-full bg-blue-500 border border-white"></div>
-            <span className="text-xs text-muted-foreground">Customer</span>
+            <div className="w-3 h-3 rounded-full bg-[#3b82f6] border-2 border-white shadow-sm"></div>
+            <span className="text-xs font-medium">Customer</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded-full bg-red-500 border border-white"></div>
-            <span className="text-xs text-muted-foreground">Lead / Other</span>
+            <div className="w-3 h-3 rounded-full bg-[#ef4444] border-2 border-white shadow-sm"></div>
+            <span className="text-xs font-medium">Lead</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded-full bg-green-500 border border-white"></div>
-            <span className="text-xs text-muted-foreground">Selected</span>
+            <div className="w-3 h-3 rounded-full bg-[#22c55e] border-2 border-white shadow-sm"></div>
+            <span className="text-xs font-medium">Selected</span>
           </div>
         </div>
       </div>
