@@ -875,5 +875,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   const httpServer = createServer(app);
+  
+  // Configure timeouts for long audio processing (10 minutes)
+  httpServer.requestTimeout = 600000; // 10 minutes
+  httpServer.timeout = 600000; // socket inactivity timeout
+  httpServer.headersTimeout = 610000; // slightly higher than requestTimeout
+  
   return httpServer;
 }

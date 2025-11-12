@@ -33,6 +33,19 @@ export function VoiceRecorder({ onTranscriptionComplete, disabled = false, onPro
     };
   }, []);
 
+  // Warn user before leaving page during active recording
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (isRecording) {
+        e.preventDefault();
+        e.returnValue = ''; // Required for Chrome
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [isRecording]);
+
   const startRecording = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -194,6 +207,11 @@ export function VoiceRecorder({ onTranscriptionComplete, disabled = false, onPro
                   <div className="h-3 w-3 rounded-full bg-red-600 animate-pulse" />
                   Recording: {formatTime(recordingTime)}
                 </div>
+                {recordingTime >= 180 && (
+                  <div className="text-sm text-amber-600 dark:text-amber-400 font-medium" data-testid="text-long-recording-warning">
+                    ⚠️ Long recording ({Math.floor(recordingTime / 60)} min) - remember to stop when done
+                  </div>
+                )}
                 <Button
                   size="lg"
                   variant="destructive"
