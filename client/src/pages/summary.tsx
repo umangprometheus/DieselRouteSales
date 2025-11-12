@@ -98,17 +98,17 @@ export default function SummaryPage() {
 
         {/* Stats Grid */}
         {isLoading ? (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {[1, 2, 3].map((i) => (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {[1, 2].map((i) => (
               <Skeleton key={i} className="h-24 w-full" />
             ))}
           </div>
         ) : summary ? (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Card>
               <CardHeader className="pb-3">
                 <CardTitle className="text-sm font-medium text-muted-foreground">
-                  Visits Completed
+                  Total Stops Completed
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -127,19 +127,6 @@ export default function SummaryPage() {
               <CardContent>
                 <p className="text-3xl font-bold text-foreground" data-testid="text-total-distance">
                   {summary.totalDistanceMi} mi
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-medium text-muted-foreground">
-                  Synced to HubSpot
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-3xl font-bold text-success" data-testid="text-synced-count">
-                  {summary.checkIns.filter((c) => c.hubspotNoteId).length}
                 </p>
               </CardContent>
             </Card>
@@ -207,10 +194,6 @@ export default function SummaryPage() {
                           <MapPin className="w-3 h-3" />
                           <span>{checkIn.lat.toFixed(6)}, {checkIn.lng.toFixed(6)}</span>
                         </div>
-
-                        {checkIn.hubspotNoteId && (
-                          <p className="text-xs text-success mt-2">✓ Synced to HubSpot</p>
-                        )}
                       </div>
                     </div>
                   </div>
