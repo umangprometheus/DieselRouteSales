@@ -34,6 +34,9 @@ Preferred communication style: Simple, everyday language.
 - Body scroll locking during route editing to prevent viewport movement
 - Touch-optimized with 800-foot proximity threshold for check-ins
 - Outdoor-readable typography (minimum 16px body text)
+- Toast notifications auto-dismiss after 4 seconds to prevent content obstruction
+- History page uses accordion pattern for route selection (collapsible route entries)
+- Summary page displays two key metrics: Total Stops Completed and Total Distance
 
 ### Backend Architecture
 
