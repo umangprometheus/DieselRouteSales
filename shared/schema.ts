@@ -257,6 +257,7 @@ export const companyWithDistanceSchema = z.object({
   postalCode: z.string().nullable(),
   country: z.string().nullable(),
   ownerId: z.string().nullable(),
+  lifecycleStage: z.string().nullable(),
   lat: z.number().nullable(),
   lng: z.number().nullable(),
   distanceMi: z.number(),

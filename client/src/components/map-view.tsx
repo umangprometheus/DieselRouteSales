@@ -196,6 +196,7 @@ export default function MapView({
           routeIndex: routeCoordinates ? index : null,
           isCurrentStop: routeCoordinates && index === currentStopIndex,
           isSelected: selectedCompanyIds.includes(company.id),
+          lifecycleStage: company.lifecycleStage || '',
         },
       }));
 
@@ -230,7 +231,11 @@ export default function MapView({
             'case',
             ['get', 'isSelected'],
             '#22c55e', // green color for selected companies
-            '#1c4ed8', // primary blue color for all other dots
+            ['==', ['get', 'lifecycleStage'], 'customer'],
+            '#3b82f6', // blue for customers
+            ['==', ['get', 'lifecycleStage'], 'lead'],
+            '#ef4444', // red for leads
+            '#f97316', // orange for others/unknown
           ],
           'circle-stroke-width': 2, // Thinner stroke for smaller dots
           'circle-stroke-color': '#ffffff',

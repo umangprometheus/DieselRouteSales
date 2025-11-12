@@ -54,9 +54,22 @@ export default function CompanyList({
               
               <div className="flex-1 min-w-0">
                 <div className="flex items-start justify-between gap-2 mb-1">
-                  <h3 className="text-base font-semibold text-foreground truncate">
-                    {company.name}
-                  </h3>
+                  <div className="flex items-center gap-2 flex-1 min-w-0">
+                    {/* Lifecycle stage indicator dot */}
+                    <div 
+                      className={`w-2 h-2 rounded-full flex-shrink-0 ${
+                        company.lifecycleStage === 'customer' 
+                          ? 'bg-blue-500' 
+                          : company.lifecycleStage === 'lead' 
+                          ? 'bg-red-500' 
+                          : 'bg-orange-500'
+                      }`}
+                      title={company.lifecycleStage || 'Unknown'}
+                    />
+                    <h3 className="text-base font-semibold text-foreground truncate">
+                      {company.name}
+                    </h3>
+                  </div>
                   <Badge 
                     variant="secondary" 
                     className="bg-success/10 text-success hover:bg-success/20 flex-shrink-0"

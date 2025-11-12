@@ -64,6 +64,7 @@ export default function PlanPage() {
   const [showEndpointConfirmation, setShowEndpointConfirmation] = useState(false);
   const [pendingRouteForEndpoint, setPendingRouteForEndpoint] = useState<BuildRouteResponse | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [lifecycleFilter, setLifecycleFilter] = useState<"all" | "customer" | "lead">("all");
   const isDesktop = useMediaQuery('(min-width: 768px)');
 
   const { data, isLoading, refetch } = useCompanies({
@@ -79,8 +80,10 @@ export default function PlanPage() {
 
   const companies = data?.companies || [];
   
-  // No need for local filtering - API handles search
-  const filteredCompanies = companies;
+  // Filter by lifecycle stage locally (search is handled by API)
+  const filteredCompanies = lifecycleFilter === "all" 
+    ? companies 
+    : companies.filter(c => c.lifecycleStage === lifecycleFilter);
 
   // Try to get GPS location on mount
   useEffect(() => {
@@ -604,7 +607,7 @@ export default function PlanPage() {
               </div>
 
               {/* Search Input */}
-              <div className="relative mb-4">
+              <div className="relative mb-3">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                 <Input
                   type="text"
@@ -623,6 +626,39 @@ export default function PlanPage() {
                     <X className="w-4 h-4" />
                   </button>
                 )}
+              </div>
+
+              {/* Lifecycle Stage Filter */}
+              <div className="flex gap-2 mb-4">
+                <Button
+                  variant={lifecycleFilter === "all" ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setLifecycleFilter("all")}
+                  className="flex-1"
+                  data-testid="button-filter-all"
+                >
+                  All
+                </Button>
+                <Button
+                  variant={lifecycleFilter === "customer" ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setLifecycleFilter("customer")}
+                  className="flex-1"
+                  data-testid="button-filter-customer"
+                >
+                  <div className="w-2 h-2 rounded-full bg-blue-500 mr-2" />
+                  Customers
+                </Button>
+                <Button
+                  variant={lifecycleFilter === "lead" ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setLifecycleFilter("lead")}
+                  className="flex-1"
+                  data-testid="button-filter-lead"
+                >
+                  <div className="w-2 h-2 rounded-full bg-red-500 mr-2" />
+                  Leads
+                </Button>
               </div>
 
               {isLoading ? (
