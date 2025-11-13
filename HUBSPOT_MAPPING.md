@@ -10,6 +10,14 @@
 
 This document outlines the complete HubSpot CRM integration for the MSP Route Management Application, detailing all data fields, object types, and synchronization mechanisms. The integration leverages HubSpot's Custom Objects to create a comprehensive field visit tracking system that captures competitive intelligence, customer insights, and sales activity in real-time.
 
+### ⚠️ Current Environment Status
+
+**Development/Testing Phase:**
+- Currently integrated with **HubSpot Developer Account** for testing and development
+- Custom Object ID `2-175854274` is specific to the developer portal
+- API keys and credentials will be migrated to MSP's production HubSpot portal before launch
+- All field mappings and data structures are production-ready and will remain unchanged during migration
+
 ---
 
 ## 1. HubSpot Objects Used
@@ -224,23 +232,63 @@ Linked to Company Record (0-2)
 
 ---
 
-## 9. Data Retention & Privacy
+## 9. Production Migration Plan
 
-### 9.1 Data Storage
+### 9.1 Transition from Developer Account to Production
+
+**Current State:**
+- Application is configured with HubSpot Developer Account credentials
+- Custom Object ID: `2-175854274` (developer portal specific)
+- Testing and development complete with production-ready code
+
+**Migration Steps:**
+
+1. **HubSpot Production Portal Setup**
+   - Create identical Custom Object in MSP's production HubSpot portal
+   - Note the NEW Custom Object ID (will differ from `2-175854274`)
+   - Create all 16 custom properties with exact same internal names
+   - Configure Company association (Association Type ID will be account-specific)
+
+2. **Update Application Configuration**
+   - Replace `HUBSPOT_API_KEY` environment variable with production API key
+   - Update Custom Object ID in `server/services/hubspot.ts` (line 102)
+   - Query and update Association Type ID if different from `73`
+   - Test sync with a single company before full deployment
+
+3. **Validation Checklist**
+   - ✅ All custom properties created with correct internal names
+   - ✅ Association to Companies object configured
+   - ✅ API key has correct permissions (Companies read, Custom Objects write)
+   - ✅ Test check-in successfully creates and associates with company
+   - ✅ All 13 data fields appear correctly in HubSpot
+
+4. **Data Migration (Optional)**
+   - Developer account check-ins can be exported and imported to production if needed
+   - Company data will sync automatically from production HubSpot portal
+
+**Estimated Migration Time:** 2-4 hours (including testing)
+
+**Zero Downtime:** Migration can be completed without interrupting sales rep access
+
+---
+
+## 10. Data Retention & Privacy
+
+### 10.1 Data Storage
 - **Application Database:** All check-in data stored in PostgreSQL on Google Cloud Platform
 - **HubSpot CRM:** Permanent record in Field Visit Check-Ins custom object
 - **Retention Policy:** Follows MSP's existing HubSpot data retention settings
 
-### 9.2 Sensitive Data Handling
+### 10.2 Sensitive Data Handling
 - **Competitor Pricing:** Stored in encrypted database fields
 - **Voice Recordings:** Audio files NOT stored permanently (transcripts only)
 - **GPS Coordinates:** Used for proximity detection, stored for audit trail
 
 ---
 
-## 10. Technical Support & Troubleshooting
+## 11. Technical Support & Troubleshooting
 
-### 10.1 Common Sync Issues
+### 11.1 Common Sync Issues
 
 **Issue:** Check-ins not appearing in HubSpot  
 **Solution:** Verify custom object properties exist with exact property names  
@@ -251,14 +299,15 @@ Linked to Company Record (0-2)
 **Issue:** Demo companies causing errors  
 **Solution:** Application automatically skips companies with ID prefix `demo-`  
 
-### 10.2 Support Contacts
+### 11.2 Support Contacts
 - **HubSpot Configuration:** MSP HubSpot Administrator
 - **Application Technical Issues:** Prometheus Agency Support
 - **API Rate Limits:** HubSpot standard limits apply (150 requests/10 seconds)
+- **Production Migration Support:** Prometheus Agency (estimated 2-4 hours)
 
 ---
 
-## 11. Success Metrics (Per Requirements)
+## 12. Success Metrics (Per Requirements)
 
 | Metric | Target | Measurement Method |
 |--------|--------|-------------------|
