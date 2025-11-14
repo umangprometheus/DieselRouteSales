@@ -255,14 +255,14 @@ export class DbStorage implements IStorage {
   }
 
   async createSavedRoute(userId: string, templateName: string, route: Partial<InsertRoute>): Promise<Route> {
-    // Create the saved route
+    // Create the saved route - ensure integer fields are properly rounded
     const [savedRoute] = await db
       .insert(schema.routes)
       .values({
         userId,
         stops: route.stops || [],
-        totalDistanceMi: route.totalDistanceMi || 0,
-        totalEtaMin: route.totalEtaMin || 0,
+        totalDistanceMi: Math.round(route.totalDistanceMi || 0),
+        totalEtaMin: Math.round(route.totalEtaMin || 0),
         currentStopIndex: 0,
         status: "template",
         routeGeometry: route.routeGeometry,
