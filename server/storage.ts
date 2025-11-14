@@ -395,13 +395,25 @@ export class DbStorage implements IStorage {
   }
 
   async createRouteStop(insertStop: InsertRouteStop): Promise<RouteStop> {
-    const [stop] = await db.insert(schema.routeStops).values(insertStop).returning();
+    // Round numeric values to integers before insertion
+    const roundedStop = {
+      ...insertStop,
+      distanceFromPrevMi: Math.round(insertStop.distanceFromPrevMi || 0),
+      etaFromPrevMin: Math.round(insertStop.etaFromPrevMin || 0),
+    };
+    const [stop] = await db.insert(schema.routeStops).values(roundedStop).returning();
     return stop;
   }
 
   async createRouteStops(stops: InsertRouteStop[]): Promise<RouteStop[]> {
     if (stops.length === 0) return [];
-    const results = await db.insert(schema.routeStops).values(stops).returning();
+    // Round numeric values to integers before insertion
+    const roundedStops = stops.map(stop => ({
+      ...stop,
+      distanceFromPrevMi: Math.round(stop.distanceFromPrevMi || 0),
+      etaFromPrevMin: Math.round(stop.etaFromPrevMin || 0),
+    }));
+    const results = await db.insert(schema.routeStops).values(roundedStops).returning();
     return results;
   }
 
