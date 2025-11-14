@@ -1,10 +1,15 @@
 import { useState } from "react";
 import { useLocation } from "wouter";
 import { useSavedRoutes, useBuildFromSaved, useDeleteSavedRoute, useUpdateSavedRoute } from "@/lib/api";
-import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -26,7 +31,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { MapPin, Route, Trash2, Edit, Loader2, Map, Calendar } from "lucide-react";
+import { MapPin, Route, Trash2, Edit, Loader2, Map, Calendar, Navigation } from "lucide-react";
 
 export default function SavedPage() {
   const [, navigate] = useLocation();
@@ -36,22 +41,28 @@ export default function SavedPage() {
   const [showRenameDialog, setShowRenameDialog] = useState(false);
   const [newName, setNewName] = useState("");
 
-  const { data, isLoading } = useSavedRoutes();
+  // Fetch saved routes with stops included
+  const { data, isLoading } = useSavedRoutes(true);
   const buildFromSavedMutation = useBuildFromSaved();
   const deleteRouteMutation = useDeleteSavedRoute();
   const updateRouteMutation = useUpdateSavedRoute();
 
   const savedRoutes = data?.routes || [];
 
-  const handleBuildRoute = async (routeId: string) => {
+  const handleBuildRoute = async (routeId: string, routeName: string) => {
     try {
       const result = await buildFromSavedMutation.mutateAsync(routeId);
+      // Store the active route in localStorage
       localStorage.setItem("activeRoute", JSON.stringify(result));
       toast({
         title: "Route activated!",
-        description: "Your saved route is now active. Let's go!",
+        description: `"${routeName}" is now your active route.`,
+        duration: 1000,
       });
-      navigate("/route");
+      // Navigate to the route page
+      setTimeout(() => {
+        navigate("/route");
+      }, 100);
     } catch (error: any) {
       toast({
         variant: "destructive",
@@ -69,6 +80,7 @@ export default function SavedPage() {
       toast({
         title: "Route deleted",
         description: `"${selectedRoute.templateName}" has been removed.`,
+        duration: 1000,
       });
       setShowDeleteDialog(false);
       setSelectedRoute(null);
@@ -92,6 +104,7 @@ export default function SavedPage() {
       toast({
         title: "Route renamed",
         description: `Route renamed to "${newName.trim()}".`,
+        duration: 1000,
       });
       setShowRenameDialog(false);
       setSelectedRoute(null);
@@ -135,17 +148,9 @@ export default function SavedPage() {
       {/* Content */}
       <div className="flex-1 overflow-y-auto px-4 py-4">
         {isLoading ? (
-          <div className="grid gap-4">
+          <div className="space-y-4">
             {[1, 2, 3].map((i) => (
-              <Card key={i}>
-                <CardContent className="p-4">
-                  <Skeleton className="h-6 w-3/4 mb-2" />
-                  <Skeleton className="h-4 w-1/2" />
-                </CardContent>
-                <CardFooter className="p-4 pt-0">
-                  <Skeleton className="h-9 w-full" />
-                </CardFooter>
-              </Card>
+              <Skeleton key={i} className="h-20 w-full" />
             ))}
           </div>
         ) : savedRoutes.length === 0 ? (
@@ -163,12 +168,16 @@ export default function SavedPage() {
             </Button>
           </div>
         ) : (
-          <div className="grid gap-4">
+          <Accordion type="single" collapsible className="space-y-2">
             {savedRoutes.map((route) => (
-              <Card key={route.id} className="overflow-hidden">
-                <CardContent className="p-4">
-                  <div className="flex items-start justify-between mb-3">
-                    <div className="flex-1 min-w-0">
+              <AccordionItem 
+                key={route.id} 
+                value={route.id}
+                className="border rounded-lg overflow-hidden"
+              >
+                <AccordionTrigger className="hover:no-underline px-4 py-3">
+                  <div className="flex items-start justify-between w-full mr-2">
+                    <div className="flex-1 min-w-0 text-left">
                       <h3 className="font-medium text-base mb-1 truncate">
                         {route.templateName}
                       </h3>
@@ -178,75 +187,110 @@ export default function SavedPage() {
                           {route.stopCount || 0} stops
                         </span>
                         <span className="flex items-center gap-1">
-                          <Route className="h-3 w-3" />
+                          <Navigation className="h-3 w-3" />
                           {formatDistance(route.totalDistanceMi || 0)}
                         </span>
+                        <Badge variant="secondary" className="ml-auto">
+                          <Calendar className="h-3 w-3 mr-1" />
+                          {formatDate(route.createdAt)}
+                        </Badge>
                       </div>
                     </div>
-                    <Badge variant="secondary" className="ml-2">
-                      <Calendar className="h-3 w-3 mr-1" />
-                      {formatDate(route.createdAt)}
-                    </Badge>
                   </div>
-
+                </AccordionTrigger>
+                
+                <AccordionContent className="px-4 pb-4">
+                  {/* Custom Endpoint */}
                   {route.customEndpoint && 
                    typeof route.customEndpoint === 'object' && 
-                   'label' in route.customEndpoint && 
-                   typeof (route.customEndpoint as any).label === 'string' && (
-                    <div className="text-xs text-muted-foreground bg-muted/50 rounded px-2 py-1 mt-2">
+                   'label' in route.customEndpoint && (
+                    <div className="text-xs text-muted-foreground bg-muted/50 rounded px-2 py-1 mb-3">
                       Ends at: {String((route.customEndpoint as any).label)}
                     </div>
                   )}
-                </CardContent>
 
-                <CardFooter className="p-4 pt-0 flex gap-2">
-                  <Button
-                    onClick={() => handleBuildRoute(route.id)}
-                    className="flex-1"
-                    disabled={buildFromSavedMutation.isPending}
-                    data-testid={`button-build-route-${route.id}`}
-                  >
-                    {buildFromSavedMutation.isPending ? (
-                      <>
-                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                        Building...
-                      </>
-                    ) : (
-                      <>
-                        <Route className="h-4 w-4 mr-2" />
-                        Use Route
-                      </>
-                    )}
-                  </Button>
-                  
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={() => {
-                      setSelectedRoute(route);
-                      setNewName(route.templateName || "");
-                      setShowRenameDialog(true);
-                    }}
-                    data-testid={`button-edit-${route.id}`}
-                  >
-                    <Edit className="h-4 w-4" />
-                  </Button>
-                  
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={() => {
-                      setSelectedRoute(route);
-                      setShowDeleteDialog(true);
-                    }}
-                    data-testid={`button-delete-${route.id}`}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </CardFooter>
-              </Card>
+                  {/* Stops List */}
+                  {route.stops && route.stops.length > 0 && (
+                    <div className="space-y-2 mb-4">
+                      <div className="text-sm font-medium mb-2">Route Stops:</div>
+                      {route.stops?.map((stop, index) => (
+                        <div 
+                          key={stop.id} 
+                          className="flex items-start gap-3 text-sm p-2 rounded-lg bg-muted/30"
+                        >
+                          <div className="flex-shrink-0 w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-semibold">
+                            {index + 1}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="font-medium truncate">{stop.companyName}</div>
+                            {(stop.address || stop.city || stop.state) && (
+                              <div className="text-xs text-muted-foreground truncate">
+                                {[stop.address, stop.city, stop.state]
+                                  .filter(item => item != null)
+                                  .join(", ")}
+                              </div>
+                            )}
+                          </div>
+                          {route.stops && index < route.stops.length - 1 && (
+                            <div className="text-xs text-muted-foreground whitespace-nowrap">
+                              {stop.etaFromPrevMin} min
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Action Buttons */}
+                  <div className="flex gap-2">
+                    <Button
+                      onClick={() => handleBuildRoute(route.id, route.templateName)}
+                      className="flex-1"
+                      disabled={buildFromSavedMutation.isPending}
+                      data-testid={`button-build-route-${route.id}`}
+                    >
+                      {buildFromSavedMutation.isPending ? (
+                        <>
+                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                          Building...
+                        </>
+                      ) : (
+                        <>
+                          <Route className="h-4 w-4 mr-2" />
+                          Use Route
+                        </>
+                      )}
+                    </Button>
+                    
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => {
+                        setSelectedRoute(route);
+                        setNewName(route.templateName || "");
+                        setShowRenameDialog(true);
+                      }}
+                      data-testid={`button-rename-route-${route.id}`}
+                    >
+                      <Edit className="h-4 w-4" />
+                    </Button>
+                    
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => {
+                        setSelectedRoute(route);
+                        setShowDeleteDialog(true);
+                      }}
+                      data-testid={`button-delete-route-${route.id}`}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
             ))}
-          </div>
+          </Accordion>
         )}
       </div>
 
@@ -261,23 +305,19 @@ export default function SavedPage() {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel onClick={() => setSelectedRoute(null)}>
+            <AlertDialogCancel 
+              onClick={() => {
+                setShowDeleteDialog(false);
+                setSelectedRoute(null);
+              }}
+            >
               Cancel
             </AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDelete}
-              disabled={deleteRouteMutation.isPending}
-              className="bg-destructive text-destructive-foreground"
-              data-testid="button-confirm-delete"
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              {deleteRouteMutation.isPending ? (
-                <>
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Deleting...
-                </>
-              ) : (
-                "Delete"
-              )}
+              Delete
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -294,9 +334,9 @@ export default function SavedPage() {
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="grid gap-2">
-              <Label htmlFor="new-route-name">Route Name</Label>
+              <Label htmlFor="route-name">Route Name</Label>
               <Input
-                id="new-route-name"
+                id="route-name"
                 value={newName}
                 onChange={(e) => setNewName(e.target.value)}
                 onKeyDown={(e) => {
@@ -304,8 +344,8 @@ export default function SavedPage() {
                     handleRename();
                   }
                 }}
-                placeholder="Enter new name"
-                data-testid="input-new-route-name"
+                placeholder="e.g., Monday Memphis Route"
+                data-testid="input-route-name"
               />
             </div>
           </div>
@@ -317,25 +357,21 @@ export default function SavedPage() {
                 setSelectedRoute(null);
                 setNewName("");
               }}
-              data-testid="button-cancel-rename"
             >
               Cancel
             </Button>
             <Button
               onClick={handleRename}
               disabled={!newName.trim() || updateRouteMutation.isPending}
-              data-testid="button-confirm-rename"
+              data-testid="button-save-name"
             >
               {updateRouteMutation.isPending ? (
                 <>
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Renaming...
+                  Saving...
                 </>
               ) : (
-                <>
-                  <Edit className="h-4 w-4 mr-2" />
-                  Rename
-                </>
+                "Save"
               )}
             </Button>
           </DialogFooter>

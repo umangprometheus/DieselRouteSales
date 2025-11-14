@@ -678,20 +678,48 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/routes/saved", requireAuth, async (req, res) => {
     try {
       const userId = (req as any).session.userId;
+      const includeStops = req.query.includeStops === 'true';
       const savedRoutes = await storage.getSavedRoutes(userId);
       
-      // Get stop counts for each saved route
-      const routesWithStopCounts = await Promise.all(
+      // Get stop data for each saved route
+      const routesWithStops = await Promise.all(
         savedRoutes.map(async (route) => {
           const stops = await storage.getRouteStops(route.id);
+          
+          if (includeStops && stops.length > 0) {
+            // Fetch company details for each stop
+            const stopsWithCompanies = await Promise.all(
+              stops.map(async (stop) => {
+                const company = await storage.getCompany(stop.companyId);
+                return {
+                  id: stop.id,
+                  companyId: stop.companyId,
+                  companyName: company?.name || "Unknown Company",
+                  address: company?.street || null,
+                  city: company?.city || null,
+                  state: company?.state || null,
+                  stopIndex: stop.stopIndex,
+                  distanceFromPrevMi: stop.distanceFromPrevMi,
+                  etaFromPrevMin: stop.etaFromPrevMin
+                };
+              })
+            );
+            
+            return {
+              ...route,
+              stopCount: stops.length,
+              stops: stopsWithCompanies
+            };
+          }
+          
           return {
             ...route,
-            stopCount: stops.length,
+            stopCount: stops.length
           };
         })
       );
       
-      res.json({ routes: routesWithStopCounts });
+      res.json({ routes: routesWithStops });
     } catch (error) {
       console.error("Error fetching saved routes:", error);
       res.status(500).json({ error: { code: "SERVER_ERROR", message: "Failed to fetch saved routes" } });

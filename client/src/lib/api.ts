@@ -100,11 +100,27 @@ export function useBuildRoute() {
 // Saved Routes API
 // ============================================================================
 
-export function useSavedRoutes() {
-  return useQuery<{ routes: (Route & { stopCount: number })[] }>({
-    queryKey: ["/api/routes/saved"],
+export function useSavedRoutes(includeStops: boolean = false) {
+  return useQuery<{ routes: (Route & { 
+    stopCount: number; 
+    stops?: Array<{
+      id: string;
+      companyId: string;
+      companyName: string;
+      address?: string | null;
+      city?: string | null;
+      state?: string | null;
+      stopIndex: number;
+      distanceFromPrevMi: number;
+      etaFromPrevMin: number;
+    }>
+  })[] }>({
+    queryKey: ["/api/routes/saved", includeStops],
     queryFn: async () => {
-      const response = await fetch("/api/routes/saved");
+      const url = includeStops 
+        ? "/api/routes/saved?includeStops=true"
+        : "/api/routes/saved";
+      const response = await fetch(url);
       if (!response.ok) throw new Error("Failed to fetch saved routes");
       return response.json();
     },
