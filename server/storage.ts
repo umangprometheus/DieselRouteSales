@@ -346,6 +346,18 @@ export class DbStorage implements IStorage {
     // Get the route stops from the saved route
     const savedStops = await this.getRouteStops(savedRouteId);
 
+    // Deactivate any existing active routes for this user
+    await db
+      .update(schema.routes)
+      .set({ status: "cancelled" })
+      .where(
+        and(
+          eq(schema.routes.userId, userId),
+          eq(schema.routes.status, "active"),
+          eq(schema.routes.isTemplate, false)
+        )
+      );
+
     // Create a new active route based on the saved route
     const [newRoute] = await db
       .insert(schema.routes)
