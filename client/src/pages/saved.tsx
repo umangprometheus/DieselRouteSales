@@ -52,17 +52,30 @@ export default function SavedPage() {
   const handleBuildRoute = async (routeId: string, routeName: string) => {
     try {
       const result = await buildFromSavedMutation.mutateAsync(routeId);
+      
+      // Convert the response to the format expected by the route page
+      const routeData = {
+        routeId: result.id,
+        stops: result.stops || [],
+        totalDistMi: result.totalDistanceMi,
+        totalEtaMin: result.totalEtaMin,
+        navUrl: `https://www.google.com/maps/dir/?api=1&waypoints=${(result.stops || []).map((s: any) => `${s.lat},${s.lng}`).join('|')}&travelmode=driving`,
+        routeGeometry: result.routeGeometry || (result.stops || []).map((s: any) => ({ lat: s.lat, lng: s.lng })),
+      };
+      
       // Store the active route in localStorage
-      localStorage.setItem("activeRoute", JSON.stringify(result));
+      localStorage.setItem("activeRoute", JSON.stringify(routeData));
+      
       toast({
         title: "Route activated!",
         description: `"${routeName}" is now your active route.`,
         duration: 1000,
       });
-      // Navigate to the route page
+      
+      // Navigate to the route page after a brief delay to ensure localStorage is saved
       setTimeout(() => {
         navigate("/route");
-      }, 100);
+      }, 200);
     } catch (error: any) {
       toast({
         variant: "destructive",
