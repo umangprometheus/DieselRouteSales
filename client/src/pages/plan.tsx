@@ -634,64 +634,71 @@ export default function PlanPage() {
 
         {/* Controls Panel - Desktop or Mobile Sheet */}
         <div className={`${activeTab === "list" || isDesktop ? "block" : "hidden"} md:block ${filteredCompanies.length > 0 ? 'md:w-96' : 'md:flex-1'} bg-background border-l overflow-y-auto`}>
-          <div className="p-4 space-y-6">
-            {/* Start Route Button - Top of List View */}
-            <div className="sticky top-0 z-20 -mx-4 -mt-4 px-4 pt-4 pb-3 bg-background/95 backdrop-blur border-b">
-              <Button
-                onClick={handleBuildRoute}
-                className="w-full h-14 text-base font-semibold shadow-lg"
-                disabled={selectedCompanyIds.length < 2 || buildRouteMutation.isPending}
-                data-testid="button-start-route-top"
-              >
-                {buildRouteMutation.isPending ? (
-                  <>
-                    <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                    Building Route...
-                  </>
-                ) : selectedCompanyIds.length === 0 ? (
-                  <>
-                    <Route className="w-5 h-5 mr-2" />
-                    Select Companies to Start
-                  </>
-                ) : selectedCompanyIds.length === 1 ? (
-                  <>
-                    <Route className="w-5 h-5 mr-2" />
-                    Select 1 More Company
-                  </>
-                ) : (
-                  <>
-                    <Route className="w-5 h-5 mr-2" />
-                    Start Route ({selectedCompanyIds.length} stops)
-                  </>
-                )}
-              </Button>
+          <div className="p-3 space-y-3">
+            {/* Compact Action Bar - Top of List View */}
+            <div className="sticky top-0 z-20 -mx-3 -mt-3 px-3 py-2 bg-background/95 backdrop-blur border-b">
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex-1 text-sm">
+                  {selectedCompanyIds.length === 0 ? (
+                    <span className="text-muted-foreground">Select companies to build route</span>
+                  ) : selectedCompanyIds.length === 1 ? (
+                    <span className="font-medium">1 company • Select 1 more</span>
+                  ) : (
+                    <span className="font-medium">{selectedCompanyIds.length} companies selected</span>
+                  )}
+                </div>
+                <Button
+                  onClick={handleBuildRoute}
+                  size="sm"
+                  className="h-9"
+                  disabled={selectedCompanyIds.length < 2 || buildRouteMutation.isPending}
+                  data-testid="button-start-route-top"
+                >
+                  {buildRouteMutation.isPending ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+                      Building...
+                    </>
+                  ) : (
+                    <>
+                      <Route className="w-4 h-4 mr-1" />
+                      Start Route
+                    </>
+                  )}
+                </Button>
+              </div>
             </div>
 
-            {/* Location Search */}
-            <Card className="p-4">
-              <h3 className="text-sm font-semibold text-foreground mb-3">Starting Location</h3>
-              <LocationSearch onLocationSelect={(lat, lng) => setUserLocation({ lat, lng })} />
-            </Card>
-
-            {/* Radius Picker */}
-            <Card className="p-4">
-              <RadiusPicker value={radiusMi} onChange={setRadiusMi} />
-            </Card>
+            {/* Compact Filter Section */}
+            <div className="bg-muted/40 rounded-md p-3 space-y-3">
+              {/* Location */}
+              <div>
+                <label className="text-xs font-medium text-muted-foreground">Starting Location</label>
+                <LocationSearch onLocationSelect={(lat, lng) => setUserLocation({ lat, lng })} />
+              </div>
+              
+              {/* Radius */}
+              <div>
+                <label className="text-xs font-medium text-muted-foreground">Search Radius</label>
+                <RadiusPicker value={radiusMi} onChange={setRadiusMi} />
+              </div>
+            </div>
 
             {/* Company List */}
             <div>
-              <div className="flex items-center justify-between mb-3">
-                <h3 className="text-sm font-semibold text-foreground">
+              <div className="flex items-center justify-between mb-2">
+                <h3 className="text-sm font-medium text-foreground">
                   {isLoading ? (
                     <Skeleton className="h-4 w-32" />
                   ) : (
-                    `Nearby Companies (${companies.length})`
+                    <>Companies ({filteredCompanies.length})</>
                   )}
                 </h3>
                 {selectedCompanyIds.length > 0 && (
                   <Button
                     variant="ghost"
                     size="sm"
+                    className="h-7 px-2 text-xs"
                     onClick={() => {
                       setSelectedCompanyIds([]);
                       setClickedCompanyId(null);
@@ -703,59 +710,62 @@ export default function PlanPage() {
                 )}
               </div>
 
-              {/* Search Input */}
-              <div className="relative mb-3">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                <Input
-                  type="text"
-                  placeholder="Search companies..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-9 pr-9"
-                  data-testid="input-search-companies"
-                />
-                {searchQuery && (
-                  <button
-                    onClick={() => setSearchQuery("")}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-                    data-testid="button-clear-search"
-                  >
-                    <X className="w-4 h-4" />
-                  </button>
-                )}
-              </div>
+              {/* Compact Search and Filters Row */}
+              <div className="space-y-2 mb-3">
+                {/* Search Input */}
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                  <Input
+                    type="text"
+                    placeholder="Search companies..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-9 pr-9 h-9"
+                    data-testid="input-search-companies"
+                  />
+                  {searchQuery && (
+                    <button
+                      onClick={() => setSearchQuery("")}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                      data-testid="button-clear-search"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  )}
+                </div>
 
-              {/* Lifecycle Stage Filter */}
-              <div className="flex gap-2 mb-4">
-                <Button
-                  variant={lifecycleFilter === "all" ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setLifecycleFilter("all")}
-                  className="flex-1"
-                  data-testid="button-filter-all"
-                >
-                  All
-                </Button>
-                <Button
-                  variant={lifecycleFilter === "customer" ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setLifecycleFilter("customer")}
-                  className="flex-1"
-                  data-testid="button-filter-customer"
-                >
-                  <div className="w-2 h-2 rounded-full bg-blue-500 mr-2" />
-                  Customers
-                </Button>
-                <Button
-                  variant={lifecycleFilter === "lead" ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setLifecycleFilter("lead")}
-                  className="flex-1"
-                  data-testid="button-filter-lead"
-                >
-                  <div className="w-2 h-2 rounded-full bg-red-500 mr-2" />
-                  Leads
-                </Button>
+                {/* Lifecycle Stage Filter */}
+                <div className="flex gap-1">
+                  <Button
+                    variant={lifecycleFilter === "all" ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setLifecycleFilter("all")}
+                    className="flex-1 h-8"
+                    data-testid="button-filter-all"
+                  >
+                    All
+                  </Button>
+                  <Button
+                    variant={lifecycleFilter === "customer" ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setLifecycleFilter("customer")}
+                    className="flex-1 h-8"
+                    data-testid="button-filter-customer"
+                  >
+                    <div className="w-2 h-2 rounded-full bg-blue-500 mr-1" />
+                    <span className="text-xs">Customers</span>
+                  </Button>
+                  <Button
+                    variant={lifecycleFilter === "lead" ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setLifecycleFilter("lead")}
+                    className="flex-1 h-8"
+                    data-testid="button-filter-lead"
+                  >
+                    <div className="w-2 h-2 rounded-full bg-red-500 mr-1" />
+                    <span className="text-xs">Leads</span>
+                  </Button>
+                </div>
               </div>
 
               {isLoading ? (
