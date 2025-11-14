@@ -16,6 +16,7 @@ import {
 } from "./services/geo";
 import { syncCompanies } from "./services/sync";
 import type { 
+  Company,
   CompanyWithDistance,
   BuildRouteRequest, 
   CheckInRequest,
@@ -157,10 +158,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(401).json({ error: { code: "UNAUTHORIZED", message: "User not found" } });
       }
 
-      // Get companies filtered by owner if user has a hubspotOwnerId
-      let companies = user.hubspotOwnerId
-        ? await storage.getCompaniesByOwner(user.hubspotOwnerId)
-        : await storage.getAllCompanies();
+      // Get companies with tiered visibility:
+      // - If user has hubspotOwnerId: show assigned companies + unassigned companies (NULL owner_id)
+      // - If no hubspotOwnerId: show all companies
+      let companies: Company[];
+      if (user.hubspotOwnerId) {
+        // Get all companies, then filter to include user's companies + unassigned
+        const allCompanies = await storage.getAllCompanies();
+        companies = allCompanies.filter(
+          (c) => c.ownerId === user.hubspotOwnerId || c.ownerId === null
+        );
+      } else {
+        companies = await storage.getAllCompanies();
+      }
 
       // Filter by search term
       if (search) {
@@ -1006,6 +1016,48 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Summary error:", error);
       res.status(500).json({ error: { code: "SERVER_ERROR", message: "Failed to fetch summary" } });
+    }
+  });
+
+  // ============================================================================
+  // Admin Routes - Owner management (temporary until proper UI is built)
+  // ============================================================================
+
+  // Get HubSpot owners for user mapping
+  app.get("/api/admin/hubspot-owners", requireAuth, async (req, res) => {
+    try {
+      const { fetchHubSpotOwners } = await import("./services/hubspot");
+      const owners = await fetchHubSpotOwners();
+      res.json({ owners });
+    } catch (error: any) {
+      console.error("Error fetching HubSpot owners:", error);
+      res.status(500).json({ 
+        error: { code: "SERVER_ERROR", message: "Failed to fetch HubSpot owners" } 
+      });
+    }
+  });
+
+  // Update user's HubSpot owner ID
+  app.post("/api/admin/set-owner", requireAuth, async (req, res) => {
+    try {
+      const { ownerId } = req.body;
+      const userId = (req as any).session.userId;
+      
+      const updatedUser = await storage.updateUser(userId, { hubspotOwnerId: ownerId });
+      
+      res.json({ 
+        success: true, 
+        user: {
+          id: updatedUser.id,
+          username: updatedUser.username,
+          hubspotOwnerId: updatedUser.hubspotOwnerId,
+        }
+      });
+    } catch (error: any) {
+      console.error("Error updating owner ID:", error);
+      res.status(500).json({ 
+        error: { code: "SERVER_ERROR", message: "Failed to update owner ID" } 
+      });
     }
   });
 

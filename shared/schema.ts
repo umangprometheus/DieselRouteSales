@@ -33,6 +33,24 @@ export type InsertUser = z.infer<typeof insertUserSchema>;
 export type LoginCredentials = z.infer<typeof loginSchema>;
 
 // ============================================================================
+// HubSpot Owners Table - Cached HubSpot owner metadata for user mapping
+// ============================================================================
+export const hubspotOwners = pgTable("hubspot_owners", {
+  id: varchar("id", { length: 100 }).primaryKey(),
+  email: varchar("email", { length: 255 }).notNull(),
+  firstName: varchar("first_name", { length: 100 }),
+  lastName: varchar("last_name", { length: 100 }),
+  lastSyncedAt: timestamp("last_synced_at").notNull().defaultNow(),
+});
+
+export const insertHubSpotOwnerSchema = createInsertSchema(hubspotOwners).omit({
+  lastSyncedAt: true,
+});
+
+export type HubSpotOwner = typeof hubspotOwners.$inferSelect;
+export type InsertHubSpotOwner = z.infer<typeof insertHubSpotOwnerSchema>;
+
+// ============================================================================
 // Companies Table - Cached HubSpot companies with geocoded locations
 // ============================================================================
 export const companies = pgTable("companies", {
