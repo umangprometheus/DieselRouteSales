@@ -775,42 +775,6 @@ export default function PlanPage() {
                 />
               )}
             </div>
-
-            {/* Build Route Buttons */}
-            {selectedCompanyIds.length > 0 && (
-              <div className="sticky bottom-0 pt-4 pb-2 bg-background space-y-2">
-                {/* Custom Endpoint Button */}
-                <Button
-                  onClick={() => setShowEndpointDrawer(true)}
-                  variant="outline"
-                  className="w-full h-12 text-base"
-                  data-testid="button-custom-endpoint"
-                >
-                  <MapPin className="w-4 h-4 mr-2" />
-                  {customEndpoint ? `Ends at: ${customEndpoint.label}` : "Set Custom Endpoint"}
-                </Button>
-                
-                {/* Build Route Button */}
-                <Button
-                  onClick={handleBuildRoute}
-                  className="w-full h-12 text-base font-semibold"
-                  disabled={selectedCompanyIds.length === 0 || buildRouteMutation.isPending}
-                  data-testid="button-build-route"
-                >
-                  {buildRouteMutation.isPending ? (
-                    <>
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      Building Route...
-                    </>
-                  ) : (
-                    <>
-                      <Route className="w-4 h-4 mr-2" />
-                      Build Route ({selectedCompanyIds.length} stops)
-                    </>
-                  )}
-                </Button>
-              </div>
-            )}
           </div>
         </div>
       </div>
