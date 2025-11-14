@@ -406,6 +406,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         status: "active", // Mark as active so GET /api/route/active can find it
         routeGeometry: optimizedRoute.routeGeometry as any, // Save full driving route path
         customEndpoint: optimizedRoute.customEndpoint as any, // Save custom endpoint location
+        isTemplate: false, // This is an active route, not a template
       });
       
       // Create route_stops records for better analytics
@@ -666,6 +667,112 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error deleting route:", error);
       res.status(500).json({ error: { code: "SERVER_ERROR", message: "Failed to delete route" } });
+    }
+  });
+
+  // ============================================================================
+  // Saved Routes Endpoints
+  // ============================================================================
+
+  // Get all saved routes for the user
+  app.get("/api/routes/saved", requireAuth, async (req, res) => {
+    try {
+      const userId = (req as any).session.userId;
+      const savedRoutes = await storage.getSavedRoutes(userId);
+      
+      // Get stop counts for each saved route
+      const routesWithStopCounts = await Promise.all(
+        savedRoutes.map(async (route) => {
+          const stops = await storage.getRouteStops(route.id);
+          return {
+            ...route,
+            stopCount: stops.length,
+          };
+        })
+      );
+      
+      res.json({ routes: routesWithStopCounts });
+    } catch (error) {
+      console.error("Error fetching saved routes:", error);
+      res.status(500).json({ error: { code: "SERVER_ERROR", message: "Failed to fetch saved routes" } });
+    }
+  });
+
+  // Save a new route template
+  app.post("/api/routes/saved", requireAuth, async (req, res) => {
+    try {
+      const { createSavedRouteSchema } = await import("@shared/schema");
+      const userId = (req as any).session.userId;
+      
+      // Validate request body
+      const validatedData = createSavedRouteSchema.parse(req.body);
+      
+      const savedRoute = await storage.createSavedRoute(userId, validatedData.templateName, validatedData.routeData);
+      res.json(savedRoute);
+    } catch (error) {
+      console.error("Error saving route:", error);
+      res.status(500).json({ error: { code: "SERVER_ERROR", message: "Failed to save route" } });
+    }
+  });
+
+  // Update a saved route (rename)
+  app.patch("/api/routes/saved/:id", requireAuth, async (req, res) => {
+    try {
+      const { updateSavedRouteSchema } = await import("@shared/schema");
+      const userId = (req as any).session.userId;
+      const { id } = req.params;
+      
+      // Validate request body
+      const validatedData = updateSavedRouteSchema.parse(req.body);
+      
+      const updatedRoute = await storage.updateSavedRoute(userId, id, { templateName: validatedData.templateName });
+      res.json(updatedRoute);
+    } catch (error) {
+      console.error("Error updating saved route:", error);
+      if ((error as any).message === "Saved route not found or access denied") {
+        res.status(404).json({ error: { code: "NOT_FOUND", message: "Saved route not found or access denied" } });
+      } else {
+        res.status(500).json({ error: { code: "SERVER_ERROR", message: "Failed to update saved route" } });
+      }
+    }
+  });
+
+  // Delete a saved route
+  app.delete("/api/routes/saved/:id", requireAuth, async (req, res) => {
+    try {
+      const userId = (req as any).session.userId;
+      const { id } = req.params;
+      
+      await storage.deleteSavedRoute(userId, id);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error deleting saved route:", error);
+      res.status(500).json({ error: { code: "SERVER_ERROR", message: "Failed to delete saved route" } });
+    }
+  });
+
+  // Build a new active route from a saved route
+  app.post("/api/routes/saved/:id/build", requireAuth, async (req, res) => {
+    try {
+      const userId = (req as any).session.userId;
+      const { id } = req.params;
+      
+      const newRoute = await storage.buildRouteFromSaved(userId, id);
+      
+      // Get the stops for the new route
+      const stops = await storage.getRouteStops(newRoute.id);
+      
+      res.json({
+        ...newRoute,
+        stops
+      });
+    } catch (error) {
+      console.error("Error building route from saved:", error);
+      if ((error as any).message === "Saved route not found or access denied") {
+        res.status(404).json({ error: { code: "NOT_FOUND", message: "Saved route not found or access denied" } });
+      } else {
+        res.status(500).json({ error: { code: "SERVER_ERROR", message: "Failed to build route from saved" } });
+      }
     }
   });
 

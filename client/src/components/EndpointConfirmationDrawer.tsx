@@ -1,7 +1,7 @@
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerDescription, DrawerFooter } from "@/components/ui/drawer";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { MapPin, Navigation2, Check } from "lucide-react";
+import { MapPin, Navigation2, Check, Save } from "lucide-react";
 import type { RouteStopApi } from "@shared/schema";
 
 interface EndpointConfirmationDrawerProps {
@@ -10,6 +10,7 @@ interface EndpointConfirmationDrawerProps {
   lastStop: RouteStopApi | null;
   onConfirmLastStop: () => void;
   onChooseDifferent: () => void;
+  onSaveForFuture?: () => void;
 }
 
 export function EndpointConfirmationDrawer({
@@ -18,6 +19,7 @@ export function EndpointConfirmationDrawer({
   lastStop,
   onConfirmLastStop,
   onChooseDifferent,
+  onSaveForFuture,
 }: EndpointConfirmationDrawerProps) {
   if (!lastStop) return null;
 
@@ -79,6 +81,17 @@ export function EndpointConfirmationDrawer({
             <Navigation2 className="h-4 w-4 mr-2" />
             Choose different location
           </Button>
+          {onSaveForFuture && (
+            <Button
+              variant="secondary"
+              onClick={onSaveForFuture}
+              className="w-full"
+              data-testid="button-save-for-future"
+            >
+              <Save className="h-4 w-4 mr-2" />
+              Save for Future Use
+            </Button>
+          )}
         </DrawerFooter>
       </DrawerContent>
     </Drawer>

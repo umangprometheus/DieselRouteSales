@@ -142,6 +142,8 @@ export const routes = pgTable("routes", {
   status: varchar("status", { length: 20 }).notNull().default("planning"),
   routeGeometry: jsonb("route_geometry"), // Full driving route path from Mapbox
   customEndpoint: jsonb("custom_endpoint"), // Custom endpoint location { label, lat, lng }
+  isTemplate: boolean("is_template").notNull().default(false), // Whether this is a saved route template
+  templateName: varchar("template_name", { length: 255 }), // Custom name for saved routes
   createdAt: timestamp("created_at").notNull().defaultNow(),
   completedAt: timestamp("completed_at"),
 });
@@ -150,10 +152,38 @@ export const insertRouteSchema = createInsertSchema(routes).omit({
   id: true,
   createdAt: true,
   completedAt: true,
+}).extend({
+  isTemplate: z.boolean().default(false),
+  templateName: z.string().nullable().optional(),
 });
 
 export type Route = typeof routes.$inferSelect;
 export type InsertRoute = z.infer<typeof insertRouteSchema>;
+
+// Schema for saved route creation
+export const createSavedRouteSchema = z.object({
+  templateName: z.string().min(1, "Template name is required"),
+  routeData: z.object({
+    stops: z.array(z.any()),
+    totalDistanceMi: z.number(),
+    totalEtaMin: z.number(),
+    routeGeometry: z.any().optional(),
+    customEndpoint: z.object({
+      label: z.string(),
+      lat: z.number(),
+      lng: z.number(),
+    }).optional(),
+  }),
+});
+
+export type CreateSavedRouteRequest = z.infer<typeof createSavedRouteSchema>;
+
+// Schema for saved route update
+export const updateSavedRouteSchema = z.object({
+  templateName: z.string().min(1, "Template name is required"),
+});
+
+export type UpdateSavedRouteRequest = z.infer<typeof updateSavedRouteSchema>;
 
 // ============================================================================
 // Route Stops Table - Individual stops for better reporting & analytics

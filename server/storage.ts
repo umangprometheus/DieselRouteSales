@@ -43,6 +43,13 @@ export interface IStorage {
   updateRoute(id: string, updates: Partial<Route>): Promise<Route>;
   deleteRoute(id: string): Promise<void>;
 
+  // Saved routes methods
+  getSavedRoutes(userId: string): Promise<Route[]>;
+  createSavedRoute(userId: string, templateName: string, route: Partial<InsertRoute>): Promise<Route>;
+  updateSavedRoute(userId: string, routeId: string, updates: { templateName?: string }): Promise<Route>;
+  deleteSavedRoute(userId: string, routeId: string): Promise<void>;
+  buildRouteFromSaved(userId: string, savedRouteId: string): Promise<Route>;
+
   getRouteStops(routeId: string): Promise<RouteStop[]>;
   createRouteStop(stop: InsertRouteStop): Promise<RouteStop>;
   createRouteStops(stops: InsertRouteStop[]): Promise<RouteStop[]>;
@@ -231,6 +238,152 @@ export class DbStorage implements IStorage {
 
   async deleteRoute(id: string): Promise<void> {
     await db.delete(schema.routes).where(eq(schema.routes.id, id));
+  }
+
+  // Saved routes methods implementation
+  async getSavedRoutes(userId: string): Promise<Route[]> {
+    return await db
+      .select()
+      .from(schema.routes)
+      .where(
+        and(
+          eq(schema.routes.userId, userId),
+          eq(schema.routes.isTemplate, true)
+        )
+      )
+      .orderBy(desc(schema.routes.createdAt));
+  }
+
+  async createSavedRoute(userId: string, templateName: string, route: Partial<InsertRoute>): Promise<Route> {
+    // Create the saved route
+    const [savedRoute] = await db
+      .insert(schema.routes)
+      .values({
+        userId,
+        stops: route.stops || [],
+        totalDistanceMi: route.totalDistanceMi || 0,
+        totalEtaMin: route.totalEtaMin || 0,
+        currentStopIndex: 0,
+        status: "template",
+        routeGeometry: route.routeGeometry,
+        customEndpoint: route.customEndpoint,
+        isTemplate: true,
+        templateName,
+      })
+      .returning();
+    
+    // Also save the stops to the route_stops table
+    if (route.stops && Array.isArray(route.stops)) {
+      const stops = route.stops as any[];
+      if (stops.length > 0) {
+        const routeStops = stops.map((stop, index) => ({
+          routeId: savedRoute.id,
+          companyId: stop.companyId,
+          stopIndex: index,
+          name: stop.name,
+          customerNumber: stop.customerNumber,
+          lat: stop.lat,
+          lng: stop.lng,
+          street: stop.street,
+          city: stop.city,
+          state: stop.state,
+          postalCode: stop.postalCode,
+          distanceFromPrevMi: stop.distanceFromPrevMi,
+          etaFromPrevMin: stop.etaFromPrevMin,
+          completed: false,
+        }));
+        await this.createRouteStops(routeStops);
+      }
+    }
+    
+    return savedRoute;
+  }
+
+  async updateSavedRoute(userId: string, routeId: string, updates: { templateName?: string }): Promise<Route> {
+    const [route] = await db
+      .update(schema.routes)
+      .set(updates)
+      .where(
+        and(
+          eq(schema.routes.id, routeId),
+          eq(schema.routes.userId, userId),
+          eq(schema.routes.isTemplate, true)
+        )
+      )
+      .returning();
+
+    if (!route) throw new Error("Saved route not found or access denied");
+    return route;
+  }
+
+  async deleteSavedRoute(userId: string, routeId: string): Promise<void> {
+    const result = await db
+      .delete(schema.routes)
+      .where(
+        and(
+          eq(schema.routes.id, routeId),
+          eq(schema.routes.userId, userId),
+          eq(schema.routes.isTemplate, true)
+        )
+      );
+  }
+
+  async buildRouteFromSaved(userId: string, savedRouteId: string): Promise<Route> {
+    // Get the saved route
+    const [savedRoute] = await db
+      .select()
+      .from(schema.routes)
+      .where(
+        and(
+          eq(schema.routes.id, savedRouteId),
+          eq(schema.routes.userId, userId),
+          eq(schema.routes.isTemplate, true)
+        )
+      );
+
+    if (!savedRoute) throw new Error("Saved route not found or access denied");
+
+    // Get the route stops from the saved route
+    const savedStops = await this.getRouteStops(savedRouteId);
+
+    // Create a new active route based on the saved route
+    const [newRoute] = await db
+      .insert(schema.routes)
+      .values({
+        userId,
+        stops: savedRoute.stops,
+        totalDistanceMi: savedRoute.totalDistanceMi,
+        totalEtaMin: savedRoute.totalEtaMin,
+        currentStopIndex: 0,
+        status: "active",
+        routeGeometry: savedRoute.routeGeometry,
+        customEndpoint: savedRoute.customEndpoint,
+        isTemplate: false,
+      })
+      .returning();
+
+    // Copy the stops to the new route
+    if (savedStops.length > 0) {
+      const newStops = savedStops.map(stop => ({
+        routeId: newRoute.id,
+        companyId: stop.companyId,
+        stopIndex: stop.stopIndex,
+        name: stop.name,
+        customerNumber: stop.customerNumber,
+        lat: stop.lat,
+        lng: stop.lng,
+        street: stop.street,
+        city: stop.city,
+        state: stop.state,
+        postalCode: stop.postalCode,
+        distanceFromPrevMi: stop.distanceFromPrevMi,
+        etaFromPrevMin: stop.etaFromPrevMin,
+        completed: false,
+      }));
+      await this.createRouteStops(newStops);
+    }
+
+    return newRoute;
   }
 
   async getRouteStops(routeId: string): Promise<RouteStop[]> {

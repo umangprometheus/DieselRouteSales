@@ -10,6 +10,7 @@ import PlanPage from "@/pages/plan";
 import RoutePage from "@/pages/route";
 import SummaryPage from "@/pages/summary";
 import HistoryPage from "@/pages/history";
+import SavedPage from "@/pages/saved";
 import CheckInSubmitPage from "@/pages/check-in-submit";
 import NotFound from "@/pages/not-found";
 
@@ -45,6 +46,9 @@ function Router() {
       </Route>
       <Route path="/history">
         {isAuthenticated ? <HistoryPage /> : <Redirect to="/login" />}
+      </Route>
+      <Route path="/saved">
+        {isAuthenticated ? <SavedPage /> : <Redirect to="/login" />}
       </Route>
       <Route path="/check-in/submit">
         {isAuthenticated ? <CheckInSubmitPage /> : <Redirect to="/login" />}

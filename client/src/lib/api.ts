@@ -6,7 +6,10 @@ import type {
   BuildRouteResponse,
   CheckInRequest,
   CheckInResponse,
-  SummaryResponse 
+  SummaryResponse,
+  CreateSavedRouteRequest,
+  UpdateSavedRouteRequest,
+  Route
 } from "@shared/schema";
 
 // ============================================================================
@@ -89,6 +92,70 @@ export function useBuildRoute() {
       
       console.log('[API] Route response:', result);
       return result;
+    },
+  });
+}
+
+// ============================================================================
+// Saved Routes API
+// ============================================================================
+
+export function useSavedRoutes() {
+  return useQuery<{ routes: (Route & { stopCount: number })[] }>({
+    queryKey: ["/api/routes/saved"],
+    queryFn: async () => {
+      const response = await fetch("/api/routes/saved");
+      if (!response.ok) throw new Error("Failed to fetch saved routes");
+      return response.json();
+    },
+  });
+}
+
+export function useSaveRoute() {
+  return useMutation<Route, Error, CreateSavedRouteRequest>({
+    mutationFn: async (data) => {
+      const res = await apiRequest("POST", "/api/routes/saved", data);
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/routes/saved"] });
+    },
+  });
+}
+
+export function useUpdateSavedRoute() {
+  return useMutation<Route, Error, { id: string; templateName: string }>({
+    mutationFn: async ({ id, templateName }) => {
+      const res = await apiRequest("PATCH", `/api/routes/saved/${id}`, { templateName });
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/routes/saved"] });
+    },
+  });
+}
+
+export function useDeleteSavedRoute() {
+  return useMutation<{ success: boolean }, Error, string>({
+    mutationFn: async (id) => {
+      const res = await apiRequest("DELETE", `/api/routes/saved/${id}`, {});
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/routes/saved"] });
+    },
+  });
+}
+
+export function useBuildFromSaved() {
+  return useMutation<Route & { stops: any[] }, Error, string>({
+    mutationFn: async (id) => {
+      const res = await apiRequest("POST", `/api/routes/saved/${id}/build`, {});
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/route"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/routes"] });
     },
   });
 }

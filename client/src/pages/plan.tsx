@@ -22,11 +22,20 @@ import LocationSearch from "@/components/location-search";
 import { RouteReorderView } from "@/components/RouteReorderView";
 import { EndpointSearchDrawer } from "@/components/EndpointSearchDrawer";
 import { EndpointConfirmationDrawer } from "@/components/EndpointConfirmationDrawer";
-import { useCompanies, useSyncCompanies, useBuildRoute } from "@/lib/api";
+import { useCompanies, useSyncCompanies, useBuildRoute, useSaveRoute } from "@/lib/api";
 import { useToast } from "@/hooks/use-toast";
-import { MapIcon, List, Route, Loader2, RefreshCw, MapPin, X, Search } from "lucide-react";
+import { MapIcon, List, Route, Loader2, RefreshCw, MapPin, X, Search, Save } from "lucide-react";
 import type { BuildRouteResponse } from "@shared/schema";
 import { Input } from "@/components/ui/input";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
 import mspLogo from "@assets/msp_logo_1762965721886.png";
 
 function useMediaQuery(query: string) {
@@ -67,6 +76,8 @@ export default function PlanPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [lifecycleFilter, setLifecycleFilter] = useState<"all" | "customer" | "lead">("all");
   const isDesktop = useMediaQuery('(min-width: 768px)');
+  const [showSaveDialog, setShowSaveDialog] = useState(false);
+  const [saveRouteName, setSaveRouteName] = useState("");
 
   const { data, isLoading, refetch } = useCompanies({
     lat: userLocation?.lat,
@@ -78,6 +89,7 @@ export default function PlanPage() {
 
   const syncMutation = useSyncCompanies();
   const buildRouteMutation = useBuildRoute();
+  const saveRouteMutation = useSaveRoute();
 
   const companies = data?.companies || [];
   
@@ -238,6 +250,51 @@ export default function PlanPage() {
   const handleChooseDifferentEndpoint = () => {
     setShowEndpointConfirmation(false);
     setShowEndpointDrawer(true);
+  };
+
+  // Handler for saving route for future use
+  const handleSaveForFuture = () => {
+    setShowEndpointConfirmation(false);
+    setShowSaveDialog(true);
+    setSaveRouteName("");
+  };
+
+  // Handler for confirming save route
+  const handleConfirmSaveRoute = async () => {
+    if (!pendingRouteForEndpoint || !saveRouteName.trim()) return;
+
+    try {
+      await saveRouteMutation.mutateAsync({
+        templateName: saveRouteName.trim(),
+        routeData: {
+          stops: pendingRouteForEndpoint.stops as any,
+          totalDistanceMi: pendingRouteForEndpoint.totalDistMi,
+          totalEtaMin: pendingRouteForEndpoint.totalEtaMin,
+          routeGeometry: pendingRouteForEndpoint.routeGeometry,
+          customEndpoint: pendingRouteForEndpoint.customEndpoint,
+        },
+      });
+
+      setShowSaveDialog(false);
+      setPendingRoute(null);
+      setPendingRouteForEndpoint(null);
+      setSaveRouteName("");
+      
+      toast({
+        title: "Route saved!",
+        description: `"${saveRouteName}" has been saved for future use.`,
+      });
+      
+      // Clear selection to go back to planning
+      setSelectedCompanyIds([]);
+      setCustomEndpoint(null);
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Failed to save route",
+        description: error?.message || "Unable to save route for future use.",
+      });
+    }
   };
 
   // Handler for adding more stops
@@ -793,6 +850,7 @@ export default function PlanPage() {
         lastStop={pendingRouteForEndpoint?.stops?.[pendingRouteForEndpoint.stops.length - 1] || null}
         onConfirmLastStop={handleConfirmLastStop}
         onChooseDifferent={handleChooseDifferentEndpoint}
+        onSaveForFuture={handleSaveForFuture}
       />
 
       {/* Endpoint Search Drawer */}
@@ -804,6 +862,61 @@ export default function PlanPage() {
         currentEndpoint={customEndpoint}
         userLocation={userLocation}
       />
+
+      {/* Save Route Dialog */}
+      <Dialog open={showSaveDialog} onOpenChange={setShowSaveDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Save Route for Future Use</DialogTitle>
+            <DialogDescription>
+              Give this route a name so you can quickly use it again in the future.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid gap-2">
+              <Label htmlFor="route-name">Route Name</Label>
+              <Input
+                id="route-name"
+                placeholder="e.g., Monday Memphis Route"
+                value={saveRouteName}
+                onChange={(e) => setSaveRouteName(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && saveRouteName.trim()) {
+                    handleConfirmSaveRoute();
+                  }
+                }}
+                data-testid="input-route-name"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button 
+              variant="outline" 
+              onClick={() => setShowSaveDialog(false)}
+              data-testid="button-cancel-save"
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleConfirmSaveRoute}
+              disabled={!saveRouteName.trim() || saveRouteMutation.isPending}
+              data-testid="button-confirm-save"
+            >
+              {saveRouteMutation.isPending ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Saving...
+                </>
+              ) : (
+                <>
+                  <Save className="w-4 h-4 mr-2" />
+                  Save Route
+                </>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
