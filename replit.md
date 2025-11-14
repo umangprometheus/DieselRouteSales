@@ -87,16 +87,25 @@ Preferred communication style: Simple, everyday language.
 - 7-day session expiration
 
 **HubSpot Owner Mapping (Multi-User Scalability)**:
-- **Current Implementation**: Each user has `hubspotOwnerId` field mapping to HubSpot CRM owner
-- **Company Visibility**: Tiered filtering shows assigned companies + unassigned companies (NULL owner_id)
-  - Users with owner ID see: their assigned companies + unassigned companies
-  - Users without owner ID see: all companies (admin/demo mode)
-- **Owner Management**: Temporary admin endpoints for self-service owner mapping
-  - `GET /api/admin/hubspot-owners`: Lists all HubSpot owners (id, email, name)
-  - `POST /api/admin/set-owner`: Allows users to set their own hubspotOwnerId only (security restricted)
+- **Current Implementation**: Admin-provisioned owner mapping model
+  - Each user has `hubspotOwnerId` field mapping to HubSpot CRM owner
+  - Admin manually assigns users to owner IDs (via SQL or admin endpoint)
+  - Users cannot self-assign or change their owner ID
+- **Company Visibility**: Tiered filtering with mandatory owner assignment
+  - Users with owner ID see: their assigned companies + unassigned companies (NULL owner_id)
+  - Users without owner ID: 403 FORBIDDEN - must contact administrator for provisioning
+  - No users can access data without admin-assigned hubspotOwnerId
+- **Owner Management**: Admin-only via SQL for security
+  - SQL command: `UPDATE users SET hubspot_owner_id = 'OWNER_ID' WHERE username = 'USERNAME';`
+  - Query HubSpot owners via `fetchHubSpotOwners()` service to find owner IDs
+  - No API endpoints exposed to prevent privilege escalation
+- **Adding New Users**:
+  1. Admin creates user account or user self-registers
+  2. Admin asks AI agent to query HubSpot owners using `fetchHubSpotOwners()` service
+  3. Admin tells AI agent to assign owner ID via SQL: `UPDATE users SET hubspot_owner_id = 'X' WHERE username = 'Y'`
+  4. User immediately sees their assigned + unassigned companies
 - **Future Enhancements** (not yet implemented):
-  - `hubspotOwners` table for cached owner metadata (schema exists, sync pending)
-  - Automatic owner sync from HubSpot CRM Owners API
+  - `hubspotOwners` table sync from HubSpot CRM Owners API
   - Role-based access control (admin vs. user permissions)
   - Admin UI for managing user-to-owner mappings
   - Multi-owner support for team managers

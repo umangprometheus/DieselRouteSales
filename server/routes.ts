@@ -158,19 +158,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(401).json({ error: { code: "UNAUTHORIZED", message: "User not found" } });
       }
 
-      // Get companies with tiered visibility:
-      // - If user has hubspotOwnerId: show assigned companies + unassigned companies (NULL owner_id)
-      // - If no hubspotOwnerId: show all companies
-      let companies: Company[];
-      if (user.hubspotOwnerId) {
-        // Get all companies, then filter to include user's companies + unassigned
-        const allCompanies = await storage.getAllCompanies();
-        companies = allCompanies.filter(
-          (c) => c.ownerId === user.hubspotOwnerId || c.ownerId === null
-        );
-      } else {
-        companies = await storage.getAllCompanies();
+      // Security: Require owner ID assignment before accessing companies
+      // Admin must provision hubspotOwnerId via SQL before user can see data
+      if (!user.hubspotOwnerId) {
+        return res.status(403).json({ 
+          error: { 
+            code: "OWNER_NOT_ASSIGNED", 
+            message: "Your account has not been assigned to a HubSpot owner. Please contact your administrator." 
+          } 
+        });
       }
+
+      // Get companies with tiered visibility:
+      // Show user's assigned companies + unassigned companies (NULL owner_id)
+      const allCompanies = await storage.getAllCompanies();
+      let companies = allCompanies.filter(
+        (c) => c.ownerId === user.hubspotOwnerId || c.ownerId === null
+      );
 
       // Filter by search term
       if (search) {
@@ -1020,80 +1024,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // ============================================================================
-  // Admin Routes - Owner management (temporary until proper UI is built)
+  // Admin Routes - Owner management
   // ============================================================================
-
-  // Get HubSpot owners for user mapping
-  app.get("/api/admin/hubspot-owners", requireAuth, async (req, res) => {
-    try {
-      const { fetchHubSpotOwners } = await import("./services/hubspot");
-      const owners = await fetchHubSpotOwners();
-      res.json({ owners });
-    } catch (error: any) {
-      console.error("Error fetching HubSpot owners:", error);
-      res.status(500).json({ 
-        error: { code: "SERVER_ERROR", message: "Failed to fetch HubSpot owners" } 
-      });
-    }
-  });
-
-  // Update user's HubSpot owner ID (restricted to own account, one-time setup)
-  app.post("/api/admin/set-owner", requireAuth, async (req, res) => {
-    try {
-      const { ownerId } = req.body;
-      const sessionUserId = (req as any).session.userId;
-      
-      // Get current user to check if owner ID is already set
-      const currentUser = await storage.getUser(sessionUserId);
-      if (!currentUser) {
-        return res.status(404).json({ 
-          error: { code: "NOT_FOUND", message: "User not found" } 
-        });
-      }
-      
-      // Security: Prevent changing owner ID after initial setup
-      // This prevents privilege escalation by impersonating other owners
-      if (currentUser.hubspotOwnerId && currentUser.hubspotOwnerId !== ownerId) {
-        return res.status(403).json({ 
-          error: { 
-            code: "FORBIDDEN", 
-            message: "Owner ID already set. Contact administrator to change." 
-          } 
-        });
-      }
-      
-      // Validate that ownerId exists in HubSpot
-      const { fetchHubSpotOwners } = await import("./services/hubspot");
-      const owners = await fetchHubSpotOwners();
-      const validOwner = owners.find((o: any) => o.id === ownerId);
-      
-      if (!validOwner) {
-        return res.status(400).json({ 
-          error: { 
-            code: "INVALID_OWNER", 
-            message: "Invalid HubSpot owner ID" 
-          } 
-        });
-      }
-      
-      // Update user with validated owner ID
-      const updatedUser = await storage.updateUser(sessionUserId, { hubspotOwnerId: ownerId });
-      
-      res.json({ 
-        success: true, 
-        user: {
-          id: updatedUser.id,
-          username: updatedUser.username,
-          hubspotOwnerId: updatedUser.hubspotOwnerId,
-        }
-      });
-    } catch (error: any) {
-      console.error("Error updating owner ID:", error);
-      res.status(500).json({ 
-        error: { code: "SERVER_ERROR", message: "Failed to update owner ID" } 
-      });
-    }
-  });
+  // Note: Owner ID assignment is admin-only via SQL for security
+  // SQL command: UPDATE users SET hubspot_owner_id = 'OWNER_ID' WHERE username = 'USERNAME';
 
   const httpServer = createServer(app);
   
