@@ -66,6 +66,7 @@ Preferred communication style: Simple, everyday language.
 
 **Data Models**:
 - Users: Username/password auth with HubSpot owner ID mapping
+- HubSpotOwners: Cached HubSpot owner metadata (id, email, name) for user mapping (schema exists, sync pending)
 - Companies: Cached HubSpot data with geocoded lat/lng coordinates
 - Routes: Active/completed routes with status tracking
 - RouteStops: Ordered waypoints with check-in status
@@ -84,6 +85,22 @@ Preferred communication style: Simple, everyday language.
 - Session secret from environment variables
 - Secure cookies in production, lax SameSite policy
 - 7-day session expiration
+
+**HubSpot Owner Mapping (Multi-User Scalability)**:
+- **Current Implementation**: Each user has `hubspotOwnerId` field mapping to HubSpot CRM owner
+- **Company Visibility**: Tiered filtering shows assigned companies + unassigned companies (NULL owner_id)
+  - Users with owner ID see: their assigned companies + unassigned companies
+  - Users without owner ID see: all companies (admin/demo mode)
+- **Owner Management**: Temporary admin endpoints for self-service owner mapping
+  - `GET /api/admin/hubspot-owners`: Lists all HubSpot owners (id, email, name)
+  - `POST /api/admin/set-owner`: Allows users to set their own hubspotOwnerId only (security restricted)
+- **Future Enhancements** (not yet implemented):
+  - `hubspotOwners` table for cached owner metadata (schema exists, sync pending)
+  - Automatic owner sync from HubSpot CRM Owners API
+  - Role-based access control (admin vs. user permissions)
+  - Admin UI for managing user-to-owner mappings
+  - Multi-owner support for team managers
+  - Delta sync for owner reassignments in HubSpot
 
 ### Route Planning & Navigation
 

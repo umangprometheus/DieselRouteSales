@@ -1037,13 +1037,47 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Update user's HubSpot owner ID
+  // Update user's HubSpot owner ID (restricted to own account, one-time setup)
   app.post("/api/admin/set-owner", requireAuth, async (req, res) => {
     try {
       const { ownerId } = req.body;
-      const userId = (req as any).session.userId;
+      const sessionUserId = (req as any).session.userId;
       
-      const updatedUser = await storage.updateUser(userId, { hubspotOwnerId: ownerId });
+      // Get current user to check if owner ID is already set
+      const currentUser = await storage.getUser(sessionUserId);
+      if (!currentUser) {
+        return res.status(404).json({ 
+          error: { code: "NOT_FOUND", message: "User not found" } 
+        });
+      }
+      
+      // Security: Prevent changing owner ID after initial setup
+      // This prevents privilege escalation by impersonating other owners
+      if (currentUser.hubspotOwnerId && currentUser.hubspotOwnerId !== ownerId) {
+        return res.status(403).json({ 
+          error: { 
+            code: "FORBIDDEN", 
+            message: "Owner ID already set. Contact administrator to change." 
+          } 
+        });
+      }
+      
+      // Validate that ownerId exists in HubSpot
+      const { fetchHubSpotOwners } = await import("./services/hubspot");
+      const owners = await fetchHubSpotOwners();
+      const validOwner = owners.find((o: any) => o.id === ownerId);
+      
+      if (!validOwner) {
+        return res.status(400).json({ 
+          error: { 
+            code: "INVALID_OWNER", 
+            message: "Invalid HubSpot owner ID" 
+          } 
+        });
+      }
+      
+      // Update user with validated owner ID
+      const updatedUser = await storage.updateUser(sessionUserId, { hubspotOwnerId: ownerId });
       
       res.json({ 
         success: true, 
