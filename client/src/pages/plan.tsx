@@ -1033,8 +1033,8 @@ export default function PlanPage() {
 
       {/* Mobile Bottom Action Bar */}
       {activeTab === "list" && !isDesktop && (
-        <div className="fixed bottom-0 left-0 right-0 z-30 md:hidden bg-background/95 backdrop-blur border-t px-4 py-3 safe-area-inset-bottom">
-          <div className="flex flex-col gap-2">
+        <div className="fixed bottom-0 left-0 right-0 z-50 md:hidden bg-background backdrop-blur-sm border-t shadow-lg px-4 pt-3 pb-[env(safe-area-inset-bottom,20px)]" style={{ paddingBottom: 'max(env(safe-area-inset-bottom, 20px), 20px)' }}>
+          <div className="flex flex-col gap-2 pb-2">
             {/* Selection Status */}
             <div className="text-center text-sm">
               {selectedCompanyIds.length === 0 ? (
