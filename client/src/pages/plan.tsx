@@ -24,7 +24,7 @@ import { EndpointSearchDrawer } from "@/components/EndpointSearchDrawer";
 import { EndpointConfirmationDrawer } from "@/components/EndpointConfirmationDrawer";
 import { useCompanies, useSyncCompanies, useBuildRoute, useSaveRoute } from "@/lib/api";
 import { useToast } from "@/hooks/use-toast";
-import { MapIcon, List, Route, Loader2, RefreshCw, MapPin, X, Search, Save } from "lucide-react";
+import { MapIcon, List, Route, Loader2, RefreshCw, MapPin, X, Search, Save, Settings2 } from "lucide-react";
 import type { BuildRouteResponse } from "@shared/schema";
 import { Input } from "@/components/ui/input";
 import {
@@ -36,6 +36,15 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+  SheetFooter,
+} from "@/components/ui/sheet";
 import mspLogo from "@assets/msp_logo_1762965721886.png";
 
 function useMediaQuery(query: string) {
@@ -78,6 +87,7 @@ export default function PlanPage() {
   const isDesktop = useMediaQuery('(min-width: 768px)');
   const [showSaveDialog, setShowSaveDialog] = useState(false);
   const [saveRouteName, setSaveRouteName] = useState("");
+  const [showFilters, setShowFilters] = useState(false);
 
   const { data, isLoading, refetch } = useCompanies({
     lat: userLocation?.lat,
@@ -633,10 +643,28 @@ export default function PlanPage() {
         )}
 
         {/* Controls Panel - Desktop or Mobile Sheet */}
-        <div className={`${activeTab === "list" || isDesktop ? "block" : "hidden"} md:block ${filteredCompanies.length > 0 ? 'md:w-96' : 'md:flex-1'} bg-background border-l overflow-y-auto`}>
-          <div className="p-3 space-y-3">
-            {/* Compact Action Bar - Top of List View */}
-            <div className="sticky top-0 z-20 -mx-3 -mt-3 px-3 py-2 bg-background/95 backdrop-blur border-b">
+        <div className={`${activeTab === "list" || isDesktop ? "block" : "hidden"} md:block ${filteredCompanies.length > 0 ? 'md:w-96' : 'md:flex-1'} bg-background border-l overflow-y-auto relative`}>
+          <div className="p-3 pb-24 md:pb-3 space-y-2">
+            {/* Mobile: Minimal top bar with filters button / Desktop: Full controls */}
+            <div className="sticky top-0 z-20 -mx-3 -mt-3 px-3 py-2 bg-background/95 backdrop-blur border-b md:hidden">
+              <div className="flex items-center justify-between gap-2">
+                <h3 className="text-sm font-medium">
+                  Companies ({filteredCompanies.length})
+                </h3>
+                <Button
+                  variant="outline"
+                  onClick={() => setShowFilters(true)}
+                  className="h-11"
+                  data-testid="button-show-filters"
+                >
+                  <Settings2 className="w-5 h-5 mr-2" />
+                  Filters
+                </Button>
+              </div>
+            </div>
+
+            {/* Desktop: Compact Action Bar */}
+            <div className="hidden md:block sticky top-0 z-20 -mx-3 -mt-3 px-3 py-2 bg-background/95 backdrop-blur border-b">
               <div className="flex items-center justify-between gap-2">
                 <div className="flex-1 text-sm">
                   {selectedCompanyIds.length === 0 ? (
@@ -652,7 +680,7 @@ export default function PlanPage() {
                   size="sm"
                   className="h-9"
                   disabled={selectedCompanyIds.length < 2 || buildRouteMutation.isPending}
-                  data-testid="button-start-route-top"
+                  data-testid="button-start-route-desktop"
                 >
                   {buildRouteMutation.isPending ? (
                     <>
@@ -669,8 +697,8 @@ export default function PlanPage() {
               </div>
             </div>
 
-            {/* Compact Filter Section */}
-            <div className="bg-muted/40 rounded-md p-3 space-y-3">
+            {/* Desktop: Filter Section (always visible) */}
+            <div className="hidden md:block bg-muted/40 rounded-md p-3 space-y-3">
               {/* Location */}
               <div>
                 <label className="text-xs font-medium text-muted-foreground">Starting Location</label>
@@ -684,9 +712,61 @@ export default function PlanPage() {
               </div>
             </div>
 
+            {/* Search Bar (Always Visible on Mobile) */}
+            <div className="relative md:hidden">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <Input
+                type="text"
+                placeholder="Search companies..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-9 pr-9 h-10"
+                data-testid="input-search-companies-mobile"
+              />
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery("")}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                  data-testid="button-clear-search-mobile"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              )}
+            </div>
+
+            {/* Lifecycle Filter Chips (Mobile) */}
+            <div className="flex gap-2 md:hidden">
+              <Button
+                variant={lifecycleFilter === "all" ? "default" : "outline"}
+                onClick={() => setLifecycleFilter("all")}
+                className="flex-1 h-11"
+                data-testid="button-filter-all-mobile"
+              >
+                All
+              </Button>
+              <Button
+                variant={lifecycleFilter === "customer" ? "default" : "outline"}
+                onClick={() => setLifecycleFilter("customer")}
+                className="flex-1 h-11"
+                data-testid="button-filter-customer-mobile"
+              >
+                <div className="w-3 h-3 rounded-full bg-blue-500 mr-2" />
+                <span>Customers</span>
+              </Button>
+              <Button
+                variant={lifecycleFilter === "lead" ? "default" : "outline"}
+                onClick={() => setLifecycleFilter("lead")}
+                className="flex-1 h-11"
+                data-testid="button-filter-lead-mobile"
+              >
+                <div className="w-3 h-3 rounded-full bg-red-500 mr-2" />
+                <span>Leads</span>
+              </Button>
+            </div>
+
             {/* Company List */}
             <div>
-              <div className="flex items-center justify-between mb-2">
+              <div className="hidden md:flex items-center justify-between mb-2">
                 <h3 className="text-sm font-medium text-foreground">
                   {isLoading ? (
                     <Skeleton className="h-4 w-32" />
@@ -710,8 +790,8 @@ export default function PlanPage() {
                 )}
               </div>
 
-              {/* Compact Search and Filters Row */}
-              <div className="space-y-2 mb-3">
+              {/* Desktop Search and Filters */}
+              <div className="hidden md:block space-y-2 mb-3">
                 {/* Search Input */}
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -911,6 +991,83 @@ export default function PlanPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Filter Sheet for Mobile */}
+      <Sheet open={showFilters} onOpenChange={setShowFilters}>
+        <SheetContent side="bottom" className="h-auto max-h-[80vh] rounded-t-2xl">
+          <SheetHeader>
+            <SheetTitle>Filters</SheetTitle>
+            <SheetDescription>
+              Adjust your search criteria
+            </SheetDescription>
+          </SheetHeader>
+          <div className="space-y-4 mt-4">
+            {/* Location */}
+            <div>
+              <Label className="text-sm font-medium mb-2">Starting Location</Label>
+              <LocationSearch onLocationSelect={(lat, lng) => {
+                setUserLocation({ lat, lng });
+                setTimeout(() => setShowFilters(false), 200);
+              }} />
+            </div>
+            
+            {/* Radius */}
+            <div>
+              <Label className="text-sm font-medium mb-2">Search Radius</Label>
+              <RadiusPicker value={radiusMi} onChange={(val) => {
+                setRadiusMi(val);
+              }} />
+            </div>
+          </div>
+          <SheetFooter className="mt-6">
+            <Button 
+              onClick={() => setShowFilters(false)}
+              className="w-full"
+              data-testid="button-apply-filters"
+            >
+              Apply Filters
+            </Button>
+          </SheetFooter>
+        </SheetContent>
+      </Sheet>
+
+      {/* Mobile Bottom Action Bar */}
+      {activeTab === "list" && !isDesktop && (
+        <div className="fixed bottom-0 left-0 right-0 z-30 md:hidden bg-background/95 backdrop-blur border-t px-4 py-3 safe-area-inset-bottom">
+          <div className="flex flex-col gap-2">
+            {/* Selection Status */}
+            <div className="text-center text-sm">
+              {selectedCompanyIds.length === 0 ? (
+                <span className="text-muted-foreground">Select companies to build route</span>
+              ) : selectedCompanyIds.length === 1 ? (
+                <span className="font-medium">1 company selected • Select 1 more</span>
+              ) : (
+                <span className="font-medium">{selectedCompanyIds.length} companies selected</span>
+              )}
+            </div>
+            
+            {/* Action Button */}
+            <Button
+              onClick={handleBuildRoute}
+              className="w-full h-12"
+              disabled={selectedCompanyIds.length < 2 || buildRouteMutation.isPending}
+              data-testid="button-start-route-mobile"
+            >
+              {buildRouteMutation.isPending ? (
+                <>
+                  <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                  Building Route...
+                </>
+              ) : (
+                <>
+                  <Route className="w-5 h-5 mr-2" />
+                  Start Route ({selectedCompanyIds.length})
+                </>
+              )}
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
