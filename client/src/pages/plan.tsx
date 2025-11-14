@@ -595,50 +595,6 @@ export default function PlanPage() {
             );
             })()}
 
-          {/* Floating Build Route Button - Mobile Map View */}
-          {selectedCompanyIds.length > 0 && activeTab === "map" && (
-            <div 
-              className={`md:hidden absolute left-4 right-4 z-50 transition-all duration-200 ${
-                clickedCompanyId ? 'bottom-44' : 'bottom-24'
-              }`}
-            >
-              <div className="space-y-2">
-                {/* Clear Selection Button */}
-                <Button
-                  variant="outline"
-                  onClick={() => {
-                    setSelectedCompanyIds([]);
-                    setClickedCompanyId(null);
-                  }}
-                  className="w-full h-12 text-base bg-background/95 backdrop-blur border-2"
-                  data-testid="button-clear-selection-mobile"
-                >
-                  <X className="w-5 h-5 mr-2" />
-                  Clear Selection
-                </Button>
-                
-                {/* Build Route Button */}
-                <Button
-                  onClick={handleBuildRoute}
-                  className="w-full h-14 text-base font-semibold shadow-xl"
-                  disabled={selectedCompanyIds.length < 2 || buildRouteMutation.isPending}
-                  data-testid="button-build-route-mobile"
-                >
-                  {buildRouteMutation.isPending ? (
-                    <>
-                      <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                      Building Route...
-                    </>
-                  ) : (
-                    <>
-                      <Route className="w-5 h-5 mr-2" />
-                      Build Route ({selectedCompanyIds.length} stops)
-                    </>
-                  )}
-                </Button>
-              </div>
-            </div>
-            )}
           </div>
         )}
 
@@ -1031,8 +987,8 @@ export default function PlanPage() {
         </SheetContent>
       </Sheet>
 
-      {/* Mobile Bottom Action Bar - positioned above BottomNav */}
-      {activeTab === "list" && !isDesktop && (
+      {/* Mobile Bottom Action Bar - positioned above BottomNav on both Map and List tabs */}
+      {!isDesktop && (
         <div className="fixed bottom-[64px] left-0 right-0 z-50 md:hidden bg-background border-t shadow-lg px-4 py-3">
           <div className="flex flex-col gap-2">
             {/* Selection Status */}
@@ -1046,25 +1002,43 @@ export default function PlanPage() {
               )}
             </div>
             
-            {/* Action Button */}
-            <Button
-              onClick={handleBuildRoute}
-              className="w-full h-12"
-              disabled={selectedCompanyIds.length < 2 || buildRouteMutation.isPending}
-              data-testid="button-start-route-mobile"
-            >
-              {buildRouteMutation.isPending ? (
-                <>
-                  <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                  Building Route...
-                </>
-              ) : (
-                <>
-                  <Route className="w-5 h-5 mr-2" />
-                  Start Route ({selectedCompanyIds.length})
-                </>
+            {/* Action Buttons */}
+            <div className="flex gap-2">
+              {/* Clear Selection Button - only show when companies are selected */}
+              {selectedCompanyIds.length > 0 && (
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setSelectedCompanyIds([]);
+                    setClickedCompanyId(null);
+                  }}
+                  className="h-12"
+                  data-testid="button-clear-selection-mobile"
+                >
+                  <X className="w-4 h-4" />
+                </Button>
               )}
-            </Button>
+              
+              {/* Start Route Button */}
+              <Button
+                onClick={handleBuildRoute}
+                className="flex-1 h-12"
+                disabled={selectedCompanyIds.length < 2 || buildRouteMutation.isPending}
+                data-testid="button-start-route-mobile"
+              >
+                {buildRouteMutation.isPending ? (
+                  <>
+                    <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                    Building Route...
+                  </>
+                ) : (
+                  <>
+                    <Route className="w-5 h-5 mr-2" />
+                    Start Route ({selectedCompanyIds.length})
+                  </>
+                )}
+              </Button>
+            </div>
           </div>
         </div>
       )}
