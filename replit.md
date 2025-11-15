@@ -125,14 +125,16 @@ Preferred communication style: Simple, everyday language.
 
 **Route Editing Experience**:
 - Full-screen overlay (RouteReorderView) for drag-and-drop stop reordering
-- Body scroll lock prevents viewport movement during drag operations
-- Touch-optimized with long-press activation (250ms delay)
+- CSS-only body scroll lock prevents viewport movement without blocking touch events
+- Touch-optimized with fast long-press activation (100ms delay for responsive feel)
+- Enhanced drag overlay shows actual content being dragged with visual feedback
+- Variable-speed auto-scroll based on proximity to edges for smooth dragging
 - Three key actions:
   - **Add Stops**: Returns to plan page to select additional companies
   - **Cancel**: Discards edits and closes editor
   - **Build Route**: Saves edited route and navigates to active route page
-- Manual edge-triggered auto-scroll when dragging near viewport edges
 - Custom endpoint (last stop) is locked and cannot be reordered
+- Mobile bottom action bar auto-hides during overlay display to prevent z-index conflicts
 
 **GPS Proximity Detection**:
 - Continuous location tracking during active route

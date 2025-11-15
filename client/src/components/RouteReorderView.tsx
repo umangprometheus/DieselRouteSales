@@ -71,11 +71,11 @@ export function RouteReorderView({
     }
   }, [open]);
 
-  // Touch-friendly drag sensors
+  // Touch-friendly drag sensors with faster activation
   const sensors = useSensors(
     useSensor(TouchSensor, {
       activationConstraint: {
-        delay: 250,
+        delay: 100, // Reduced from 250ms for more responsive dragging
         tolerance: 5,
       },
     }),
@@ -96,45 +96,54 @@ export function RouteReorderView({
     }
   }, [route]);
 
-  // Manual scroll during drag for items near viewport edges
+  // Smoother auto-scroll during drag for items near viewport edges
   useEffect(() => {
     if (!activeId || !scrollAreaRef.current) return;
 
     let animationFrameId: number;
+    let scrollDirection = 0; // -1 for up, 0 for none, 1 for down
     const scrollContainer = scrollAreaRef.current.querySelector('[data-radix-scroll-area-viewport]') as HTMLElement;
     if (!scrollContainer) return;
 
     const autoScroll = () => {
+      if (scrollDirection !== 0) {
+        const scrollSpeed = 8; // Increased for smoother scrolling
+        scrollContainer.scrollTop += scrollDirection * scrollSpeed;
+        animationFrameId = requestAnimationFrame(autoScroll);
+      }
+    };
+
+    const updateScrollDirection = (e: MouseEvent | TouchEvent) => {
+      const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
       const rect = scrollContainer.getBoundingClientRect();
-      const mouseY = window.lastMouseY || 0;
-      
-      const edgeThreshold = 100;
-      const scrollSpeed = 5;
+      const edgeThreshold = 80; // Reduced threshold for more predictable behavior
 
-      if (mouseY < rect.top + edgeThreshold) {
-        scrollContainer.scrollTop -= scrollSpeed;
-      } else if (mouseY > rect.bottom - edgeThreshold) {
-        scrollContainer.scrollTop += scrollSpeed;
-      }
-
-      animationFrameId = requestAnimationFrame(autoScroll);
-    };
-
-    const trackMouse = (e: MouseEvent | TouchEvent) => {
-      if ('touches' in e) {
-        window.lastMouseY = e.touches[0].clientY;
+      if (clientY < rect.top + edgeThreshold) {
+        // Near top edge - scroll up
+        const intensity = 1 - (clientY - rect.top) / edgeThreshold;
+        scrollDirection = -Math.max(0.5, intensity); // Variable speed based on proximity
+      } else if (clientY > rect.bottom - edgeThreshold) {
+        // Near bottom edge - scroll down
+        const intensity = 1 - (rect.bottom - clientY) / edgeThreshold;
+        scrollDirection = Math.max(0.5, intensity); // Variable speed based on proximity
       } else {
-        window.lastMouseY = e.clientY;
+        // Not near edges - stop scrolling
+        scrollDirection = 0;
+        cancelAnimationFrame(animationFrameId);
+      }
+
+      // Start scrolling if needed
+      if (scrollDirection !== 0 && !animationFrameId) {
+        animationFrameId = requestAnimationFrame(autoScroll);
       }
     };
 
-    document.addEventListener('mousemove', trackMouse);
-    document.addEventListener('touchmove', trackMouse);
-    animationFrameId = requestAnimationFrame(autoScroll);
+    document.addEventListener('mousemove', updateScrollDirection);
+    document.addEventListener('touchmove', updateScrollDirection, { passive: true });
 
     return () => {
-      document.removeEventListener('mousemove', trackMouse);
-      document.removeEventListener('touchmove', trackMouse);
+      document.removeEventListener('mousemove', updateScrollDirection);
+      document.removeEventListener('touchmove', updateScrollDirection);
       cancelAnimationFrame(animationFrameId);
     };
   }, [activeId]);
@@ -309,11 +318,29 @@ export function RouteReorderView({
               }),
             }}
           >
-            {activeId ? (
-              <div className="bg-white border rounded-lg shadow-xl p-2 opacity-90">
-                <GripVertical className="h-4 w-4" />
-              </div>
-            ) : null}
+            {activeId ? (() => {
+              const activeStop = editedStops.find(s => getSortableId(s) === activeId);
+              if (!activeStop) return null;
+              const index = editedStops.findIndex(s => getSortableId(s) === activeId);
+              return (
+                <div className="bg-background border-2 border-primary rounded-lg shadow-2xl p-3 opacity-95">
+                  <div className="flex items-start gap-3">
+                    <GripVertical className="h-5 w-5 text-muted-foreground mt-1" />
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-medium text-muted-foreground">
+                          #{index + 1}
+                        </span>
+                        <h3 className="font-medium text-sm truncate">{activeStop.name}</h3>
+                      </div>
+                      {activeStop.customerNumber && (
+                        <p className="text-xs text-muted-foreground">#{activeStop.customerNumber}</p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              );
+            })() : null}
           </DragOverlay>
         </DndContext>
       </div>
