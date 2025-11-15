@@ -159,7 +159,13 @@ export function RouteReorderView({
     setIsDirty(true);
   };
 
-  const handleBuildRoute = () => {
+  const handleBuildRoute = (e?: React.MouseEvent | React.TouchEvent) => {
+    // Prevent any default behavior and stop propagation at button level
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    
     alert('Build Route button clicked!'); // Debug - remove later
     console.log('[RouteReorderView] handleBuildRoute called, route:', !!route);
     if (!route) {
@@ -312,6 +318,7 @@ export function RouteReorderView({
           </Button>
           <Button
             onClick={handleBuildRoute}
+            onTouchStart={handleBuildRoute}
             className="flex-1"
             data-testid="button-build-route"
           >
