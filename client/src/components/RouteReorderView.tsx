@@ -50,44 +50,45 @@ export function RouteReorderView({
   const [activeId, setActiveId] = useState<string | null>(null);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
 
-  // Lock body scroll when open using CSS instead of touch event prevention
-  // The touch event prevention was blocking button clicks on iOS Safari
+  // Lock body scroll when open
   useEffect(() => {
     if (open) {
-      // Save current scroll position and lock body
       const scrollY = window.scrollY;
       document.body.style.position = 'fixed';
       document.body.style.top = `-${scrollY}px`;
       document.body.style.width = '100%';
-      // Prevent pull-to-refresh on mobile browsers
-      document.body.style.overscrollBehavior = 'none';
       
       return () => {
-        // Restore scroll position when closing
         const scrollY = document.body.style.top;
         document.body.style.position = '';
         document.body.style.top = '';
         document.body.style.width = '';
-        document.body.style.overscrollBehavior = '';
         window.scrollTo(0, parseInt(scrollY || '0') * -1);
       };
     }
   }, [open]);
 
-  // Prevent pull-to-refresh ONLY during active dragging
+  // Prevent pull-to-refresh ONLY on the scrollable list during drag
+  // This targets just the drag area, leaving buttons free to work
   useEffect(() => {
-    if (!activeId) return;
+    if (!activeId || !scrollAreaRef.current) return;
+
+    const scrollViewport = scrollAreaRef.current.querySelector('[data-radix-scroll-area-viewport]') as HTMLElement;
+    if (!scrollViewport) return;
 
     const preventPullToRefresh = (e: TouchEvent) => {
-      // Prevent pull-to-refresh and other default touch behaviors during drag
       e.preventDefault();
     };
 
-    // Add non-passive listener to allow preventDefault
-    document.addEventListener('touchmove', preventPullToRefresh, { passive: false });
+    // Prevent touch events only within the scrollable list
+    scrollViewport.addEventListener('touchmove', preventPullToRefresh, { passive: false });
+    scrollViewport.style.touchAction = 'none';
+    scrollViewport.style.overscrollBehaviorY = 'contain';
 
     return () => {
-      document.removeEventListener('touchmove', preventPullToRefresh);
+      scrollViewport.removeEventListener('touchmove', preventPullToRefresh);
+      scrollViewport.style.touchAction = '';
+      scrollViewport.style.overscrollBehaviorY = '';
     };
   }, [activeId]);
 
