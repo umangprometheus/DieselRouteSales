@@ -21,7 +21,12 @@ export function EndpointConfirmationDrawer({
   onChooseDifferent,
   onSaveForFuture,
 }: EndpointConfirmationDrawerProps) {
-  if (!lastStop) return null;
+  console.log('[EndpointDrawer] Render - open:', open, 'lastStop:', lastStop?.name);
+  
+  if (!lastStop) {
+    console.log('[EndpointDrawer] No lastStop, returning null');
+    return null;
+  }
 
   const formatAddress = (stop: RouteStopApi) => {
     const parts = [stop.street, stop.city, stop.state, stop.postalCode].filter(Boolean);

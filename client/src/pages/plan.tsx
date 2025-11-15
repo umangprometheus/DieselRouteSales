@@ -232,13 +232,18 @@ export default function PlanPage() {
 
   // Handler for building route from edit view
   const handleBuildRouteFromEdit = async (editedRoute: BuildRouteResponse) => {
+    console.log('[Plan] handleBuildRouteFromEdit called with route:', editedRoute);
+    
     // Close the edit drawer first
     setShowEditRouteDrawer(false);
     setPendingRouteForEndpoint(editedRoute);
     
+    console.log('[Plan] Set pending route, will open endpoint confirmation in 100ms');
+    
     // Small delay to ensure drawer closes before opening endpoint confirmation
     // This prevents z-index conflicts on mobile Safari
     setTimeout(() => {
+      console.log('[Plan] Opening endpoint confirmation drawer');
       setShowEndpointConfirmation(true);
     }, 100);
   };
