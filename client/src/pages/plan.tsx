@@ -232,10 +232,15 @@ export default function PlanPage() {
 
   // Handler for building route from edit view
   const handleBuildRouteFromEdit = async (editedRoute: BuildRouteResponse) => {
-    // Show endpoint confirmation instead of immediately navigating
-    setPendingRouteForEndpoint(editedRoute);
+    // Close the edit drawer first
     setShowEditRouteDrawer(false);
-    setShowEndpointConfirmation(true);
+    setPendingRouteForEndpoint(editedRoute);
+    
+    // Small delay to ensure drawer closes before opening endpoint confirmation
+    // This prevents z-index conflicts on mobile Safari
+    setTimeout(() => {
+      setShowEndpointConfirmation(true);
+    }, 100);
   };
 
   // Handler for confirming the last stop as endpoint

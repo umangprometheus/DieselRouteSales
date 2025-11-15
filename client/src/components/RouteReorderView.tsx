@@ -292,34 +292,23 @@ export function RouteReorderView({
 
       {/* Footer */}
       <div className="flex-shrink-0 border-t p-4 pb-20 bg-background">
-        <div className="flex flex-col gap-3">
+        <div className="flex gap-2">
           <Button
-            size="lg"
-            onClick={onAddStops}
-            className="w-full bg-green-600 hover:bg-green-700 text-white"
-            data-testid="button-add-stops"
+            variant="outline"
+            onClick={handleCancel}
+            className="flex-1"
+            data-testid="button-cancel-route-edit"
           >
-            <Plus className="h-5 w-5 mr-2" />
-            Add Stops
+            Cancel
           </Button>
-          <div className="flex gap-2">
-            <Button
-              variant="outline"
-              onClick={handleCancel}
-              className="flex-1"
-              data-testid="button-cancel-route-edit"
-            >
-              Cancel
-            </Button>
-            <Button
-              onClick={handleBuildRoute}
-              className="flex-1"
-              data-testid="button-build-route"
-            >
-              <RouteIcon className="h-4 w-4 mr-2" />
-              Build Route
-            </Button>
-          </div>
+          <Button
+            onClick={handleBuildRoute}
+            className="flex-1"
+            data-testid="button-build-route"
+          >
+            <RouteIcon className="h-4 w-4 mr-2" />
+            Build Route
+          </Button>
         </div>
       </div>
     </div>
