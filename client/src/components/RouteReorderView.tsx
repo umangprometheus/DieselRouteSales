@@ -55,14 +55,13 @@ export function RouteReorderView({
   useBodyScrollLock(open);
 
   // Touch-friendly drag sensors
-  // Temporarily disable TouchSensor to debug iOS button issue
   const sensors = useSensors(
-    // useSensor(TouchSensor, {
-    //   activationConstraint: {
-    //     delay: 250,
-    //     tolerance: 5,
-    //   },
-    // }),
+    useSensor(TouchSensor, {
+      activationConstraint: {
+        delay: 250,
+        tolerance: 5,
+      },
+    }),
     useSensor(PointerSensor, {
       activationConstraint: {
         distance: 8,
@@ -160,22 +159,11 @@ export function RouteReorderView({
     setIsDirty(true);
   };
 
-  const handleBuildRoute = (e?: React.MouseEvent | React.TouchEvent) => {
-    // Prevent any default behavior and stop propagation at button level
-    if (e) {
-      e.preventDefault();
-      e.stopPropagation();
-    }
-    
-    alert('Build Route button clicked!'); // Debug - remove later
-    console.log('[RouteReorderView] handleBuildRoute called, route:', !!route);
+  const handleBuildRoute = () => {
     if (!route) {
-      console.log('[RouteReorderView] No route, returning');
       return;
     }
     const updatedRoute = { ...route, stops: editedStops };
-    console.log('[RouteReorderView] Calling onBuildRoute with updated route');
-    
     // Call the handler and immediately close this view
     onBuildRoute(updatedRoute);
     onClose(); // Force close the reorder view
@@ -249,64 +237,64 @@ export function RouteReorderView({
 
       </div>
 
-      {/* Content Area - Fixed Height */}
+      {/* Content Area - Fixed Height with DnD Context */}
       <div className="flex-1 overflow-hidden">
-        <ScrollArea ref={scrollAreaRef} className="h-full px-4">
-            <DndContext
-              sensors={sensors}
-              collisionDetection={closestCenter}
-              onDragStart={handleDragStart}
-              onDragEnd={handleDragEnd}
-              modifiers={[restrictToVerticalAxis]}
-              autoScroll={false}
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragStart={handleDragStart}
+          onDragEnd={handleDragEnd}
+          modifiers={[restrictToVerticalAxis]}
+          autoScroll={false}
+        >
+          <ScrollArea ref={scrollAreaRef} className="h-full px-4">
+            <SortableContext
+              items={editedStops.map(s => getSortableId(s))}
+              strategy={verticalListSortingStrategy}
             >
-              <SortableContext
-                items={editedStops.map(s => getSortableId(s))}
-                strategy={verticalListSortingStrategy}
-              >
-                <div className="space-y-2 py-2">
-                  {editedStops.map((stop, index) => {
-                    const isEndpoint = customEndpoint && index === editedStops.length - 1;
-                    const stopId = getSortableId(stop);
-                    return (
-                      <SortableItem
-                        key={stopId}
-                        id={stopId}
-                        disabled={!!isEndpoint}
-                        stop={stop}
-                        index={index}
-                        isEndpoint={!!isEndpoint}
-                        onMoveUp={() => handleMoveUp(index)}
-                        onMoveDown={() => handleMoveDown(index)}
-                        canMoveUp={index > 0 && !isEndpoint}
-                        canMoveDown={index < (customEndpoint ? editedStops.length - 2 : editedStops.length - 1)}
-                      />
-                    );
-                  })}
-                </div>
-              </SortableContext>
-              <DragOverlay
-                dropAnimation={{
-                  sideEffects: defaultDropAnimationSideEffects({
-                    styles: {
-                      active: {
-                        opacity: '0.5',
-                      },
-                    },
-                  }),
-                }}
-              >
-                {activeId ? (
-                  <div className="bg-white border rounded-lg shadow-xl p-2 opacity-90">
-                    <GripVertical className="h-4 w-4" />
-                  </div>
-                ) : null}
-              </DragOverlay>
-            </DndContext>
-        </ScrollArea>
+              <div className="space-y-2 py-2">
+                {editedStops.map((stop, index) => {
+                  const isEndpoint = customEndpoint && index === editedStops.length - 1;
+                  const stopId = getSortableId(stop);
+                  return (
+                    <SortableItem
+                      key={stopId}
+                      id={stopId}
+                      disabled={!!isEndpoint}
+                      stop={stop}
+                      index={index}
+                      isEndpoint={!!isEndpoint}
+                      onMoveUp={() => handleMoveUp(index)}
+                      onMoveDown={() => handleMoveDown(index)}
+                      canMoveUp={index > 0 && !isEndpoint}
+                      canMoveDown={index < (customEndpoint ? editedStops.length - 2 : editedStops.length - 1)}
+                    />
+                  );
+                })}
+              </div>
+            </SortableContext>
+          </ScrollArea>
+          <DragOverlay
+            dropAnimation={{
+              sideEffects: defaultDropAnimationSideEffects({
+                styles: {
+                  active: {
+                    opacity: '0.5',
+                  },
+                },
+              }),
+            }}
+          >
+            {activeId ? (
+              <div className="bg-white border rounded-lg shadow-xl p-2 opacity-90">
+                <GripVertical className="h-4 w-4" />
+              </div>
+            ) : null}
+          </DragOverlay>
+        </DndContext>
       </div>
 
-      {/* Footer */}
+      {/* Footer - Outside all stacking contexts */}
       <div className="flex-shrink-0 border-t p-4 pb-20 bg-background">
         <div className="flex gap-2">
           <Button
@@ -319,7 +307,6 @@ export function RouteReorderView({
           </Button>
           <Button
             onClick={handleBuildRoute}
-            onTouchStart={handleBuildRoute}
             className="flex-1"
             data-testid="button-build-route"
           >
