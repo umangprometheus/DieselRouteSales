@@ -259,8 +259,8 @@ export function RouteReorderView({
 
       </div>
 
-      {/* Content Area - Fixed Height with DnD Context */}
-      <div className="flex-1 overflow-hidden">
+      {/* Content Area - Constrained height to not overlap footer */}
+      <div className="flex-1 overflow-hidden pb-32" style={{ pointerEvents: 'auto' }}>
         <DndContext
           sensors={sensors}
           collisionDetection={closestCenter}
@@ -269,33 +269,35 @@ export function RouteReorderView({
           modifiers={[restrictToVerticalAxis]}
           autoScroll={false}
         >
-          <ScrollArea ref={scrollAreaRef} className="h-full px-4">
-            <SortableContext
-              items={editedStops.map(s => getSortableId(s))}
-              strategy={verticalListSortingStrategy}
-            >
-              <div className="space-y-2 py-2">
-                {editedStops.map((stop, index) => {
-                  const isEndpoint = customEndpoint && index === editedStops.length - 1;
-                  const stopId = getSortableId(stop);
-                  return (
-                    <SortableItem
-                      key={stopId}
-                      id={stopId}
-                      disabled={!!isEndpoint}
-                      stop={stop}
-                      index={index}
-                      isEndpoint={!!isEndpoint}
-                      onMoveUp={() => handleMoveUp(index)}
-                      onMoveDown={() => handleMoveDown(index)}
-                      canMoveUp={index > 0 && !isEndpoint}
-                      canMoveDown={index < (customEndpoint ? editedStops.length - 2 : editedStops.length - 1)}
-                    />
-                  );
-                })}
-              </div>
-            </SortableContext>
-          </ScrollArea>
+          <div className="h-full overflow-hidden">
+            <ScrollArea ref={scrollAreaRef} className="h-full px-4">
+              <SortableContext
+                items={editedStops.map(s => getSortableId(s))}
+                strategy={verticalListSortingStrategy}
+              >
+                <div className="space-y-2 py-2 pb-24">
+                  {editedStops.map((stop, index) => {
+                    const isEndpoint = customEndpoint && index === editedStops.length - 1;
+                    const stopId = getSortableId(stop);
+                    return (
+                      <SortableItem
+                        key={stopId}
+                        id={stopId}
+                        disabled={!!isEndpoint}
+                        stop={stop}
+                        index={index}
+                        isEndpoint={!!isEndpoint}
+                        onMoveUp={() => handleMoveUp(index)}
+                        onMoveDown={() => handleMoveDown(index)}
+                        canMoveUp={index > 0 && !isEndpoint}
+                        canMoveDown={index < (customEndpoint ? editedStops.length - 2 : editedStops.length - 1)}
+                      />
+                    );
+                  })}
+                </div>
+              </SortableContext>
+            </ScrollArea>
+          </div>
           <DragOverlay
             dropAnimation={{
               sideEffects: defaultDropAnimationSideEffects({
@@ -316,8 +318,8 @@ export function RouteReorderView({
         </DndContext>
       </div>
 
-      {/* Footer - Outside all stacking contexts */}
-      <div className="flex-shrink-0 border-t p-4 pb-20 bg-background" style={{ position: 'relative', zIndex: 9999 }}>
+      {/* Footer - Absolutely positioned to ensure it's above everything */}
+      <div className="absolute bottom-0 left-0 right-0 border-t p-4 pb-20 bg-background" style={{ zIndex: 10000 }}>
         <div className="flex gap-2">
           <button
             type="button"
