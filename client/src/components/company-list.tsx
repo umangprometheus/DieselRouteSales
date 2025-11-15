@@ -68,7 +68,7 @@ export default function CompanyList({
                       }`}
                       title={company.lifecycleStage || 'Unknown'}
                     />
-                    <h3 className="text-base font-semibold text-foreground truncate">
+                    <h3 className="text-base font-semibold text-foreground truncate select-none" style={{ WebkitUserSelect: 'none', WebkitTouchCallout: 'none', userSelect: 'none' }}>
                       {company.name}
                     </h3>
                   </div>
@@ -81,9 +81,9 @@ export default function CompanyList({
                   </Badge>
                 </div>
                 
-                <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                <div className="flex items-center gap-1.5 text-sm text-muted-foreground select-none" style={{ WebkitUserSelect: 'none', WebkitTouchCallout: 'none', userSelect: 'none' }}>
                   <Building2 className="w-3.5 h-3.5 flex-shrink-0" />
-                  <p className="truncate">
+                  <p className="truncate select-none" style={{ WebkitUserSelect: 'none', WebkitTouchCallout: 'none', userSelect: 'none' }}>
                     {[company.street, company.city, company.state, company.postalCode]
                       .filter(Boolean)
                       .join(", ")}
