@@ -68,26 +68,18 @@ export function RouteReorderView({
     }
   }, [open]);
 
-  // Prevent pull-to-refresh ONLY on the scrollable list during drag
-  // This targets just the drag area, leaving buttons free to work
+  // Prevent pull-to-refresh during active drag by setting overscroll behavior
+  // This does NOT block scrolling, just prevents the refresh gesture
   useEffect(() => {
     if (!activeId || !scrollAreaRef.current) return;
 
     const scrollViewport = scrollAreaRef.current.querySelector('[data-radix-scroll-area-viewport]') as HTMLElement;
     if (!scrollViewport) return;
 
-    const preventPullToRefresh = (e: TouchEvent) => {
-      e.preventDefault();
-    };
-
-    // Prevent touch events only within the scrollable list
-    scrollViewport.addEventListener('touchmove', preventPullToRefresh, { passive: false });
-    scrollViewport.style.touchAction = 'none';
+    // Set overscroll behavior to prevent pull-to-refresh without blocking scroll
     scrollViewport.style.overscrollBehaviorY = 'contain';
 
     return () => {
-      scrollViewport.removeEventListener('touchmove', preventPullToRefresh);
-      scrollViewport.style.touchAction = '';
       scrollViewport.style.overscrollBehaviorY = '';
     };
   }, [activeId]);
@@ -234,11 +226,6 @@ export function RouteReorderView({
   return (
     <div 
       className="fixed inset-0 z-[200] bg-background flex flex-col pointer-events-auto"
-      style={{ 
-        overscrollBehavior: 'none',
-        touchAction: 'pan-y',
-        WebkitOverflowScrolling: 'touch'
-      }}
     >
       {/* Header */}
       <div className="flex-shrink-0 border-b">
