@@ -185,11 +185,7 @@ export function RouteReorderView({
   if (!open || !route) return null;
 
   return (
-    <div 
-      className="fixed inset-0 z-50 bg-background flex flex-col"
-      onClick={(e) => e.stopPropagation()}
-      onTouchEnd={(e) => e.stopPropagation()}
-    >
+    <div className="fixed inset-0 z-50 bg-background flex flex-col pointer-events-auto">
       {/* Header */}
       <div className="flex-shrink-0 border-b">
         <div className="flex items-center justify-between p-4">
@@ -316,11 +312,6 @@ export function RouteReorderView({
           </Button>
           <Button
             onClick={handleBuildRoute}
-            onTouchEnd={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              handleBuildRoute();
-            }}
             className="flex-1"
             data-testid="button-build-route"
           >
