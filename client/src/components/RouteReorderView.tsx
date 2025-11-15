@@ -160,8 +160,13 @@ export function RouteReorderView({
   };
 
   const handleBuildRoute = () => {
-    if (!route) return;
+    console.log('[RouteReorderView] handleBuildRoute called, route:', !!route);
+    if (!route) {
+      console.log('[RouteReorderView] No route, returning');
+      return;
+    }
     const updatedRoute = { ...route, stops: editedStops };
+    console.log('[RouteReorderView] Calling onBuildRoute with updated route');
     onBuildRoute(updatedRoute);
   };
 
