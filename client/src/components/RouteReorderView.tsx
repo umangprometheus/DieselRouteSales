@@ -177,13 +177,18 @@ export function RouteReorderView({
   };
 
   const handleBuildRoute = () => {
+    console.log('[RouteReorderView] handleBuildRoute clicked');
     if (!route) {
+      console.log('[RouteReorderView] No route, returning');
       return;
     }
     const updatedRoute = { ...route, stops: editedStops };
+    console.log('[RouteReorderView] Calling onBuildRoute');
     // Call the handler and immediately close this view
     onBuildRoute(updatedRoute);
+    console.log('[RouteReorderView] Calling onClose');
     onClose(); // Force close the reorder view
+    console.log('[RouteReorderView] Both handlers called');
   };
 
   const handleCancel = () => {

@@ -89,6 +89,20 @@ export default function PlanPage() {
   const [saveRouteName, setSaveRouteName] = useState("");
   const [showFilters, setShowFilters] = useState(false);
 
+  // Handle opening endpoint confirmation after reorder view closes (iOS Safari fix)
+  useEffect(() => {
+    // Only open endpoint confirmation after reorder drawer has fully closed
+    if (!showEditRouteDrawer && pendingRouteForEndpoint && !showEndpointConfirmation) {
+      // Use requestAnimationFrame to ensure the previous overlay has fully unmounted
+      const frameId = requestAnimationFrame(() => {
+        console.log('[Plan] Opening endpoint confirmation after reorder close');
+        setShowEndpointConfirmation(true);
+      });
+      
+      return () => cancelAnimationFrame(frameId);
+    }
+  }, [showEditRouteDrawer, pendingRouteForEndpoint, showEndpointConfirmation]);
+
   const { data, isLoading, refetch } = useCompanies({
     lat: userLocation?.lat,
     lng: userLocation?.lng,
@@ -233,19 +247,14 @@ export default function PlanPage() {
   // Handler for building route from edit view
   const handleBuildRouteFromEdit = async (editedRoute: BuildRouteResponse) => {
     console.log('[Plan] handleBuildRouteFromEdit called with route:', editedRoute);
+    console.log('[Plan] Current showEditRouteDrawer:', showEditRouteDrawer);
     
-    // Close the edit drawer first
-    setShowEditRouteDrawer(false);
+    // Store the route and close the drawer
+    // The useEffect below will handle opening the endpoint confirmation
     setPendingRouteForEndpoint(editedRoute);
-    
-    console.log('[Plan] Set pending route, will open endpoint confirmation in 100ms');
-    
-    // Small delay to ensure drawer closes before opening endpoint confirmation
-    // This prevents z-index conflicts on mobile Safari
-    setTimeout(() => {
-      console.log('[Plan] Opening endpoint confirmation drawer');
-      setShowEndpointConfirmation(true);
-    }, 100);
+    console.log('[Plan] Setting showEditRouteDrawer to false');
+    setShowEditRouteDrawer(false);
+    console.log('[Plan] handleBuildRouteFromEdit complete');
   };
 
   // Handler for confirming the last stop as endpoint
@@ -255,8 +264,12 @@ export default function PlanPage() {
     // Save route and navigate
     localStorage.setItem("activeRoute", JSON.stringify(pendingRouteForEndpoint));
     setShowEndpointConfirmation(false);
-    setPendingRoute(null);
-    setPendingRouteForEndpoint(null);
+    
+    // Clear state after a frame to avoid re-triggering the useEffect
+    requestAnimationFrame(() => {
+      setPendingRoute(null);
+      setPendingRouteForEndpoint(null);
+    });
     
     toast({
       title: "Route started!",
