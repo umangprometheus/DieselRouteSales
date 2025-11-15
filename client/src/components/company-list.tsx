@@ -41,11 +41,19 @@ export default function CompanyList({
               isSelected ? "ring-2 ring-primary" : ""
             }`}
             onClick={() => onToggle(company.id)}
+            onTouchStart={(e) => {
+              (e.currentTarget.style as any).webkitUserSelect = 'none';
+              e.currentTarget.style.userSelect = 'none';
+            }}
+            onMouseDown={(e) => {
+              e.preventDefault();
+            }}
             data-testid={`card-company-${company.id}`}
             style={{
               WebkitUserSelect: 'none',
               WebkitTouchCallout: 'none',
-              userSelect: 'none'
+              userSelect: 'none',
+              WebkitTapHighlightColor: 'transparent'
             }}
           >
             <div className="flex items-start gap-3">
