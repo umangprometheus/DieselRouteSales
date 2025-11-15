@@ -341,6 +341,7 @@ export default function PlanPage() {
   const handleCancelRouteEdits = () => {
     setShowEditRouteDrawer(false);
     setPendingRoute(null);
+    setPendingRouteForEndpoint(null); // Clear this to prevent re-triggering endpoint confirmation
   };
 
   // Handler for setting custom endpoint

@@ -41,12 +41,13 @@ export function EndpointConfirmationDrawer({
         <div className="flex items-center gap-3 p-4">
           {onBack && (
             <Button
-              variant="ghost"
+              variant="outline"
               size="icon"
               onClick={onBack}
               data-testid="button-back-to-reorder"
+              className="flex-shrink-0"
             >
-              <ArrowLeft className="h-5 w-5" />
+              <ArrowLeft className="h-5 w-5 text-primary" />
             </Button>
           )}
           <div className="flex-1">
