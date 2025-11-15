@@ -160,6 +160,7 @@ export function RouteReorderView({
   };
 
   const handleBuildRoute = () => {
+    alert('Build Route button clicked!'); // Debug - remove later
     console.log('[RouteReorderView] handleBuildRoute called, route:', !!route);
     if (!route) {
       console.log('[RouteReorderView] No route, returning');
