@@ -2,6 +2,12 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Prevent pull-to-refresh on mobile Chrome/Safari */
+html, body {
+  overscroll-behavior-y: none;
+  -webkit-overflow-scrolling: touch;
+}
+
 /* Prevent viewport scrolling during drag operations */
 .dragging-active {
   position: fixed !important;
@@ -9,6 +15,7 @@
   overflow: hidden !important;
   touch-action: none !important;
   -webkit-overflow-scrolling: auto !important;
+  overscroll-behavior: none !important;
 }
 
 .drag-container-locked {

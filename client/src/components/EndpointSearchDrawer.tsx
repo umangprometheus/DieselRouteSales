@@ -213,6 +213,7 @@ export function EndpointSearchDrawer({
                 companies={[{
                   id: "endpoint",
                   name: selectedPlace.label,
+                  customerNumber: null,
                   street: null,
                   city: null,
                   state: null,
@@ -221,6 +222,7 @@ export function EndpointSearchDrawer({
                   lat: selectedPlace.lat,
                   lng: selectedPlace.lng,
                   ownerId: null,
+                  lifecycleStage: null,
                   distanceMi: 0,
                 }]}
                 selectedCompanyIds={["endpoint"]}
