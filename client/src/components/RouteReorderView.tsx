@@ -23,7 +23,6 @@ import { SortableItem } from "./SortableItem";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Navigation, MapPin, Clock, Route as RouteIcon, GripVertical, X, Plus } from "lucide-react";
-import { useBodyScrollLock } from "@/hooks/useBodyScrollLock";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import type { BuildRouteResponse } from "@shared/schema";
 
@@ -51,8 +50,26 @@ export function RouteReorderView({
   const [activeId, setActiveId] = useState<string | null>(null);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
 
-  // Lock body scroll when open
-  useBodyScrollLock(open);
+  // Lock body scroll when open using CSS instead of touch event prevention
+  // The touch event prevention was blocking button clicks on iOS Safari
+  useEffect(() => {
+    if (open) {
+      // Save current scroll position and lock body
+      const scrollY = window.scrollY;
+      document.body.style.position = 'fixed';
+      document.body.style.top = `-${scrollY}px`;
+      document.body.style.width = '100%';
+      
+      return () => {
+        // Restore scroll position when closing
+        const scrollY = document.body.style.top;
+        document.body.style.position = '';
+        document.body.style.top = '';
+        document.body.style.width = '';
+        window.scrollTo(0, parseInt(scrollY || '0') * -1);
+      };
+    }
+  }, [open]);
 
   // Touch-friendly drag sensors
   const sensors = useSensors(
@@ -295,24 +312,25 @@ export function RouteReorderView({
       </div>
 
       {/* Footer - Outside all stacking contexts */}
-      <div className="flex-shrink-0 border-t p-4 pb-20 bg-background">
+      <div className="flex-shrink-0 border-t p-4 pb-20 bg-background" style={{ position: 'relative', zIndex: 9999 }}>
         <div className="flex gap-2">
-          <Button
-            variant="outline"
+          <button
+            type="button"
             onClick={handleCancel}
-            className="flex-1"
+            className="flex-1 inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground min-h-9 px-4 py-2"
             data-testid="button-cancel-route-edit"
           >
             Cancel
-          </Button>
-          <Button
+          </button>
+          <button
+            type="button"
             onClick={handleBuildRoute}
-            className="flex-1"
+            className="flex-1 inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground shadow hover:bg-primary/90 min-h-9 px-4 py-2"
             data-testid="button-build-route"
           >
             <RouteIcon className="h-4 w-4 mr-2" />
             Build Route
-          </Button>
+          </button>
         </div>
       </div>
     </div>
