@@ -59,6 +59,8 @@ export function RouteReorderView({
       document.body.style.position = 'fixed';
       document.body.style.top = `-${scrollY}px`;
       document.body.style.width = '100%';
+      // Prevent pull-to-refresh on mobile browsers
+      document.body.style.overscrollBehavior = 'none';
       
       return () => {
         // Restore scroll position when closing
@@ -66,10 +68,28 @@ export function RouteReorderView({
         document.body.style.position = '';
         document.body.style.top = '';
         document.body.style.width = '';
+        document.body.style.overscrollBehavior = '';
         window.scrollTo(0, parseInt(scrollY || '0') * -1);
       };
     }
   }, [open]);
+
+  // Prevent pull-to-refresh ONLY during active dragging
+  useEffect(() => {
+    if (!activeId) return;
+
+    const preventPullToRefresh = (e: TouchEvent) => {
+      // Prevent pull-to-refresh and other default touch behaviors during drag
+      e.preventDefault();
+    };
+
+    // Add non-passive listener to allow preventDefault
+    document.addEventListener('touchmove', preventPullToRefresh, { passive: false });
+
+    return () => {
+      document.removeEventListener('touchmove', preventPullToRefresh);
+    };
+  }, [activeId]);
 
   // Touch-friendly drag sensors with faster activation
   const sensors = useSensors(
