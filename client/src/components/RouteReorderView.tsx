@@ -202,7 +202,7 @@ export function RouteReorderView({
   if (!open || !route) return null;
 
   return (
-    <div className="fixed inset-0 z-50 bg-background flex flex-col pointer-events-auto">
+    <div className="fixed inset-0 z-[200] bg-background flex flex-col pointer-events-auto">
       {/* Header */}
       <div className="flex-shrink-0 border-b">
         <div className="flex items-center justify-between p-4">

@@ -1018,7 +1018,8 @@ export default function PlanPage() {
       </Sheet>
 
       {/* Mobile Bottom Action Bar - positioned above BottomNav on both Map and List tabs */}
-      {!isDesktop && (
+      {/* Hide when overlays are open to prevent z-index conflicts */}
+      {!isDesktop && !showEditRouteDrawer && !showEndpointDrawer && !showEndpointConfirmation && (
         <div className="fixed bottom-[64px] left-0 right-0 z-50 md:hidden bg-background border-t shadow-lg px-4 py-3">
           <div className="flex flex-col gap-2">
             {/* Selection Status */}
