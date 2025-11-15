@@ -55,13 +55,14 @@ export function RouteReorderView({
   useBodyScrollLock(open);
 
   // Touch-friendly drag sensors
+  // Temporarily disable TouchSensor to debug iOS button issue
   const sensors = useSensors(
-    useSensor(TouchSensor, {
-      activationConstraint: {
-        delay: 250,
-        tolerance: 5,
-      },
-    }),
+    // useSensor(TouchSensor, {
+    //   activationConstraint: {
+    //     delay: 250,
+    //     tolerance: 5,
+    //   },
+    // }),
     useSensor(PointerSensor, {
       activationConstraint: {
         distance: 8,
