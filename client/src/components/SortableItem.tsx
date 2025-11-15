@@ -64,8 +64,13 @@ export function SortableItem({
           isDragging ? "opacity-50 shadow-lg scale-105" : ""
         } ${disabled ? "opacity-75" : ""} ${
           isEndpoint ? "border-primary bg-primary/5" : ""
-        } ${!disabled ? "cursor-grab active:cursor-grabbing hover:shadow-md hover:border-primary/30 transition-all" : ""}`}
+        } ${!disabled ? "cursor-grab active:cursor-grabbing hover:shadow-md hover:border-primary/30 transition-all select-none" : "select-none"}`}
         data-testid={`stop-card-${index}`}
+        style={{
+          WebkitUserSelect: 'none',
+          WebkitTouchCallout: 'none',
+          userSelect: 'none'
+        }}
         {...(!disabled ? attributes : {})}
         {...(!disabled ? listeners : {})}
       >

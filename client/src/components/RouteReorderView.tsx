@@ -88,8 +88,8 @@ export function RouteReorderView({
   const sensors = useSensors(
     useSensor(TouchSensor, {
       activationConstraint: {
-        delay: 250, // Longer delay to distinguish from scroll gestures
-        tolerance: 1, // Very tight tolerance so scroll gestures don't trigger drag
+        delay: 350, // Longer delay to clearly distinguish from scroll gestures
+        tolerance: 8, // Slightly more tolerance to allow settling before drag starts
       },
     }),
     useSensor(PointerSensor, {
