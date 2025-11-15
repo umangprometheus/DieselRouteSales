@@ -293,17 +293,9 @@ export default function MapView({
       }
     } // Close the else block
 
-    // Add click handler for individual company markers - works for both click and touch
-    let lastClickTime = 0;
+    // Add click handler for individual company markers
+    // Note: Mapbox normalizes touch events to 'click' on mobile, so we only need the click handler
     const clickHandler = (e: mapboxgl.MapMouseEvent | mapboxgl.MapTouchEvent) => {
-      // Prevent double-firing from both click and touchend events
-      const now = Date.now();
-      if (now - lastClickTime < 300) {
-        console.log('[MapView] Ignoring duplicate click event');
-        return;
-      }
-      lastClickTime = now;
-
       console.log('[MapView] Marker clicked, features:', e.features?.length);
       if (!e.features || e.features.length === 0) return;
       const feature = e.features[0];
@@ -351,15 +343,14 @@ export default function MapView({
       }
     };
 
-    // Attach handlers to both circle and label layers for individual companies (both click and touch)
+    // Attach handlers to circle and label layers
+    // Only use 'click' events - Mapbox normalizes touch to click on mobile
     map.current.on('click', circleLayerId, clickHandler);
-    map.current.on('touchend', circleLayerId, clickHandler);
     map.current.on('mouseenter', circleLayerId, mouseEnterHandler);
     map.current.on('mouseleave', circleLayerId, mouseLeaveHandler);
 
     if (routeCoordinates) {
       map.current.on('click', labelLayerId, clickHandler);
-      map.current.on('touchend', labelLayerId, clickHandler);
       map.current.on('mouseenter', labelLayerId, mouseEnterHandler);
       map.current.on('mouseleave', labelLayerId, mouseLeaveHandler);
     }
@@ -371,13 +362,11 @@ export default function MapView({
     return () => {
       if (map.current) {
         map.current.off('click', circleLayerId, clickHandler);
-        map.current.off('touchend', circleLayerId, clickHandler);
         map.current.off('mouseenter', circleLayerId, mouseEnterHandler);
         map.current.off('mouseleave', circleLayerId, mouseLeaveHandler);
         
         if (routeCoordinates) {
           map.current.off('click', labelLayerId, clickHandler);
-          map.current.off('touchend', labelLayerId, clickHandler);
           map.current.off('mouseenter', labelLayerId, mouseEnterHandler);
           map.current.off('mouseleave', labelLayerId, mouseLeaveHandler);
         }
