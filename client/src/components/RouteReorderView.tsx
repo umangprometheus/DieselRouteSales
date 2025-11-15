@@ -167,7 +167,10 @@ export function RouteReorderView({
     }
     const updatedRoute = { ...route, stops: editedStops };
     console.log('[RouteReorderView] Calling onBuildRoute with updated route');
+    
+    // Call the handler and immediately close this view
     onBuildRoute(updatedRoute);
+    onClose(); // Force close the reorder view
   };
 
   const handleCancel = () => {
