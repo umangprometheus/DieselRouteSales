@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { MapPin, Navigation2, Check, Save } from "lucide-react";
+import { MapPin, Navigation2, Check, Save, ArrowLeft } from "lucide-react";
 import type { RouteStopApi } from "@shared/schema";
 
 interface EndpointConfirmationDrawerProps {
@@ -10,6 +10,7 @@ interface EndpointConfirmationDrawerProps {
   onConfirmLastStop: () => void;
   onChooseDifferent: () => void;
   onSaveForFuture?: () => void;
+  onBack?: () => void;
 }
 
 export function EndpointConfirmationDrawer({
@@ -19,6 +20,7 @@ export function EndpointConfirmationDrawer({
   onConfirmLastStop,
   onChooseDifferent,
   onSaveForFuture,
+  onBack,
 }: EndpointConfirmationDrawerProps) {
   console.log('[EndpointDrawer] Render - open:', open, 'lastStop:', lastStop?.name);
   
@@ -35,11 +37,27 @@ export function EndpointConfirmationDrawer({
   return (
     <div className="fixed inset-0 z-50 bg-background flex flex-col">
       {/* Header */}
-      <div className="flex-shrink-0 p-6 border-b">
-        <h2 className="text-xl font-semibold mb-2">Where should your route end?</h2>
-        <p className="text-sm text-muted-foreground">
-          By default, your route will end at the last stop. You can confirm this or choose a different location (like home or office).
-        </p>
+      <div className="flex-shrink-0 border-b">
+        <div className="flex items-center gap-3 p-4">
+          {onBack && (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={onBack}
+              data-testid="button-back-to-reorder"
+            >
+              <ArrowLeft className="h-5 w-5" />
+            </Button>
+          )}
+          <div className="flex-1">
+            <h2 className="text-xl font-semibold">Where should your route end?</h2>
+          </div>
+        </div>
+        <div className="px-4 pb-4">
+          <p className="text-sm text-muted-foreground">
+            By default, your route will end at the last stop. You can confirm this or choose a different location (like home or office).
+          </p>
+        </div>
       </div>
 
       {/* Content */}

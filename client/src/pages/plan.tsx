@@ -911,6 +911,12 @@ export default function PlanPage() {
         onConfirmLastStop={handleConfirmLastStop}
         onChooseDifferent={handleChooseDifferentEndpoint}
         onSaveForFuture={handleSaveForFuture}
+        onBack={() => {
+          // Go back to route reorder view
+          setShowEndpointConfirmation(false);
+          setPendingRoute(pendingRouteForEndpoint);
+          setShowEditRouteDrawer(true);
+        }}
       />
 
       {/* Endpoint Search Drawer */}
@@ -921,6 +927,11 @@ export default function PlanPage() {
         onRemove={handleRemoveEndpoint}
         currentEndpoint={customEndpoint}
         userLocation={userLocation}
+        onBack={() => {
+          // Go back to endpoint confirmation
+          setShowEndpointDrawer(false);
+          setShowEndpointConfirmation(true);
+        }}
       />
 
       {/* Save Route Dialog */}

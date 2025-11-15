@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerDescription, DrawerFooter } from "@/components/ui/drawer";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { MapPin, Navigation2, X, Loader2 } from "lucide-react";
+import { MapPin, Navigation2, X, Loader2, ArrowLeft } from "lucide-react";
 import AddressAutocomplete from "./AddressAutocomplete";
 import MapView from "./map-view";
 import { useToast } from "@/hooks/use-toast";
@@ -14,6 +14,7 @@ interface EndpointSearchDrawerProps {
   onRemove: () => void;
   currentEndpoint?: { label: string; lat: number; lng: number } | null;
   userLocation?: { lat: number; lng: number } | null;
+  onBack?: () => void;
 }
 
 export function EndpointSearchDrawer({
@@ -22,7 +23,8 @@ export function EndpointSearchDrawer({
   onConfirm,
   onRemove,
   currentEndpoint,
-  userLocation
+  userLocation,
+  onBack
 }: EndpointSearchDrawerProps) {
   const [selectedPlace, setSelectedPlace] = useState<{ label: string; lat: number; lng: number } | null>(
     currentEndpoint || null
@@ -110,7 +112,21 @@ export function EndpointSearchDrawer({
     <Drawer open={open} onOpenChange={handleOpenChange}>
       <DrawerContent className="h-[90vh] max-h-[90vh] flex flex-col">
         <DrawerHeader className="pb-2 border-b">
-          <DrawerTitle>End Your Route At...</DrawerTitle>
+          <div className="flex items-center gap-3 -mt-2">
+            {onBack && (
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={onBack}
+                data-testid="button-back-to-endpoint-confirm"
+              >
+                <ArrowLeft className="h-5 w-5" />
+              </Button>
+            )}
+            <div className="flex-1">
+              <DrawerTitle>End Your Route At...</DrawerTitle>
+            </div>
+          </div>
           <DrawerDescription>
             Choose where you want to finish your route
           </DrawerDescription>
