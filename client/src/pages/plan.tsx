@@ -886,8 +886,15 @@ export default function PlanPage() {
       {/* Endpoint Confirmation Drawer */}
       <EndpointConfirmationDrawer
         open={showEndpointConfirmation}
-        onOpenChange={setShowEndpointConfirmation}
-        lastStop={pendingRouteForEndpoint?.stops?.[pendingRouteForEndpoint.stops.length - 1] || null}
+        onOpenChange={(open) => {
+          console.log('[Plan] EndpointDrawer onOpenChange:', open);
+          setShowEndpointConfirmation(open);
+        }}
+        lastStop={(() => {
+          const lastStop = pendingRouteForEndpoint?.stops?.[pendingRouteForEndpoint.stops.length - 1] || null;
+          console.log('[Plan] Passing lastStop to drawer:', lastStop?.name, 'open:', showEndpointConfirmation);
+          return lastStop;
+        })()}
         onConfirmLastStop={handleConfirmLastStop}
         onChooseDifferent={handleChooseDifferentEndpoint}
         onSaveForFuture={handleSaveForFuture}
