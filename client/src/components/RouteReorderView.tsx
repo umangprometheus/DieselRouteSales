@@ -22,7 +22,7 @@ import { restrictToVerticalAxis } from "@dnd-kit/modifiers";
 import { SortableItem } from "./SortableItem";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Navigation, MapPin, Clock, Route as RouteIcon, GripVertical, X, Plus } from "lucide-react";
+import { Navigation, MapPin, Clock, Route as RouteIcon, GripVertical, ArrowLeft } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import type { BuildRouteResponse } from "@shared/schema";
 
@@ -84,12 +84,12 @@ export function RouteReorderView({
     };
   }, [activeId]);
 
-  // Touch-friendly drag sensors with faster activation
+  // Touch-friendly drag sensors optimized to prevent scroll interference
   const sensors = useSensors(
     useSensor(TouchSensor, {
       activationConstraint: {
-        delay: 100, // Reduced from 250ms for more responsive dragging
-        tolerance: 5,
+        delay: 250, // Longer delay to distinguish from scroll gestures
+        tolerance: 1, // Very tight tolerance so scroll gestures don't trigger drag
       },
     }),
     useSensor(PointerSensor, {
@@ -229,25 +229,23 @@ export function RouteReorderView({
     >
       {/* Header */}
       <div className="flex-shrink-0 border-b">
-        <div className="flex items-center justify-between p-4">
-          <div className="flex items-center gap-2">
-            <RouteIcon className="h-5 w-5 text-primary" />
-            <div>
-              <h2 className="text-lg font-semibold">Edit Route</h2>
-              <p className="text-xs text-muted-foreground">
-                {editedStops.length} stop{editedStops.length !== 1 ? 's' : ''}
-                {customEndpoint && ' + custom endpoint'}
-              </p>
-            </div>
-          </div>
+        <div className="flex items-center gap-3 p-4">
           <Button
-            variant="ghost"
+            variant="outline"
             size="icon"
             onClick={handleCancel}
-            data-testid="button-close-route-edit"
+            data-testid="button-back-from-reorder"
+            className="flex-shrink-0"
           >
-            <X className="h-5 w-5" />
+            <ArrowLeft className="h-5 w-5 text-primary" />
           </Button>
+          <div className="flex-1">
+            <h2 className="text-xl font-semibold">Edit Route</h2>
+            <p className="text-xs text-muted-foreground">
+              {editedStops.length} stop{editedStops.length !== 1 ? 's' : ''}
+              {customEndpoint && ' + custom endpoint'}
+            </p>
+          </div>
         </div>
 
         {/* Summary Cards */}
@@ -361,26 +359,17 @@ export function RouteReorderView({
       </div>
 
       {/* Footer - Absolutely positioned to ensure it's above everything */}
-      <div className="absolute bottom-0 left-0 right-0 border-t p-4 pb-20 bg-background" style={{ zIndex: 10000 }}>
-        <div className="flex gap-2">
-          <button
-            type="button"
-            onClick={handleCancel}
-            className="flex-1 inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground min-h-9 px-4 py-2"
-            data-testid="button-cancel-route-edit"
-          >
-            Cancel
-          </button>
-          <button
-            type="button"
-            onClick={handleBuildRoute}
-            className="flex-1 inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground shadow hover:bg-primary/90 min-h-9 px-4 py-2"
-            data-testid="button-build-route"
-          >
-            <RouteIcon className="h-4 w-4 mr-2" />
-            Build Route
-          </button>
-        </div>
+      <div className="absolute bottom-0 left-0 right-0 border-t p-6 pb-20 bg-background space-y-3" style={{ zIndex: 10000 }}>
+        <button
+          type="button"
+          onClick={handleBuildRoute}
+          disabled={editedStops.length === 0}
+          className="w-full inline-flex items-center justify-center whitespace-nowrap rounded-md text-base font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground shadow hover:bg-primary/90 min-h-10 px-4 py-2"
+          data-testid="button-build-route"
+        >
+          <RouteIcon className="h-5 w-5 mr-2" />
+          Build Route
+        </button>
       </div>
     </div>
   );
