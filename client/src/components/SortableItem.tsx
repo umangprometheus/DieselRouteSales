@@ -64,19 +64,18 @@ export function SortableItem({
           isDragging ? "opacity-50 shadow-lg scale-105" : ""
         } ${disabled ? "opacity-75" : ""} ${
           isEndpoint ? "border-primary bg-primary/5" : ""
-        } ${!disabled ? "hover:shadow-md hover:border-primary/30 transition-all" : ""}`}
+        } ${!disabled ? "cursor-grab active:cursor-grabbing hover:shadow-md hover:border-primary/30 transition-all" : ""}`}
         data-testid={`stop-card-${index}`}
-        style={{ touchAction: 'pan-y' }}
+        {...(!disabled ? attributes : {})}
+        {...(!disabled ? listeners : {})}
       >
         <CardContent className="p-3">
           <div className="flex items-start gap-2">
-            {/* Drag Handle - Only this element receives drag listeners */}
+            {/* Visual Drag Indicator */}
             {!disabled && (
               <div
-                className="flex-shrink-0 p-1 -ml-1 cursor-grab active:cursor-grabbing touch-none"
-                data-testid={`drag-handle-${index}`}
-                {...attributes}
-                {...listeners}
+                className="flex-shrink-0 p-1 -ml-1 pointer-events-none"
+                data-testid={`drag-indicator-${index}`}
               >
                 <GripVertical className="h-4 w-4 text-muted-foreground" />
               </div>
