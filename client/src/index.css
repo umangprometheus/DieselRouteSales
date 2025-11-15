@@ -9,13 +9,24 @@ html, body {
 }
 
 /* Prevent text selection on interactive cards */
-[data-testid*="card-company-"] * {
+[data-testid*="card-company-"],
+[data-testid*="card-company-"] *,
+[data-testid*="card-company-"] p,
+[data-testid*="card-company-"] h3,
+[data-testid*="card-company-"] div,
+[data-testid*="card-company-"] span {
   -webkit-user-select: none !important;
   -moz-user-select: none !important;
   -ms-user-select: none !important;
   user-select: none !important;
   -webkit-touch-callout: none !important;
   -webkit-tap-highlight-color: transparent !important;
+  -webkit-user-drag: none !important;
+  pointer-events: none !important;
+}
+
+[data-testid*="card-company-"] {
+  pointer-events: auto !important;
 }
 
 /* Prevent viewport scrolling during drag operations */
