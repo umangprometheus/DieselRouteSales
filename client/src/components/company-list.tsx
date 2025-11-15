@@ -37,11 +37,16 @@ export default function CompanyList({
         return (
           <Card
             key={company.id}
-            className={`p-4 hover-elevate transition-all cursor-pointer ${
+            className={`p-4 hover-elevate transition-all cursor-pointer select-none ${
               isSelected ? "ring-2 ring-primary" : ""
             }`}
             onClick={() => onToggle(company.id)}
             data-testid={`card-company-${company.id}`}
+            style={{
+              WebkitUserSelect: 'none',
+              WebkitTouchCallout: 'none',
+              userSelect: 'none'
+            }}
           >
             <div className="flex items-start gap-3">
               <Checkbox
