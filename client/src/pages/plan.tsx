@@ -504,7 +504,7 @@ export default function PlanPage() {
         {/* Mobile Tab Controls - Always visible on mobile */}
         <div className="md:hidden sticky top-0 left-0 right-0 z-30 p-4 pb-4 bg-background">
           <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "map" | "list")} className="w-full">
-            <TabsList className="grid w-full grid-cols-2 bg-muted/50 p-1">
+            <TabsList className="grid w-full grid-cols-2 bg-muted/50 p-1.5">
               <TabsTrigger 
                 value="map" 
                 data-testid="tab-map" 
