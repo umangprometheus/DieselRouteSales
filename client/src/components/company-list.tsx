@@ -40,29 +40,8 @@ export default function CompanyList({
             className={`p-4 hover-elevate transition-all cursor-pointer select-none ${
               isSelected ? "ring-2 ring-primary" : ""
             }`}
-            onClick={(e) => {
-              e.preventDefault();
+            onClick={() => {
               onToggle(company.id);
-            }}
-            onTouchStart={(e) => {
-              e.preventDefault();
-              (e.currentTarget.style as any).webkitUserSelect = 'none';
-              e.currentTarget.style.userSelect = 'none';
-            }}
-            onTouchEnd={(e) => {
-              e.preventDefault();
-              onToggle(company.id);
-            }}
-            onMouseDown={(e) => {
-              e.preventDefault();
-            }}
-            onSelectStart={(e) => {
-              e.preventDefault();
-              return false;
-            }}
-            onContextMenu={(e) => {
-              e.preventDefault();
-              return false;
             }}
             data-testid={`card-company-${company.id}`}
             style={{
@@ -70,10 +49,7 @@ export default function CompanyList({
               WebkitTouchCallout: 'none',
               userSelect: 'none',
               WebkitTapHighlightColor: 'transparent',
-              WebkitUserDrag: 'none',
-              KhtmlUserSelect: 'none',
-              MozUserSelect: 'none',
-              msUserSelect: 'none'
+              touchAction: 'manipulation'
             } as React.CSSProperties}
           >
             <div className="flex items-start gap-3">
