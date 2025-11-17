@@ -741,15 +741,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const savedRoute = await storage.createRoute({
         userId,
         status: "saved",
-        isSavedRoute: true,
+        isTemplate: true,
         templateName: templateName || `Route from ${new Date(originalRoute.createdAt).toLocaleDateString()}`,
-        stops: originalRoute.stops,
-        customEndpoint: originalRoute.customEndpoint,
-        routeGeometry: originalRoute.routeGeometry,
+        stops: originalRoute.stops as any,
+        customEndpoint: originalRoute.customEndpoint as any,
+        routeGeometry: originalRoute.routeGeometry as any,
         totalDistanceMi: originalRoute.totalDistanceMi,
-        totalDurationMin: originalRoute.totalDurationMin,
-        startLat: originalRoute.startLat,
-        startLng: originalRoute.startLng,
+        totalEtaMin: originalRoute.totalEtaMin,
       });
       
       // Copy the stops to the new route

@@ -5,10 +5,12 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { DateFilterSheet } from "@/components/DateFilterSheet";
-import { MapPin, Clock, Edit2, Check, X, Filter } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { MapPin, Clock, Edit2, Check, X, Filter, BookmarkPlus } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import type { Route } from "@shared/schema";
@@ -37,6 +39,9 @@ export default function HistoryPage() {
     start: startOfDay(new Date()),
     end: endOfDay(new Date())
   });
+  const [saveDialogOpen, setSaveDialogOpen] = useState(false);
+  const [selectedRouteToSave, setSelectedRouteToSave] = useState<string | null>(null);
+  const [templateName, setTemplateName] = useState("");
 
   const startDate = format(dateRange.start, "yyyy-MM-dd");
   const endDate = format(dateRange.end, "yyyy-MM-dd");
@@ -86,6 +91,42 @@ export default function HistoryPage() {
     },
   });
 
+  const saveRouteMutation = useMutation({
+    mutationFn: async ({ routeId, templateName }: { routeId: string; templateName: string }) => {
+      return apiRequest("POST", `/api/routes/${routeId}/save`, { templateName });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/routes/saved"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/routes/history"] });
+      setSaveDialogOpen(false);
+      setSelectedRouteToSave(null);
+      setTemplateName("");
+      toast({
+        title: "Route saved",
+        description: "Route has been saved to your templates",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to save route",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleSaveRoute = (routeId: string, defaultName: string) => {
+    setSelectedRouteToSave(routeId);
+    setTemplateName(defaultName);
+    setSaveDialogOpen(true);
+  };
+
+  const handleConfirmSave = () => {
+    if (selectedRouteToSave && templateName.trim()) {
+      saveRouteMutation.mutate({ routeId: selectedRouteToSave, templateName: templateName.trim() });
+    }
+  };
+
   const routes = data?.routes || [];
 
   const formatTime = (dateString: string) => {
@@ -134,6 +175,43 @@ export default function HistoryPage() {
         onFilterChange={handleFilterChange}
       />
 
+      {/* Save Route Dialog */}
+      <Dialog open={saveDialogOpen} onOpenChange={setSaveDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Save Route as Template</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="template-name">Template Name</Label>
+              <Input
+                id="template-name"
+                placeholder="Enter a name for this route template"
+                value={templateName}
+                onChange={(e) => setTemplateName(e.target.value)}
+                data-testid="input-template-name"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setSaveDialogOpen(false)}
+              data-testid="button-cancel-save"
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleConfirmSave}
+              disabled={!templateName.trim() || saveRouteMutation.isPending}
+              data-testid="button-confirm-save"
+            >
+              {saveRouteMutation.isPending ? "Saving..." : "Save Template"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {/* Content */}
       <div className="max-w-2xl mx-auto p-4 pt-6">
         {/* Routes List */}
@@ -162,8 +240,8 @@ export default function HistoryPage() {
         ) : (
           <Accordion type="single" collapsible className="space-y-3">
             {routes.map((route) => {
-              const completedStops = route.checkIns?.length || 0;
-              const totalStops = completedStops;
+              const stopCount = (route as any).stopCount || route.checkIns?.length || 0;
+              const checkInCount = route.checkIns?.length || 0;
 
               return (
                 <AccordionItem
@@ -180,7 +258,7 @@ export default function HistoryPage() {
                             {format(new Date(route.createdAt), "MMM d, yyyy")}
                           </h3>
                           {route.status === "completed" && (
-                            <Badge variant="success" className="text-xs">
+                            <Badge variant="secondary" className="text-xs bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100">
                               Completed
                             </Badge>
                           )}
@@ -188,7 +266,7 @@ export default function HistoryPage() {
                         <div className="flex items-center gap-3 text-sm text-muted-foreground">
                           <span className="flex items-center gap-1">
                             <MapPin className="h-3 w-3" />
-                            {completedStops} stops
+                            {stopCount} stops
                           </span>
                           {route.totalDistanceMi && (
                             <span>{formatDistance(route.totalDistanceMi)}</span>
@@ -199,6 +277,22 @@ export default function HistoryPage() {
                   </AccordionTrigger>
 
                   <AccordionContent className="px-4 pb-4">
+                    {/* Save Route Button */}
+                    <div className="mb-4">
+                      <Button
+                        variant="outline"
+                        className="w-full h-11"
+                        onClick={() => handleSaveRoute(
+                          route.id,
+                          `Route from ${format(new Date(route.createdAt), "MMM d, yyyy")}`
+                        )}
+                        data-testid={`button-save-route-${route.id}`}
+                      >
+                        <BookmarkPlus className="h-4 w-4 mr-2" />
+                        Save as Template
+                      </Button>
+                    </div>
+
                     <div className="space-y-3">
                       {route.checkIns?.map((checkIn, index) => (
                         <Card key={checkIn.id} className="p-3">
