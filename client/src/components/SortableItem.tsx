@@ -32,6 +32,7 @@ export function SortableItem({
     attributes,
     listeners,
     setNodeRef,
+    setActivatorNodeRef,
     transform,
     transition,
     isDragging,
@@ -64,26 +65,29 @@ export function SortableItem({
           isDragging ? "opacity-50 shadow-lg scale-105" : ""
         } ${disabled ? "opacity-75" : ""} ${
           isEndpoint ? "border-primary bg-primary/5" : ""
-        } ${!disabled ? "cursor-grab active:cursor-grabbing hover:shadow-md hover:border-primary/30 transition-all select-none" : "select-none"}`}
+        } ${!disabled ? "hover:shadow-md hover:border-primary/30 transition-all" : ""}`}
         data-testid={`stop-card-${index}`}
         style={{
+          touchAction: 'pan-y',
           WebkitUserSelect: 'none',
           WebkitTouchCallout: 'none',
           userSelect: 'none'
         }}
-        {...(!disabled ? attributes : {})}
-        {...(!disabled ? listeners : {})}
       >
         <CardContent className="p-3">
           <div className="flex items-start gap-2">
-            {/* Visual Drag Indicator */}
+            {/* Drag Handle - Only this activates drag */}
             {!disabled && (
-              <div
-                className="flex-shrink-0 p-1 -ml-1 pointer-events-none"
-                data-testid={`drag-indicator-${index}`}
+              <button
+                ref={setActivatorNodeRef}
+                className="flex-shrink-0 p-1 -ml-1 cursor-grab active:cursor-grabbing touch-none"
+                data-testid={`drag-handle-${index}`}
+                aria-label="Drag to reorder"
+                {...attributes}
+                {...listeners}
               >
                 <GripVertical className="h-4 w-4 text-muted-foreground" />
-              </div>
+              </button>
             )}
 
             {/* Stop Number */}

@@ -84,17 +84,17 @@ export function RouteReorderView({
     };
   }, [activeId]);
 
-  // Touch-friendly drag sensors optimized to prevent scroll interference
+  // Touch-friendly drag sensors - handle-only activation with optimized timing
   const sensors = useSensors(
     useSensor(TouchSensor, {
       activationConstraint: {
-        delay: 350, // Longer delay to clearly distinguish from scroll gestures
-        tolerance: 8, // Slightly more tolerance to allow settling before drag starts
+        delay: 250, // Optimal delay for grip handle activation
+        tolerance: 6, // Tight tolerance since only handle activates drag
       },
     }),
     useSensor(PointerSensor, {
       activationConstraint: {
-        distance: 8,
+        distance: 6, // Consistent with touch tolerance
       },
     }),
     useSensor(KeyboardSensor, {
