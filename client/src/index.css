@@ -3,7 +3,15 @@
 @tailwind utilities;
 
 /* Prevent pull-to-refresh on mobile Chrome/Safari */
-html, body {
+html {
+  overscroll-behavior-y: none;
+  -webkit-overflow-scrolling: touch;
+  /* Reserve space for scrollbar to prevent layout shift */
+  overflow-y: scroll;
+  scrollbar-gutter: stable;
+}
+
+body {
   overscroll-behavior-y: none;
   -webkit-overflow-scrolling: touch;
 }

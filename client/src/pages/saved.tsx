@@ -218,7 +218,7 @@ export default function SavedPage() {
                    typeof route.customEndpoint === 'object' && 
                    'label' in route.customEndpoint && (
                     <div className="text-xs text-muted-foreground bg-muted/50 rounded px-2 py-1 mb-3">
-                      Ends at: {String((route.customEndpoint as any).label)}
+                      Ends at: {(route.customEndpoint as { label: string }).label}
                     </div>
                   )}
 
@@ -257,7 +257,7 @@ export default function SavedPage() {
                   {/* Action Buttons */}
                   <div className="flex gap-2">
                     <Button
-                      onClick={() => handleBuildRoute(route.id, route.templateName)}
+                      onClick={() => handleBuildRoute(route.id, route.templateName || "Unnamed Route")}
                       className="flex-1"
                       disabled={buildFromSavedMutation.isPending}
                       data-testid={`button-build-route-${route.id}`}
