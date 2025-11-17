@@ -7,14 +7,13 @@ import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { Calendar } from "@/components/ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { ArrowLeft, MapPin, Clock, Edit2, Check, X, CalendarIcon } from "lucide-react";
+import { DateFilterSheet } from "@/components/DateFilterSheet";
+import { MapPin, Clock, Edit2, Check, X, Filter } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import type { Route } from "@shared/schema";
 import mspLogo from "@assets/msp_logo_1762965721886.png";
-import { format, startOfDay, endOfDay, subDays, startOfWeek, endOfWeek, startOfMonth, endOfMonth, subWeeks, subMonths } from "date-fns";
+import { format, startOfDay, endOfDay } from "date-fns";
 
 interface RouteWithDetails extends Route {
   checkIns?: Array<{
@@ -28,44 +27,41 @@ interface RouteWithDetails extends Route {
   }>;
 }
 
-type DateFilter = "today" | "yesterday" | "this-week" | "last-week" | "this-month" | "last-month" | "custom";
-
 export default function HistoryPage() {
   const [, navigate] = useLocation();
   const { toast } = useToast();
   const [editingNote, setEditingNote] = useState<{ checkInId: string; note: string } | null>(null);
-  const [dateFilter, setDateFilter] = useState<DateFilter>("today");
-  const [customDate, setCustomDate] = useState<Date>(new Date());
+  const [dateFilterOpen, setDateFilterOpen] = useState(false);
+  const [selectedFilter, setSelectedFilter] = useState("today");
+  const [dateRange, setDateRange] = useState({
+    start: startOfDay(new Date()),
+    end: endOfDay(new Date())
+  });
 
-  const getDateRange = (): { start: Date; end: Date } => {
-    const now = new Date();
-    
-    switch (dateFilter) {
-      case "today":
-        return { start: startOfDay(now), end: endOfDay(now) };
-      case "yesterday":
-        const yesterday = subDays(now, 1);
-        return { start: startOfDay(yesterday), end: endOfDay(yesterday) };
-      case "this-week":
-        return { start: startOfWeek(now), end: endOfWeek(now) };
-      case "last-week":
-        const lastWeek = subWeeks(now, 1);
-        return { start: startOfWeek(lastWeek), end: endOfWeek(lastWeek) };
-      case "this-month":
-        return { start: startOfMonth(now), end: endOfMonth(now) };
-      case "last-month":
-        const lastMonth = subMonths(now, 1);
-        return { start: startOfMonth(lastMonth), end: endOfMonth(lastMonth) };
-      case "custom":
-        return { start: startOfDay(customDate), end: endOfDay(customDate) };
-      default:
-        return { start: startOfDay(now), end: endOfDay(now) };
-    }
+  const startDate = format(dateRange.start, "yyyy-MM-dd");
+  const endDate = format(dateRange.end, "yyyy-MM-dd");
+
+  const handleFilterChange = (filter: string, start: Date, end: Date) => {
+    setSelectedFilter(filter);
+    setDateRange({ start, end });
   };
 
-  const { start, end } = getDateRange();
-  const startDate = format(start, "yyyy-MM-dd");
-  const endDate = format(end, "yyyy-MM-dd");
+  const getFilterLabel = () => {
+    const filterLabels: Record<string, string> = {
+      today: "Today",
+      yesterday: "Yesterday",
+      thisWeek: "This Week",
+      lastWeek: "Last Week",
+      thisMonth: "This Month",
+      lastMonth: "Last Month"
+    };
+
+    if (selectedFilter === "custom") {
+      return format(dateRange.start, "MMM d, yyyy");
+    }
+    
+    return filterLabels[selectedFilter] || "Select Date";
+  };
 
   const { data, isLoading } = useQuery<{ routes: RouteWithDetails[] }>({
     queryKey: ["/api/routes/history", startDate, endDate],
@@ -92,208 +88,203 @@ export default function HistoryPage() {
 
   const routes = data?.routes || [];
 
-  const filterButtons: { label: string; value: DateFilter }[] = [
-    { label: "Today", value: "today" },
-    { label: "Yesterday", value: "yesterday" },
-    { label: "This Week", value: "this-week" },
-    { label: "Last Week", value: "last-week" },
-    { label: "This Month", value: "this-month" },
-    { label: "Last Month", value: "last-month" },
-  ];
+  const formatTime = (dateString: string) => {
+    return new Date(dateString).toLocaleTimeString("en-US", {
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
+    });
+  };
+
+  const formatDistance = (miles: number | null) => {
+    if (!miles) return "—";
+    if (miles < 0.5) {
+      return `${Math.round(miles * 5280)} ft`;
+    }
+    return `${miles.toFixed(1)} mi`;
+  };
 
   return (
     <div className="min-h-screen bg-background pb-20 md:pb-0">
       {/* Header */}
-      <header className="sticky top-0 z-10 pt-safe px-4 flex items-center justify-between border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 min-h-[56px]">
+      <header className="sticky top-0 z-10 px-4 pt-safe flex items-center justify-between gap-2 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 min-h-[56px]">
         <img 
           src={mspLogo} 
           alt="MSP Diesel Solutions" 
-          className="h-8 w-auto"
+          className="h-8 w-auto flex-shrink-0"
         />
+        
+        {/* Date Filter Button */}
+        <Button
+          variant="outline"
+          className="h-10 gap-2"
+          onClick={() => setDateFilterOpen(true)}
+          data-testid="button-date-filter"
+        >
+          <Filter className="h-4 w-4" />
+          <span className="font-medium">{getFilterLabel()}</span>
+        </Button>
       </header>
 
+      {/* Date Filter Sheet */}
+      <DateFilterSheet
+        open={dateFilterOpen}
+        onOpenChange={setDateFilterOpen}
+        selectedFilter={selectedFilter}
+        onFilterChange={handleFilterChange}
+      />
+
       {/* Content */}
-      <div className="max-w-4xl mx-auto p-4 space-y-4">
-        {/* Date Filter */}
-        <Card>
-          <CardContent className="p-4">
-            <div className="space-y-3">
-              {/* Quick Filters */}
-              <div className="flex flex-wrap gap-2">
-                {filterButtons.map((filter) => (
-                  <Button
-                    key={filter.value}
-                    variant={dateFilter === filter.value ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => setDateFilter(filter.value)}
-                    data-testid={`button-filter-${filter.value}`}
-                  >
-                    {filter.label}
-                  </Button>
-                ))}
-              </div>
-
-              {/* Custom Date Picker */}
-              <div className="flex items-center gap-3">
-                <CalendarIcon className="w-5 h-5 text-muted-foreground" />
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant={dateFilter === "custom" ? "default" : "outline"}
-                      className="flex-1 justify-start text-left font-normal min-h-[44px]"
-                      onClick={() => setDateFilter("custom")}
-                      data-testid="button-custom-date"
-                    >
-                      {dateFilter === "custom" ? format(customDate, "MMMM dd, yyyy") : "Custom Date"}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar
-                      mode="single"
-                      selected={customDate}
-                      onSelect={(date) => {
-                        if (date) {
-                          setCustomDate(date);
-                          setDateFilter("custom");
-                        }
-                      }}
-                      initialFocus
-                    />
-                  </PopoverContent>
-                </Popover>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
+      <div className="max-w-2xl mx-auto p-4 pt-6">
         {/* Routes List */}
-        <div>
         {isLoading ? (
-          <p className="text-center text-muted-foreground py-8">Loading routes...</p>
+          <div className="space-y-4">
+            {[1, 2, 3].map((i) => (
+              <Card key={i} className="p-4">
+                <div className="animate-pulse space-y-3">
+                  <div className="h-5 bg-muted rounded w-1/3" />
+                  <div className="h-4 bg-muted rounded w-2/3" />
+                  <div className="h-4 bg-muted rounded w-1/2" />
+                </div>
+              </Card>
+            ))}
+          </div>
         ) : routes.length === 0 ? (
           <Card>
-            <CardContent className="py-12 text-center">
-              <MapPin className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
-              <p className="text-sm font-medium text-foreground">No completed routes</p>
-              <p className="text-xs text-muted-foreground mt-1">
-                Your completed routes will appear here
+            <CardContent className="p-8 text-center">
+              <MapPin className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+              <h3 className="text-lg font-semibold mb-2">No routes found</h3>
+              <p className="text-sm text-muted-foreground">
+                Completed routes for {getFilterLabel().toLowerCase()} will appear here
               </p>
             </CardContent>
           </Card>
         ) : (
-          <Accordion type="single" collapsible className="space-y-4">
+          <Accordion type="single" collapsible className="space-y-3">
             {routes.map((route) => {
-              const stops = route.stops as any[];
-              const completedStops = stops.filter((s) => s.completed);
-              const routeDate = new Date(route.createdAt);
+              const completedStops = route.checkIns?.length || 0;
+              const totalStops = completedStops;
 
               return (
-                <AccordionItem key={route.id} value={route.id} className="border rounded-lg bg-card">
-                  <AccordionTrigger className="px-4 hover:no-underline" data-testid={`accordion-route-${route.id}`}>
-                    <div className="flex items-start justify-between gap-3 w-full pr-4">
-                      <div className="flex-1 text-left">
-                        <h3 className="font-semibold text-foreground">
-                          {routeDate.toLocaleDateString("en-US", {
-                            weekday: "long",
-                            month: "long",
-                            day: "numeric",
-                            year: "numeric",
-                          })}
-                        </h3>
-                        <div className="flex items-center gap-2 mt-1 text-sm text-muted-foreground">
-                          <Clock className="w-3 h-3" />
-                          {routeDate.toLocaleTimeString("en-US", {
-                            hour: "numeric",
-                            minute: "2-digit",
-                          })}
+                <AccordionItem
+                  key={route.id}
+                  value={route.id}
+                  className="rounded-lg border bg-background overflow-hidden"
+                  data-testid={`route-${route.id}`}
+                >
+                  <AccordionTrigger className="hover:no-underline px-4 py-3">
+                    <div className="flex items-start justify-between w-full mr-2">
+                      <div className="flex-1 min-w-0 text-left">
+                        <div className="flex items-center gap-2 mb-1">
+                          <h3 className="font-medium text-base">
+                            {format(new Date(route.createdAt), "MMM d, yyyy")}
+                          </h3>
+                          {route.status === "completed" && (
+                            <Badge variant="success" className="text-xs">
+                              Completed
+                            </Badge>
+                          )}
                         </div>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Badge variant="secondary" className="shrink-0">
-                          {completedStops.length}/{stops.length} stops
-                        </Badge>
+                        <div className="flex items-center gap-3 text-sm text-muted-foreground">
+                          <span className="flex items-center gap-1">
+                            <MapPin className="h-3 w-3" />
+                            {completedStops} stops
+                          </span>
+                          {route.totalDistanceMi && (
+                            <span>{formatDistance(route.totalDistanceMi)}</span>
+                          )}
+                        </div>
                       </div>
                     </div>
                   </AccordionTrigger>
-                  <AccordionContent className="px-4">
-                    <div className="space-y-3 pt-2">
-                      {stops.map((stop, idx) => {
-                        // Find corresponding check-in for this stop
-                        const checkIn = route.checkIns?.find(
-                          (ci) => ci.companyId === stop.companyId
-                        );
 
-                        return (
-                          <div
-                            key={stop.companyId}
-                            className={`flex items-start gap-3 p-3 rounded-lg ${
-                              stop.completed
-                                ? "bg-success/10 border border-success/20"
-                                : "bg-muted/50"
-                            }`}
-                          >
-                            <div className="w-8 h-8 rounded-full bg-background flex items-center justify-center flex-shrink-0 text-sm font-semibold">
-                              {idx + 1}
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <h4 className="font-semibold text-foreground">{stop.name}</h4>
-                              {(stop.street || stop.city) && (
-                                <p className="text-sm text-muted-foreground mt-0.5">
-                                  {[stop.street, stop.city, stop.state]
-                                    .filter(Boolean)
-                                    .join(", ")}
+                  <AccordionContent className="px-4 pb-4">
+                    <div className="space-y-3">
+                      {route.checkIns?.map((checkIn, index) => (
+                        <Card key={checkIn.id} className="p-3">
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="flex gap-3 flex-1 min-w-0">
+                              <div className="w-7 h-7 rounded-full bg-success/10 flex items-center justify-center flex-shrink-0">
+                                <span className="text-xs font-semibold text-success">
+                                  {index + 1}
+                                </span>
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <h4 className="font-medium text-sm truncate">
+                                  {checkIn.companyName}
+                                </h4>
+                                <p className="text-xs text-muted-foreground mt-1">
+                                  <Clock className="inline-block w-3 h-3 mr-1" />
+                                  {formatTime(checkIn.timestamp)}
                                 </p>
-                              )}
-                              {stop.completed && checkIn && (
-                                <div className="mt-2 space-y-2">
-                                  <Badge variant="default">
-                                    <Check className="w-3 h-3 mr-1" />
-                                    Visited
-                                  </Badge>
-                                  {checkIn.note && (
-                                    <p className="text-sm text-muted-foreground italic border-l-2 border-muted pl-2 mt-2">
-                                      "{checkIn.note}"
+                                {checkIn.note ? (
+                                  editingNote?.checkInId === checkIn.id ? (
+                                    <div className="mt-2 space-y-2">
+                                      <Textarea
+                                        value={editingNote.note}
+                                        onChange={(e) =>
+                                          setEditingNote({
+                                            ...editingNote,
+                                            note: e.target.value,
+                                          })
+                                        }
+                                        className="min-h-[60px] text-sm"
+                                        placeholder="Add a note..."
+                                        autoFocus
+                                      />
+                                      <div className="flex gap-2">
+                                        <Button
+                                          size="sm"
+                                          onClick={() =>
+                                            updateNoteMutation.mutate({
+                                              checkInId: checkIn.id,
+                                              note: editingNote.note,
+                                            })
+                                          }
+                                          disabled={updateNoteMutation.isPending}
+                                          data-testid={`button-save-note-${checkIn.id}`}
+                                        >
+                                          <Check className="h-3 w-3 mr-1" />
+                                          Save
+                                        </Button>
+                                        <Button
+                                          size="sm"
+                                          variant="outline"
+                                          onClick={() => setEditingNote(null)}
+                                          data-testid={`button-cancel-note-${checkIn.id}`}
+                                        >
+                                          <X className="h-3 w-3 mr-1" />
+                                          Cancel
+                                        </Button>
+                                      </div>
+                                    </div>
+                                  ) : (
+                                    <p className="text-sm text-muted-foreground mt-2 break-words">
+                                      {checkIn.note}
                                     </p>
-                                  )}
-                                  <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={() =>
-                                      setEditingNote({
-                                        checkInId: checkIn.id,
-                                        note: checkIn.note || "",
-                                      })
-                                    }
-                                    className="h-9 text-xs"
-                                    data-testid={`button-edit-note-${idx}`}
-                                  >
-                                    <Edit2 className="w-3 h-3 mr-1" />
-                                    {checkIn.note ? "Edit Note" : "Add Note"}
-                                  </Button>
-                                </div>
-                              )}
+                                  )
+                                ) : null}
+                              </div>
                             </div>
+                            {!editingNote || editingNote.checkInId !== checkIn.id ? (
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                className="h-8 w-8 p-0"
+                                onClick={() =>
+                                  setEditingNote({
+                                    checkInId: checkIn.id,
+                                    note: checkIn.note || "",
+                                  })
+                                }
+                                data-testid={`button-edit-note-${checkIn.id}`}
+                              >
+                                <Edit2 className="h-3 w-3" />
+                              </Button>
+                            ) : null}
                           </div>
-                        );
-                      })}
-
-                      <div className="pt-2 border-t">
-                        <p className="text-sm font-medium text-muted-foreground mb-2">
-                          Route Stats
-                        </p>
-                        <div className="grid grid-cols-2 gap-4 text-sm">
-                          <div>
-                            <span className="text-muted-foreground">Distance:</span>{" "}
-                            <span className="font-semibold">
-                              {route.totalDistanceMi.toFixed(1)} mi
-                            </span>
-                          </div>
-                          <div>
-                            <span className="text-muted-foreground">Est. Time:</span>{" "}
-                            <span className="font-semibold">{route.totalEtaMin} min</span>
-                          </div>
-                        </div>
-                      </div>
+                        </Card>
+                      ))}
                     </div>
                   </AccordionContent>
                 </AccordionItem>
@@ -301,48 +292,7 @@ export default function HistoryPage() {
             })}
           </Accordion>
         )}
-        </div>
       </div>
-
-      {/* Edit Note Dialog */}
-      {editingNote && (
-        <Dialog open={true} onOpenChange={() => setEditingNote(null)}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Edit Check-In Note</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4 pt-4">
-              <Textarea
-                value={editingNote.note}
-                onChange={(e) =>
-                  setEditingNote({ ...editingNote, note: e.target.value })
-                }
-                placeholder="Add notes about this visit..."
-                className="min-h-[100px]"
-              />
-              <div className="flex justify-end gap-2">
-                <Button variant="outline" onClick={() => setEditingNote(null)} className="min-h-[44px]">
-                  <X className="w-4 h-4 mr-2" />
-                  Cancel
-                </Button>
-                <Button
-                  onClick={() =>
-                    updateNoteMutation.mutate({
-                      checkInId: editingNote.checkInId,
-                      note: editingNote.note,
-                    })
-                  }
-                  disabled={updateNoteMutation.isPending}
-                  className="min-h-[44px]"
-                >
-                  <Check className="w-4 h-4 mr-2" />
-                  Save
-                </Button>
-              </div>
-            </div>
-          </DialogContent>
-        </Dialog>
-      )}
     </div>
   );
 }
