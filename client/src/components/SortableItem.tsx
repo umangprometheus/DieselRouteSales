@@ -80,13 +80,13 @@ export function SortableItem({
             {!disabled && (
               <button
                 ref={setActivatorNodeRef}
-                className="flex-shrink-0 p-1 -ml-1 cursor-grab active:cursor-grabbing touch-none"
+                className="flex-shrink-0 p-2 -ml-2 cursor-grab active:cursor-grabbing touch-none"
                 data-testid={`drag-handle-${index}`}
                 aria-label="Drag to reorder"
                 {...attributes}
                 {...listeners}
               >
-                <GripVertical className="h-4 w-4 text-primary" />
+                <GripVertical className="h-6 w-6 text-primary" />
               </button>
             )}
 
@@ -118,22 +118,22 @@ export function SortableItem({
                     <Button
                       size="icon"
                       variant="outline"
-                      className="h-6 w-6"
+                      className="h-8 w-8"
                       onClick={onMoveUp}
                       disabled={!canMoveUp}
                       data-testid={`move-up-${index}`}
                     >
-                      <ChevronUp className="h-3 w-3 text-primary" />
+                      <ChevronUp className="h-5 w-5 text-primary" />
                     </Button>
                     <Button
                       size="icon"
                       variant="outline"
-                      className="h-6 w-6"
+                      className="h-8 w-8"
                       onClick={onMoveDown}
                       disabled={!canMoveDown}
                       data-testid={`move-down-${index}`}
                     >
-                      <ChevronDown className="h-3 w-3 text-primary" />
+                      <ChevronDown className="h-5 w-5 text-primary" />
                     </Button>
                   </div>
                 )}
