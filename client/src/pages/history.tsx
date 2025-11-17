@@ -7,11 +7,14 @@ import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { ArrowLeft, MapPin, Clock, Edit2, Check, X } from "lucide-react";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { ArrowLeft, MapPin, Clock, Edit2, Check, X, CalendarIcon } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import type { Route } from "@shared/schema";
 import mspLogo from "@assets/msp_logo_1762965721886.png";
+import { format, startOfDay, endOfDay, subDays, startOfWeek, endOfWeek, startOfMonth, endOfMonth, subWeeks, subMonths } from "date-fns";
 
 interface RouteWithDetails extends Route {
   checkIns?: Array<{
@@ -25,15 +28,49 @@ interface RouteWithDetails extends Route {
   }>;
 }
 
+type DateFilter = "today" | "yesterday" | "this-week" | "last-week" | "this-month" | "last-month" | "custom";
+
 export default function HistoryPage() {
   const [, navigate] = useLocation();
   const { toast } = useToast();
   const [editingNote, setEditingNote] = useState<{ checkInId: string; note: string } | null>(null);
+  const [dateFilter, setDateFilter] = useState<DateFilter>("today");
+  const [customDate, setCustomDate] = useState<Date>(new Date());
+
+  const getDateRange = (): { start: Date; end: Date } => {
+    const now = new Date();
+    
+    switch (dateFilter) {
+      case "today":
+        return { start: startOfDay(now), end: endOfDay(now) };
+      case "yesterday":
+        const yesterday = subDays(now, 1);
+        return { start: startOfDay(yesterday), end: endOfDay(yesterday) };
+      case "this-week":
+        return { start: startOfWeek(now), end: endOfWeek(now) };
+      case "last-week":
+        const lastWeek = subWeeks(now, 1);
+        return { start: startOfWeek(lastWeek), end: endOfWeek(lastWeek) };
+      case "this-month":
+        return { start: startOfMonth(now), end: endOfMonth(now) };
+      case "last-month":
+        const lastMonth = subMonths(now, 1);
+        return { start: startOfMonth(lastMonth), end: endOfMonth(lastMonth) };
+      case "custom":
+        return { start: startOfDay(customDate), end: endOfDay(customDate) };
+      default:
+        return { start: startOfDay(now), end: endOfDay(now) };
+    }
+  };
+
+  const { start, end } = getDateRange();
+  const startDate = format(start, "yyyy-MM-dd");
+  const endDate = format(end, "yyyy-MM-dd");
 
   const { data, isLoading } = useQuery<{ routes: RouteWithDetails[] }>({
-    queryKey: ["/api/routes/history"],
+    queryKey: ["/api/routes/history", startDate, endDate],
     queryFn: async () => {
-      const response = await fetch("/api/routes/history?status=completed");
+      const response = await fetch(`/api/routes/history?status=completed&startDate=${startDate}&endDate=${endDate}`);
       if (!response.ok) throw new Error("Failed to fetch route history");
       return response.json();
     },
@@ -55,6 +92,15 @@ export default function HistoryPage() {
 
   const routes = data?.routes || [];
 
+  const filterButtons: { label: string; value: DateFilter }[] = [
+    { label: "Today", value: "today" },
+    { label: "Yesterday", value: "yesterday" },
+    { label: "This Week", value: "this-week" },
+    { label: "Last Week", value: "last-week" },
+    { label: "This Month", value: "this-month" },
+    { label: "Last Month", value: "last-month" },
+  ];
+
   return (
     <div className="min-h-screen bg-background pb-20 md:pb-0">
       {/* Header */}
@@ -67,7 +113,61 @@ export default function HistoryPage() {
       </header>
 
       {/* Content */}
-      <div className="max-w-4xl mx-auto p-4">
+      <div className="max-w-4xl mx-auto p-4 space-y-4">
+        {/* Date Filter */}
+        <Card>
+          <CardContent className="p-4">
+            <div className="space-y-3">
+              {/* Quick Filters */}
+              <div className="flex flex-wrap gap-2">
+                {filterButtons.map((filter) => (
+                  <Button
+                    key={filter.value}
+                    variant={dateFilter === filter.value ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setDateFilter(filter.value)}
+                    data-testid={`button-filter-${filter.value}`}
+                  >
+                    {filter.label}
+                  </Button>
+                ))}
+              </div>
+
+              {/* Custom Date Picker */}
+              <div className="flex items-center gap-3">
+                <CalendarIcon className="w-5 h-5 text-muted-foreground" />
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant={dateFilter === "custom" ? "default" : "outline"}
+                      className="flex-1 justify-start text-left font-normal min-h-[44px]"
+                      onClick={() => setDateFilter("custom")}
+                      data-testid="button-custom-date"
+                    >
+                      {dateFilter === "custom" ? format(customDate, "MMMM dd, yyyy") : "Custom Date"}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={customDate}
+                      onSelect={(date) => {
+                        if (date) {
+                          setCustomDate(date);
+                          setDateFilter("custom");
+                        }
+                      }}
+                      initialFocus
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Routes List */}
+        <div>
         {isLoading ? (
           <p className="text-center text-muted-foreground py-8">Loading routes...</p>
         ) : routes.length === 0 ? (
@@ -201,6 +301,7 @@ export default function HistoryPage() {
             })}
           </Accordion>
         )}
+        </div>
       </div>
 
       {/* Edit Note Dialog */}

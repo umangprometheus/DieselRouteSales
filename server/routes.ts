@@ -664,7 +664,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/routes/history", requireAuth, async (req, res) => {
     try {
       const status = req.query.status as string | undefined;
-      const routes = await storage.getRoutesByUser((req as any).session.userId, status);
+      const startDate = req.query.startDate as string | undefined;
+      const endDate = req.query.endDate as string | undefined;
+      const routes = await storage.getRoutesByUser((req as any).session.userId, status, startDate, endDate);
       res.json({ routes });
     } catch (error) {
       console.error("Error fetching route history:", error);

@@ -214,13 +214,19 @@ export default function SavedPage() {
                 
                 <AccordionContent className="px-4 pb-4">
                   {/* Custom Endpoint */}
-                  {route.customEndpoint && 
-                   typeof route.customEndpoint === 'object' && 
-                   'label' in route.customEndpoint && (
-                    <div className="text-xs text-muted-foreground bg-muted/50 rounded px-2 py-1 mb-3">
-                      Ends at: {(route.customEndpoint as { label: string }).label}
-                    </div>
-                  )}
+                  {(() => {
+                    if (route.customEndpoint && 
+                        typeof route.customEndpoint === 'object' && 
+                        'label' in route.customEndpoint) {
+                      const label = (route.customEndpoint as { label: string }).label;
+                      return (
+                        <div className="text-xs text-muted-foreground bg-muted/50 rounded px-2 py-1 mb-3">
+                          Ends at: {label}
+                        </div>
+                      );
+                    }
+                    return null;
+                  })()}
 
                   {/* Stops List */}
                   {route.stops && route.stops.length > 0 && (

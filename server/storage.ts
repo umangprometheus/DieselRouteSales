@@ -38,7 +38,7 @@ export interface IStorage {
 
   getRoute(id: string): Promise<Route | undefined>;
   getActiveRoute(userId: string): Promise<Route | undefined>;
-  getRoutesByUser(userId: string, status?: string): Promise<Route[]>;
+  getRoutesByUser(userId: string, status?: string, startDate?: string, endDate?: string): Promise<Route[]>;
   createRoute(route: InsertRoute): Promise<Route>;
   updateRoute(id: string, updates: Partial<Route>): Promise<Route>;
   deleteRoute(id: string): Promise<void>;
@@ -205,18 +205,25 @@ export class DbStorage implements IStorage {
     return route;
   }
 
-  async getRoutesByUser(userId: string, status?: string): Promise<Route[]> {
+  async getRoutesByUser(userId: string, status?: string, startDate?: string, endDate?: string): Promise<Route[]> {
+    const conditions = [eq(schema.routes.userId, userId)];
+    
     if (status) {
-      return await db
-        .select()
-        .from(schema.routes)
-        .where(and(eq(schema.routes.userId, userId), eq(schema.routes.status, status)))
-        .orderBy(desc(schema.routes.createdAt));
+      conditions.push(eq(schema.routes.status, status));
     }
+    
+    if (startDate) {
+      conditions.push(gte(schema.routes.createdAt, new Date(startDate + 'T00:00:00')));
+    }
+    
+    if (endDate) {
+      conditions.push(lte(schema.routes.createdAt, new Date(endDate + 'T23:59:59')));
+    }
+    
     return await db
       .select()
       .from(schema.routes)
-      .where(eq(schema.routes.userId, userId))
+      .where(and(...conditions))
       .orderBy(desc(schema.routes.createdAt));
   }
 
