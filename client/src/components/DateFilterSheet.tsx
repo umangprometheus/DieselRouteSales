@@ -129,16 +129,17 @@ export function DateFilterSheet({
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent 
         side="bottom" 
-        className="h-auto max-h-[85vh]"
+        className="flex h-[85vh] flex-col overflow-hidden"
         onOpenAutoFocus={(e) => e.preventDefault()}
       >
-        <SheetHeader>
+        <SheetHeader className="flex-shrink-0">
           <SheetTitle>Select Date Range</SheetTitle>
         </SheetHeader>
 
-        <div className="mt-6 space-y-4">
+        {/* Scrollable Content Area */}
+        <div className="flex-1 overflow-y-auto mt-4 -mx-6 px-6">
           {/* Quick Filters */}
-          <div className="space-y-2">
+          <div className="space-y-1">
             <RadioGroup 
               value={tempFilter === "custom" ? "" : tempFilter} 
               onValueChange={handleQuickFilterChange}
@@ -147,47 +148,39 @@ export function DateFilterSheet({
                 <Label
                   key={option.id}
                   htmlFor={option.id}
-                  className="flex items-center justify-between p-4 min-h-[48px] rounded-lg border bg-background cursor-pointer hover-elevate active-elevate-2"
+                  className="flex items-center py-2.5 px-3 rounded-lg border bg-background cursor-pointer hover-elevate active-elevate-2"
                   data-testid={`filter-${option.id}`}
                 >
-                  <div className="flex items-center gap-3">
-                    <RadioGroupItem value={option.id} id={option.id} />
-                    <div>
-                      <div className="font-medium text-base">{option.label}</div>
-                      <div className="text-sm text-muted-foreground">{option.subtitle}</div>
-                    </div>
+                  <RadioGroupItem value={option.id} id={option.id} className="flex-shrink-0" />
+                  <div className="ml-3 flex-1">
+                    <div className="font-medium text-sm">{option.label}</div>
+                    <div className="text-xs text-muted-foreground">{option.subtitle}</div>
                   </div>
-                  {selectedFilter === option.id && (
-                    <Check className="h-4 w-4 text-success" />
-                  )}
                 </Label>
               ))}
             </RadioGroup>
           </div>
 
           {/* Custom Date Option */}
-          <div>
+          <div className="mt-3">
             <Button
               variant={showCustomPicker ? "default" : "outline"}
-              className="w-full h-12 justify-start text-left"
+              className="w-full h-11 justify-start text-left"
               onClick={handleCustomClick}
               data-testid="button-custom-date"
             >
-              <CalendarIcon className="mr-3 h-4 w-4" />
-              <span className="flex-1">
+              <CalendarIcon className="mr-2 h-4 w-4" />
+              <span className="flex-1 text-sm">
                 {customDate && tempFilter === "custom" 
                   ? format(customDate, "MMMM d, yyyy")
                   : "Select Custom Date"
                 }
               </span>
-              {selectedFilter === "custom" && customDate && (
-                <Check className="h-4 w-4 text-success ml-2" />
-              )}
             </Button>
 
             {/* Custom Date Picker */}
             {showCustomPicker && (
-              <div className="mt-4 flex justify-center">
+              <div className="mt-3 flex justify-center">
                 <Calendar
                   mode="single"
                   selected={customDate}
@@ -203,26 +196,26 @@ export function DateFilterSheet({
               </div>
             )}
           </div>
+        </div>
 
-          {/* Action Buttons */}
-          <div className="flex gap-3 pt-4 border-t">
-            <Button
-              variant="outline"
-              className="flex-1 h-12"
-              onClick={() => onOpenChange(false)}
-              data-testid="button-cancel"
-            >
-              Cancel
-            </Button>
-            <Button
-              variant="default"
-              className="flex-1 h-12"
-              onClick={handleApply}
-              data-testid="button-apply"
-            >
-              Apply Filter
-            </Button>
-          </div>
+        {/* Sticky Action Buttons */}
+        <div className="flex-shrink-0 flex gap-3 pt-4 mt-auto border-t bg-background">
+          <Button
+            variant="outline"
+            className="flex-1 h-11"
+            onClick={() => onOpenChange(false)}
+            data-testid="button-cancel"
+          >
+            Cancel
+          </Button>
+          <Button
+            variant="default"
+            className="flex-1 h-11"
+            onClick={handleApply}
+            data-testid="button-apply"
+          >
+            Apply Filter
+          </Button>
         </div>
       </SheetContent>
     </Sheet>
