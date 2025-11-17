@@ -667,10 +667,112 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const startDate = req.query.startDate as string | undefined;
       const endDate = req.query.endDate as string | undefined;
       const routes = await storage.getRoutesByUser((req as any).session.userId, status, startDate, endDate);
-      res.json({ routes });
+      
+      // Add check-ins and stops data for each route
+      const routesWithDetails = await Promise.all(
+        routes.map(async (route) => {
+          // Get route stops
+          const stops = await storage.getRouteStops(route.id);
+          
+          // Get check-ins for this route (based on date)
+          const checkIns = await storage.getCheckInsByUser((req as any).session.userId);
+          
+          // Filter check-ins that happened during this route's timeframe
+          const routeCheckIns = checkIns.filter(checkIn => {
+            const checkInTime = new Date(checkIn.timestamp);
+            const routeStart = new Date(route.createdAt);
+            const routeEnd = route.completedAt ? new Date(route.completedAt) : new Date();
+            return checkInTime >= routeStart && checkInTime <= routeEnd;
+          });
+          
+          // Get company details for check-ins
+          const checkInsWithCompanies = await Promise.all(
+            routeCheckIns.map(async (checkIn) => {
+              const company = await storage.getCompany(checkIn.companyId);
+              return {
+                id: checkIn.id,
+                companyId: checkIn.companyId,
+                companyName: company?.name || "Unknown",
+                lat: checkIn.lat,
+                lng: checkIn.lng,
+                note: checkIn.note,
+                timestamp: checkIn.timestamp
+              };
+            })
+          );
+          
+          return {
+            ...route,
+            checkIns: checkInsWithCompanies,
+            stopCount: stops.length
+          };
+        })
+      );
+      
+      res.json({ routes: routesWithDetails });
     } catch (error) {
       console.error("Error fetching route history:", error);
       res.status(500).json({ error: { code: "SERVER_ERROR", message: "Failed to fetch routes" } });
+    }
+  });
+
+  // Save route as template from history
+  app.post("/api/routes/:id/save", requireAuth, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { templateName } = req.body;
+      const userId = (req as any).session.userId;
+      
+      // Get the original route
+      const originalRoute = await storage.getRoute(id);
+      if (!originalRoute) {
+        return res.status(404).json({ error: { code: "NOT_FOUND", message: "Route not found" } });
+      }
+      
+      // Verify ownership
+      if (originalRoute.userId !== userId) {
+        return res.status(403).json({ error: { code: "FORBIDDEN", message: "Not authorized" } });
+      }
+      
+      // Get the stops from the original route
+      const originalStops = await storage.getRouteStops(id);
+      
+      // Create a new route as a template
+      const savedRoute = await storage.createRoute({
+        userId,
+        status: "saved",
+        isSavedRoute: true,
+        templateName: templateName || `Route from ${new Date(originalRoute.createdAt).toLocaleDateString()}`,
+        stops: originalRoute.stops,
+        customEndpoint: originalRoute.customEndpoint,
+        routeGeometry: originalRoute.routeGeometry,
+        totalDistanceMi: originalRoute.totalDistanceMi,
+        totalDurationMin: originalRoute.totalDurationMin,
+        startLat: originalRoute.startLat,
+        startLng: originalRoute.startLng,
+      });
+      
+      // Copy the stops to the new route
+      if (originalStops.length > 0) {
+        await storage.createRouteStops(
+          originalStops.map(stop => ({
+            routeId: savedRoute.id,
+            companyId: stop.companyId,
+            stopIndex: stop.stopIndex,
+            lat: stop.lat,
+            lng: stop.lng,
+            distanceFromPrevMi: stop.distanceFromPrevMi,
+            etaFromPrevMin: stop.etaFromPrevMin,
+            completed: false,
+            completedAt: null
+          }))
+        );
+      }
+      
+      res.json(savedRoute);
+    } catch (error) {
+      console.error("Error saving route as template:", error);
+      res.status(500).json({ error: { code: "SERVER_ERROR", message: "Failed to save route as template" } });
     }
   });
 
