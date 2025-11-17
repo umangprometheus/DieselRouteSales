@@ -129,16 +129,22 @@ export function RouteReorderView({
     const updateScrollDirection = (e: MouseEvent | TouchEvent) => {
       const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
       const rect = scrollContainer.getBoundingClientRect();
-      const edgeThreshold = 80; // Reduced threshold for more predictable behavior
+      const edgeThreshold = 100; // Larger threshold for easier triggering
+      
+      // Use viewport-relative positioning for more consistent behavior
+      const viewportHeight = window.innerHeight;
+      const distanceFromTop = clientY;
+      const distanceFromBottom = viewportHeight - clientY;
 
-      if (clientY < rect.top + edgeThreshold) {
-        // Near top edge - scroll up
-        const intensity = 1 - (clientY - rect.top) / edgeThreshold;
-        scrollDirection = -Math.max(0.5, intensity); // Variable speed based on proximity
-      } else if (clientY > rect.bottom - edgeThreshold) {
-        // Near bottom edge - scroll down
-        const intensity = 1 - (rect.bottom - clientY) / edgeThreshold;
-        scrollDirection = Math.max(0.5, intensity); // Variable speed based on proximity
+      if (distanceFromTop < edgeThreshold && scrollContainer.scrollTop > 0) {
+        // Near top edge - scroll up (only if there's content above)
+        const intensity = 1 - (distanceFromTop / edgeThreshold);
+        scrollDirection = -Math.max(0.5, intensity);
+      } else if (distanceFromBottom < edgeThreshold && 
+                 scrollContainer.scrollTop < scrollContainer.scrollHeight - scrollContainer.clientHeight) {
+        // Near bottom edge - scroll down (only if there's content below)
+        const intensity = 1 - (distanceFromBottom / edgeThreshold);
+        scrollDirection = Math.max(0.5, intensity);
       } else {
         // Not near edges - stop scrolling
         scrollDirection = 0;

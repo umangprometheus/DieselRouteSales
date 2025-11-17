@@ -86,7 +86,7 @@ export function SortableItem({
                 {...attributes}
                 {...listeners}
               >
-                <GripVertical className="h-4 w-4 text-muted-foreground" />
+                <GripVertical className="h-4 w-4 text-primary" />
               </button>
             )}
 
@@ -117,23 +117,23 @@ export function SortableItem({
                   <div className="flex flex-col gap-1 flex-shrink-0">
                     <Button
                       size="icon"
-                      variant="ghost"
+                      variant="outline"
                       className="h-6 w-6"
                       onClick={onMoveUp}
                       disabled={!canMoveUp}
                       data-testid={`move-up-${index}`}
                     >
-                      <ChevronUp className="h-3 w-3" />
+                      <ChevronUp className="h-3 w-3 text-primary" />
                     </Button>
                     <Button
                       size="icon"
-                      variant="ghost"
+                      variant="outline"
                       className="h-6 w-6"
                       onClick={onMoveDown}
                       disabled={!canMoveDown}
                       data-testid={`move-down-${index}`}
                     >
-                      <ChevronDown className="h-3 w-3" />
+                      <ChevronDown className="h-3 w-3 text-primary" />
                     </Button>
                   </div>
                 )}
