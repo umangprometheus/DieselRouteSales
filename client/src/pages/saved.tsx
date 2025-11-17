@@ -32,6 +32,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { MapPin, Route, Trash2, Edit, Loader2, Map, Calendar, Navigation } from "lucide-react";
+import mspLogo from "@assets/msp_logo_1762965721886.png";
 
 export default function SavedPage() {
   const [, navigate] = useLocation();
@@ -149,14 +150,13 @@ export default function SavedPage() {
   return (
     <div className="flex flex-col h-screen">
       {/* Header */}
-      <div className="border-b bg-background">
-        <div className="px-4 py-3">
-          <h1 className="text-xl font-semibold">Saved Routes</h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            Your saved route templates for quick access
-          </p>
-        </div>
-      </div>
+      <header className="pt-safe px-4 flex items-center justify-between border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 min-h-[56px] flex-shrink-0">
+        <img 
+          src={mspLogo} 
+          alt="MSP Diesel Solutions" 
+          className="h-8 w-auto"
+        />
+      </header>
 
       {/* Content */}
       <div className="flex-1 overflow-y-auto px-4 py-4">

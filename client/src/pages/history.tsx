@@ -11,6 +11,7 @@ import { ArrowLeft, MapPin, Clock, Edit2, Check, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import type { Route } from "@shared/schema";
+import mspLogo from "@assets/msp_logo_1762965721886.png";
 
 interface RouteWithDetails extends Route {
   checkIns?: Array<{
@@ -58,17 +59,11 @@ export default function HistoryPage() {
     <div className="min-h-screen bg-background pb-20 md:pb-0">
       {/* Header */}
       <header className="sticky top-0 z-10 pt-safe px-4 flex items-center justify-between border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 min-h-[56px]">
-        <div className="flex items-center gap-3">
-          <Button
-            variant="ghost"
-            className="h-11 w-11 md:h-9 md:w-9"
-            onClick={() => navigate("/plan")}
-            data-testid="button-back"
-          >
-            <ArrowLeft className="w-5 h-5" />
-          </Button>
-          <h1 className="text-lg font-semibold text-foreground">Route History</h1>
-        </div>
+        <img 
+          src={mspLogo} 
+          alt="MSP Diesel Solutions" 
+          className="h-8 w-auto"
+        />
       </header>
 
       {/* Content */}
