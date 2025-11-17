@@ -95,6 +95,7 @@ export default function LocationSearch({ onLocationSelect, className = "" }: Loc
             onChange={(e) => setSearchValue(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && handleSearch()}
             className="pl-9"
+            autoFocus={false}
             data-testid="input-location-search"
           />
         </div>
