@@ -74,7 +74,7 @@ export function SortableItem({
           userSelect: 'none'
         }}
       >
-        <CardContent className="p-3">
+        <CardContent className="p-2">
           <div className="flex items-center gap-2">
             {/* Drag Handle - Only this activates drag */}
             {!disabled && (
@@ -90,26 +90,51 @@ export function SortableItem({
               </button>
             )}
 
-            {/* Stop Number */}
-            <div className={`flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-xs font-semibold ${
-              isEndpoint ? "bg-primary text-primary-foreground" : "bg-accent text-accent-foreground"
-            }`}>
-              {isEndpoint ? <Flag className="h-3 w-3" /> : index + 1}
-            </div>
-
             {/* Stop Details */}
             <div className="flex-1 min-w-0">
               <div className="flex items-start justify-between">
                 <div className="flex-1 min-w-0 pr-2">
-                  <p className="font-medium text-sm truncate">
-                    {stop.name}
-                  </p>
+                  {/* Company name with stop number */}
+                  <div className="flex items-center gap-1.5">
+                    {isEndpoint ? (
+                      <Flag className="h-3 w-3 text-primary flex-shrink-0" />
+                    ) : (
+                      <span className="text-xs font-semibold text-primary flex-shrink-0">#{index + 1}</span>
+                    )}
+                    <p className="font-medium text-sm truncate">
+                      {stop.name}
+                    </p>
+                  </div>
+                  
+                  {/* Address */}
                   {stop.street && (
                     <p className="text-xs text-muted-foreground truncate">
                       {stop.street}
                       {stop.city && `, ${stop.city}`}
                     </p>
                   )}
+                  
+                  {/* Metadata - distance and time */}
+                  <div className="flex items-center gap-2 mt-0.5">
+                    {stop.distanceFromPrevMi !== null && stop.distanceFromPrevMi > 0 && (
+                      <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                        <Route className="h-3 w-3" />
+                        {formatDistance(stop.distanceFromPrevMi)}
+                      </div>
+                    )}
+                    {stop.etaFromPrevMin !== null && stop.etaFromPrevMin > 0 && (
+                      <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                        <Clock className="h-3 w-3" />
+                        {formatTime(stop.etaFromPrevMin)}
+                      </div>
+                    )}
+                    {isEndpoint && (
+                      <div className="flex items-center gap-1 text-xs text-primary font-medium">
+                        <MapPin className="h-3 w-3" />
+                        Final destination
+                      </div>
+                    )}
+                  </div>
                 </div>
                 
                 {/* Reorder Buttons - Mobile fallback */}
@@ -135,28 +160,6 @@ export function SortableItem({
                     >
                       <ChevronDown className="h-5 w-5 text-primary" />
                     </Button>
-                  </div>
-                )}
-              </div>
-
-              {/* Stop Metadata */}
-              <div className="flex items-center gap-3">
-                {stop.distanceFromPrevMi !== null && stop.distanceFromPrevMi > 0 && (
-                  <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                    <Route className="h-3 w-3" />
-                    {formatDistance(stop.distanceFromPrevMi)}
-                  </div>
-                )}
-                {stop.etaFromPrevMin !== null && stop.etaFromPrevMin > 0 && (
-                  <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                    <Clock className="h-3 w-3" />
-                    {formatTime(stop.etaFromPrevMin)}
-                  </div>
-                )}
-                {isEndpoint && (
-                  <div className="flex items-center gap-1 text-xs text-primary font-medium">
-                    <MapPin className="h-3 w-3" />
-                    Final destination
                   </div>
                 )}
               </div>
