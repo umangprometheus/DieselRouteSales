@@ -75,7 +75,7 @@ export function SortableItem({
         }}
       >
         <CardContent className="p-3">
-          <div className="flex items-start gap-2">
+          <div className="flex items-center gap-2">
             {/* Drag Handle - Only this activates drag */}
             {!disabled && (
               <button
@@ -140,7 +140,7 @@ export function SortableItem({
               </div>
 
               {/* Stop Metadata */}
-              <div className="flex items-center gap-3 mt-1">
+              <div className="flex items-center gap-3">
                 {stop.distanceFromPrevMi !== null && stop.distanceFromPrevMi > 0 && (
                   <div className="flex items-center gap-1 text-xs text-muted-foreground">
                     <Route className="h-3 w-3" />
