@@ -65,28 +65,28 @@ export default function CompanyList({
                   <div className="flex items-center gap-2 flex-1 min-w-0">
                     {/* Lifecycle stage indicator dot */}
                     <div 
-                      className={`w-2 h-2 rounded-full flex-shrink-0 ${
+                      className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${
                         company.lifecycleStage === 'customer' 
                           ? 'bg-blue-500' 
                           : 'bg-red-500'
                       }`}
                       title={company.lifecycleStage || 'Unknown'}
                     />
-                    <h3 className="text-base font-semibold text-foreground truncate select-none" style={{ WebkitUserSelect: 'none', WebkitTouchCallout: 'none', userSelect: 'none' }}>
+                    <h3 className="text-lg font-semibold text-foreground truncate select-none" style={{ WebkitUserSelect: 'none', WebkitTouchCallout: 'none', userSelect: 'none' }}>
                       {company.name}
                     </h3>
                   </div>
                   <Badge 
                     variant="secondary" 
-                    className="bg-success/10 text-success hover:bg-success/20 flex-shrink-0"
+                    className="bg-success/10 text-success hover:bg-success/20 flex-shrink-0 text-sm font-medium"
                     data-testid={`badge-distance-${company.id}`}
                   >
                     {company.distanceMi.toFixed(1)} mi
                   </Badge>
                 </div>
                 
-                <div className="flex items-center gap-1.5 text-sm text-muted-foreground select-none" style={{ WebkitUserSelect: 'none', WebkitTouchCallout: 'none', userSelect: 'none' }}>
-                  <Building2 className="w-3.5 h-3.5 flex-shrink-0" />
+                <div className="flex items-center gap-1.5 text-base text-muted-foreground select-none" style={{ WebkitUserSelect: 'none', WebkitTouchCallout: 'none', userSelect: 'none' }}>
+                  <Building2 className="w-4 h-4 flex-shrink-0" />
                   <p className="truncate select-none" style={{ WebkitUserSelect: 'none', WebkitTouchCallout: 'none', userSelect: 'none' }}>
                     {[company.street, company.city, company.state, company.postalCode]
                       .filter(Boolean)
