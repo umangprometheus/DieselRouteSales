@@ -992,7 +992,11 @@ export default function PlanPage() {
 
       {/* Filter Sheet for Mobile */}
       <Sheet open={showFilters} onOpenChange={setShowFilters}>
-        <SheetContent side="bottom" className="h-auto max-h-[80vh] rounded-t-2xl">
+        <SheetContent 
+          side="bottom" 
+          className="h-auto max-h-[80vh] rounded-t-2xl"
+          onOpenAutoFocus={(e) => e.preventDefault()}
+        >
           <SheetHeader>
             <SheetTitle>Filters</SheetTitle>
             <SheetDescription>
