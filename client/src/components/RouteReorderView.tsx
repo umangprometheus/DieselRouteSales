@@ -22,7 +22,7 @@ import { restrictToVerticalAxis } from "@dnd-kit/modifiers";
 import { SortableItem } from "./SortableItem";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Navigation, MapPin, Clock, Route as RouteIcon, GripVertical, ArrowLeft, ArrowUpDown, Hand } from "lucide-react";
+import { Navigation, MapPin, Clock, Route as RouteIcon, GripVertical, ArrowLeft } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import type { BuildRouteResponse } from "@shared/schema";
 
@@ -48,7 +48,6 @@ export function RouteReorderView({
   const [editedStops, setEditedStops] = useState(route?.stops || []);
   const [isDirty, setIsDirty] = useState(false);
   const [activeId, setActiveId] = useState<string | null>(null);
-  const [reorderMode, setReorderMode] = useState(false);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
 
   // Lock body scroll when open
@@ -280,70 +279,43 @@ export function RouteReorderView({
           </Card>
         </div>
 
-        {/* Reorder Mode Toggle - Only show if many stops */}
-        {editedStops.length > 5 && (
-          <div className="px-4 pb-3">
-            <Button
-              variant={reorderMode ? "default" : "outline"}
-              size="sm"
-              onClick={() => setReorderMode(!reorderMode)}
-              className="w-full"
-              data-testid="button-toggle-reorder"
-            >
-              {reorderMode ? (
-                <>
-                  <ArrowUpDown className="h-4 w-4 mr-2" />
-                  Reorder Mode ON (Drag to reorder)
-                </>
-              ) : (
-                <>
-                  <Hand className="h-4 w-4 mr-2" />
-                  Scroll Mode (Tap to switch to reorder)
-                </>
-              )}
-            </Button>
-          </div>
-        )}
-
       </div>
 
       {/* Content Area - Constrained height to not overlap footer */}
       <div className="flex-1 overflow-hidden pb-32" style={{ pointerEvents: 'auto' }}>
-        {reorderMode ? (
-          // Reorder mode - drag and drop enabled
-          <DndContext
-            sensors={sensors}
-            collisionDetection={closestCenter}
-            onDragStart={handleDragStart}
-            onDragEnd={handleDragEnd}
-            modifiers={[restrictToVerticalAxis]}
-            autoScroll={false}
-          >
-            <div className="h-full overflow-hidden">
-              <ScrollArea ref={scrollAreaRef} className="h-full px-4">
-                <SortableContext
-                  items={editedStops.map(s => getSortableId(s))}
-                  strategy={verticalListSortingStrategy}
-                >
-                  <div className="space-y-2 py-2 pb-24">
-                    {editedStops.map((stop, index) => {
-                      const isEndpoint = customEndpoint && index === editedStops.length - 1;
-                      const stopId = getSortableId(stop);
-                      return (
-                        <SortableItem
-                          key={stopId}
-                          id={stopId}
-                          disabled={!!isEndpoint}
-                          stop={stop}
-                          index={index}
-                          isEndpoint={!!isEndpoint}
-                          onMoveUp={() => handleMoveUp(index)}
-                          onMoveDown={() => handleMoveDown(index)}
-                          canMoveUp={index > 0 && !isEndpoint}
-                          canMoveDown={index < (customEndpoint ? editedStops.length - 2 : editedStops.length - 1)}
-                        />
-                      );
-                    })}
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragStart={handleDragStart}
+          onDragEnd={handleDragEnd}
+          modifiers={[restrictToVerticalAxis]}
+          autoScroll={false}
+        >
+          <div className="h-full overflow-hidden">
+            <ScrollArea ref={scrollAreaRef} className="h-full px-4">
+              <SortableContext
+                items={editedStops.map(s => getSortableId(s))}
+                strategy={verticalListSortingStrategy}
+              >
+                <div className="space-y-2 py-2 pb-24">
+                  {editedStops.map((stop, index) => {
+                    const isEndpoint = customEndpoint && index === editedStops.length - 1;
+                    const stopId = getSortableId(stop);
+                    return (
+                      <SortableItem
+                        key={stopId}
+                        id={stopId}
+                        disabled={!!isEndpoint}
+                        stop={stop}
+                        index={index}
+                        isEndpoint={!!isEndpoint}
+                        onMoveUp={() => handleMoveUp(index)}
+                        onMoveDown={() => handleMoveDown(index)}
+                        canMoveUp={index > 0 && !isEndpoint}
+                        canMoveDown={index < (customEndpoint ? editedStops.length - 2 : editedStops.length - 1)}
+                      />
+                    );
+                  })}
                 </div>
               </SortableContext>
             </ScrollArea>
@@ -384,48 +356,6 @@ export function RouteReorderView({
             })() : null}
           </DragOverlay>
         </DndContext>
-        ) : (
-          // Scroll mode - drag disabled, normal scrolling
-          <div className="h-full overflow-hidden">
-            <ScrollArea ref={scrollAreaRef} className="h-full px-4">
-              <div className="space-y-2 py-2 pb-24">
-                {editedStops.map((stop, index) => {
-                  const isEndpoint = customEndpoint && index === editedStops.length - 1;
-                  return (
-                    <Card
-                      key={stop.routeStopId || stop.companyId}
-                      className={`${
-                        isEndpoint ? "border-primary bg-primary/5" : ""
-                      }`}
-                      data-testid={`stop-card-${index}`}
-                    >
-                      <CardContent className="p-3">
-                        <div className="flex items-start gap-2">
-                          <div className={`flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-xs font-semibold ${
-                            isEndpoint ? "bg-primary text-primary-foreground" : "bg-accent text-accent-foreground"
-                          }`}>
-                            {index + 1}
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <p className="font-medium text-sm truncate">
-                              {stop.name}
-                            </p>
-                            {stop.street && (
-                              <p className="text-xs text-muted-foreground truncate">
-                                {stop.street}
-                                {stop.city && `, ${stop.city}`}
-                              </p>
-                            )}
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  );
-                })}
-              </div>
-            </ScrollArea>
-          </div>
-        )}
       </div>
 
       {/* Footer - Absolutely positioned to ensure it's above everything */}
