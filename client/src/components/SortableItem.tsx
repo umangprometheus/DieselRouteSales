@@ -95,20 +95,20 @@ export function SortableItem({
               <div className="flex items-start justify-between">
                 <div className="flex-1 min-w-0 pr-2">
                   {/* Company name with stop number */}
-                  <div className="flex items-center gap-1.5">
+                  <div className="flex items-center gap-2">
                     {isEndpoint ? (
-                      <Flag className="h-3 w-3 text-primary flex-shrink-0" />
+                      <Flag className="h-4 w-4 text-primary flex-shrink-0" />
                     ) : (
-                      <span className="text-xs font-semibold text-primary flex-shrink-0">#{index + 1}</span>
+                      <span className="text-lg font-bold text-primary flex-shrink-0">#{index + 1}</span>
                     )}
-                    <p className="font-medium text-sm truncate">
+                    <p className="font-semibold text-base truncate">
                       {stop.name}
                     </p>
                   </div>
                   
                   {/* Address */}
                   {stop.street && (
-                    <p className="text-xs text-muted-foreground truncate">
+                    <p className="text-sm text-muted-foreground truncate">
                       {stop.street}
                       {stop.city && `, ${stop.city}`}
                     </p>
@@ -117,20 +117,20 @@ export function SortableItem({
                   {/* Metadata - distance and time */}
                   <div className="flex items-center gap-2 mt-0.5">
                     {stop.distanceFromPrevMi !== null && stop.distanceFromPrevMi > 0 && (
-                      <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                        <Route className="h-3 w-3" />
+                      <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                        <Route className="h-3.5 w-3.5" />
                         {formatDistance(stop.distanceFromPrevMi)}
                       </div>
                     )}
                     {stop.etaFromPrevMin !== null && stop.etaFromPrevMin > 0 && (
-                      <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                        <Clock className="h-3 w-3" />
+                      <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                        <Clock className="h-3.5 w-3.5" />
                         {formatTime(stop.etaFromPrevMin)}
                       </div>
                     )}
                     {isEndpoint && (
-                      <div className="flex items-center gap-1 text-xs text-primary font-medium">
-                        <MapPin className="h-3 w-3" />
+                      <div className="flex items-center gap-1 text-sm text-primary font-medium">
+                        <MapPin className="h-3.5 w-3.5" />
                         Final destination
                       </div>
                     )}
