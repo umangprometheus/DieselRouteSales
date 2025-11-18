@@ -1,0 +1,16 @@
+Field Name,Display Label,Field Type,Required,Description,Available Options
+machineryTypes,Machinery Types,Single Select Dropdown,Yes,What type of machinery does the customer work on?,"Light duty trucks, Medium duty trucks, Heavy duty trucks, Light & Medium duty, Medium & Heavy duty, All duty types"
+engineTypes,Engine Types,Multi-Select,No,Select specific engine models currently in their shop,"CAT C15, CAT C13, CAT 3406, Cummins ISX, Cummins X15, Cummins N14, Detroit Series 60, Detroit DD15, Detroit DD13, PACCAR MX-13, Volvo D13, Mack MP8, International MaxxForce, [Other - custom input]"
+fleetMakeup,Fleet Makeup,Multi-Select,No,Truck makes and models in their fleet,"Freightliner, Peterbilt, Kenworth, Volvo, Mack, International, Ford, Chevrolet, RAM, GMC, Isuzu, Hino, [Other - custom input]"
+currentSuppliers,Current Suppliers,Multi-Select,No,Who are they currently purchasing from?,"NAPA, FleetPride, OEM Dealer, O'Reilly, AutoZone, Advance Auto Parts, TruckPro, Rush Truck Centers, Penske, Ryder, Love's, TA/Petro, [Other - custom input]"
+competitorData,Competitors,Multi-Select,Yes,Competitive products they're currently using,"Bosch, Denso, Delphi, Stanadyne, Diesel X, Industrial Injection, S&S Diesel, Dynomite Diesel, DIPACO, Pure Power, Alliant Power, [Other - custom input]"
+pricingInfo,Pricing Info,Text Area,No,Any pricing information discussed or competitive pricing intel,N/A - Free text entry
+productModels,Product Models,Multi-Select,No,Specific product models that may be of interest,"55-75 Injectors, Remanufactured Injectors, New Injectors, High Pressure Pumps, Lift Pumps, Remanufactured Turbos, New Turbos, DPF Filters, EGR Valves, NOx Sensors, Pressure Sensors, Complete Overhaul Kits, [Other - custom input]"
+availabilityGaps,Availability Gaps,Text Area,No,Products they need but can't get from current suppliers,N/A - Free text entry
+customerNeeds,Customer Needs,Text Area,Yes,Assessment of their primary needs and pain points,N/A - Free text entry
+competitivePosition,Competitive Position,Text Area,No,How we stack up against competitors in this account,N/A - Free text entry
+insideSalesIssues,Inside Sales Issues,Text Area,No,Any issues with inside sales or customer service to address,N/A - Free text entry
+nextSteps,Next Steps,Text Area,Yes,Specific action items and follow-up plan,N/A - Free text entry
+miscNotes,Miscellaneous Notes,Text Area,No,Any additional notes or observations,N/A - Free text entry
+voiceTranscript,Voice Transcript,Text Area (Auto-filled),No,Full transcript of voice recording,N/A - Auto-generated from AI transcription
+visitDurationMin,Visit Duration,Number (Auto-calculated),No,Duration of visit in minutes,N/A - Auto-calculated from check-in to submission time
