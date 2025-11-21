@@ -80,8 +80,7 @@ export default function Home() {
       <div className="p-3 md:p-6 max-w-6xl mx-auto space-y-4">
         {/* Welcome Section - Mobile */}
         <div className="md:hidden">
-          <h1 className="text-xl font-bold">MSP Field Service</h1>
-          <p className="text-sm text-muted-foreground">Welcome, {user?.username}!</p>
+          <h1 className="text-xl font-bold">Welcome, {(user as any)?.name || user?.username}!</h1>
         </div>
 
         {/* Yesterday's Metrics Dashboard - More Visual */}
