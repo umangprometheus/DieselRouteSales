@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useLocation } from "wouter";
+import { useLocation, Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -15,6 +15,13 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import MapView from "@/components/map-view";
 import RadiusPicker from "@/components/radius-picker";
 import CompanyList from "@/components/company-list";
@@ -24,7 +31,8 @@ import { EndpointSearchDrawer } from "@/components/EndpointSearchDrawer";
 import { EndpointConfirmationDrawer } from "@/components/EndpointConfirmationDrawer";
 import { useCompanies, useSyncCompanies, useBuildRoute, useSaveRoute } from "@/lib/api";
 import { useToast } from "@/hooks/use-toast";
-import { MapIcon, List, Route, Loader2, RefreshCw, MapPin, X, Search, Save, Settings2 } from "lucide-react";
+import { useAuth } from "@/lib/auth";
+import { MapIcon, List, Route, Loader2, RefreshCw, MapPin, X, Search, Save, Settings2, User, LogOut, Shield } from "lucide-react";
 import type { BuildRouteResponse } from "@shared/schema";
 import { Input } from "@/components/ui/input";
 import {
@@ -69,6 +77,7 @@ function useMediaQuery(query: string) {
 export default function PlanPage() {
   const [, navigate] = useLocation();
   const { toast } = useToast();
+  const { user, logout } = useAuth();
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [radiusMi, setRadiusMi] = useState(25);
   const [selectedCompanyIds, setSelectedCompanyIds] = useState<string[]>([]);
@@ -481,22 +490,38 @@ export default function PlanPage() {
         <img 
           src={mspLogo} 
           alt="MSP Diesel Solutions" 
-          className="h-8 w-auto"
+          className="h-8 w-auto flex-shrink-0"
         />
-        <Button 
-          variant="ghost" 
-          size="sm" 
-          onClick={handleSync}
-          disabled={syncMutation.isPending}
-          data-testid="button-sync"
-        >
-          {syncMutation.isPending ? (
-            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-          ) : (
-            <RefreshCw className="w-4 h-4 mr-2" />
-          )}
-          Sync
-        </Button>
+        
+        {/* User Menu */}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="icon" data-testid="button-user-menu-mobile">
+              <User className="h-5 w-5" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <div className="px-2 py-1.5 text-sm font-medium">
+              {user?.username}
+            </div>
+            <DropdownMenuSeparator />
+            {(user as any)?.isAdmin && (
+              <>
+                <Link href="/admin">
+                  <DropdownMenuItem data-testid="link-admin-panel">
+                    <Shield className="mr-2 h-4 w-4" />
+                    <span>Admin Panel</span>
+                  </DropdownMenuItem>
+                </Link>
+                <DropdownMenuSeparator />
+              </>
+            )}
+            <DropdownMenuItem onClick={logout} data-testid="button-logout">
+              <LogOut className="mr-2 h-4 w-4" />
+              <span>Logout</span>
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </header>
 
       {/* Main Content */}
