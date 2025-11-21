@@ -2,18 +2,26 @@ import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { LogOut } from "lucide-react";
+import { LogOut, User, Shield } from "lucide-react";
 import { format } from "date-fns";
 import { useSummary } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
 import mspLogo from "@assets/msp_logo_1762965721886.png";
+import { Link } from "wouter";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 export default function SummaryPage() {
   const [, navigate] = useLocation();
   const dateString = format(new Date(), "yyyy-MM-dd");
   
   const { data: summary, isLoading } = useSummary(dateString);
-  const { logout } = useAuth();
+  const { user, logout } = useAuth();
 
 
   return (
@@ -25,6 +33,36 @@ export default function SummaryPage() {
           alt="MSP Diesel Solutions" 
           className="h-8 w-auto"
         />
+        
+        {/* User Menu */}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="icon" data-testid="button-user-menu-mobile">
+              <User className="h-5 w-5" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <div className="px-2 py-1.5 text-sm font-medium">
+              {user?.username}
+            </div>
+            <DropdownMenuSeparator />
+            {(user as any)?.isAdmin && (
+              <>
+                <Link href="/admin">
+                  <DropdownMenuItem data-testid="link-admin-panel">
+                    <Shield className="mr-2 h-4 w-4" />
+                    <span>Admin Panel</span>
+                  </DropdownMenuItem>
+                </Link>
+                <DropdownMenuSeparator />
+              </>
+            )}
+            <DropdownMenuItem onClick={logout} data-testid="button-logout">
+              <LogOut className="mr-2 h-4 w-4" />
+              <span>Logout</span>
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </header>
 
       {/* Content */}

@@ -3,7 +3,7 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { useLocation } from "wouter";
+import { useLocation, Link } from "wouter";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -26,10 +26,17 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/lib/auth";
-import { Shield, Plus, Pencil, Trash2, Save, X } from "lucide-react";
+import { Shield, Plus, Pencil, Trash2, Save, X, User, LogOut } from "lucide-react";
 import { format } from "date-fns";
 
 const announcementSchema = z.object({
@@ -41,7 +48,7 @@ type AnnouncementForm = z.infer<typeof announcementSchema>;
 
 export default function AdminPanel() {
   const { toast } = useToast();
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const [, navigate] = useLocation();
   const [editingId, setEditingId] = useState<string | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -189,11 +196,41 @@ export default function AdminPanel() {
     <div className="min-h-screen bg-background pb-20 md:pb-4">
       {/* Header - Mobile only */}
       <div className="md:hidden sticky top-0 z-30 p-4 bg-background border-b">
-        <div className="flex items-center gap-2">
-          <Shield className="w-6 h-6 text-primary" />
-          <h1 className="text-2xl font-bold">Admin Panel</h1>
+        <div className="flex items-center gap-2 justify-between">
+          <div className="flex items-center gap-2 flex-1 min-w-0">
+            <Shield className="w-6 h-6 text-primary flex-shrink-0" />
+            <div className="flex-1 min-w-0">
+              <h1 className="text-2xl font-bold truncate">Admin Panel</h1>
+              <p className="text-sm text-muted-foreground truncate">Manage announcements</p>
+            </div>
+          </div>
+          
+          {/* User Menu */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon" className="flex-shrink-0" data-testid="button-user-menu-mobile">
+                <User className="h-5 w-5" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <div className="px-2 py-1.5 text-sm font-medium">
+                {user?.username}
+              </div>
+              <DropdownMenuSeparator />
+              <Link href="/">
+                <DropdownMenuItem data-testid="link-home">
+                  <Shield className="mr-2 h-4 w-4" />
+                  <span>Home</span>
+                </DropdownMenuItem>
+              </Link>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={logout} data-testid="button-logout">
+                <LogOut className="mr-2 h-4 w-4" />
+                <span>Logout</span>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
-        <p className="text-sm text-muted-foreground mt-1">Manage team announcements</p>
       </div>
 
       {/* Desktop spacing for fixed header */}

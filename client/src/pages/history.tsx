@@ -10,12 +10,21 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { DateFilterSheet } from "@/components/DateFilterSheet";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { MapPin, Clock, Edit2, Check, X, Filter, BookmarkPlus } from "lucide-react";
+import { MapPin, Clock, Edit2, Check, X, Filter, BookmarkPlus, User, LogOut, Shield } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/lib/auth";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import type { Route } from "@shared/schema";
 import mspLogo from "@assets/msp_logo_1762965721886.png";
 import { format, startOfDay, endOfDay } from "date-fns";
+import { Link } from "wouter";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface RouteWithDetails extends Route {
   checkIns?: Array<{
@@ -32,6 +41,7 @@ interface RouteWithDetails extends Route {
 export default function HistoryPage() {
   const [, navigate] = useLocation();
   const { toast } = useToast();
+  const { user, logout } = useAuth();
   const [editingNote, setEditingNote] = useState<{ checkInId: string; note: string } | null>(null);
   const [dateFilterOpen, setDateFilterOpen] = useState(false);
   const [selectedFilter, setSelectedFilter] = useState("today");
@@ -155,16 +165,48 @@ export default function HistoryPage() {
           className="h-8 w-auto flex-shrink-0"
         />
         
-        {/* Date Filter Button */}
-        <Button
-          variant="outline"
-          className="h-10 gap-2"
-          onClick={() => setDateFilterOpen(true)}
-          data-testid="button-date-filter"
-        >
-          <Filter className="h-4 w-4" />
-          <span className="font-medium">{getFilterLabel()}</span>
-        </Button>
+        <div className="flex items-center gap-2">
+          {/* Date Filter Button */}
+          <Button
+            variant="outline"
+            className="h-10 gap-2"
+            onClick={() => setDateFilterOpen(true)}
+            data-testid="button-date-filter"
+          >
+            <Filter className="h-4 w-4" />
+            <span className="font-medium">{getFilterLabel()}</span>
+          </Button>
+          
+          {/* User Menu */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon" data-testid="button-user-menu-mobile">
+                <User className="h-5 w-5" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <div className="px-2 py-1.5 text-sm font-medium">
+                {user?.username}
+              </div>
+              <DropdownMenuSeparator />
+              {(user as any)?.isAdmin && (
+                <>
+                  <Link href="/admin">
+                    <DropdownMenuItem data-testid="link-admin-panel">
+                      <Shield className="mr-2 h-4 w-4" />
+                      <span>Admin Panel</span>
+                    </DropdownMenuItem>
+                  </Link>
+                  <DropdownMenuSeparator />
+                </>
+              )}
+              <DropdownMenuItem onClick={logout} data-testid="button-logout">
+                <LogOut className="mr-2 h-4 w-4" />
+                <span>Logout</span>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
       </header>
 
       {/* Date Filter Sheet */}

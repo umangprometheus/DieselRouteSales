@@ -4,13 +4,20 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/lib/auth";
-import { MapPin, CheckCircle2, Navigation, BookOpen, MessageSquare, TrendingUp, Circle, Settings } from "lucide-react";
+import { MapPin, CheckCircle2, Navigation, BookOpen, MessageSquare, TrendingUp, Circle, Settings, User, LogOut, Shield } from "lucide-react";
 import { format, subDays } from "date-fns";
 import { Link } from "wouter";
 import mspLogo from "@assets/msp_logo_1762965721886.png";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 export default function Home() {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
 
   // Fetch announcements
   const { data: announcements, isLoading: announcementsLoading } = useQuery<any[]>({
@@ -35,6 +42,34 @@ export default function Home() {
             <h1 className="text-xl font-bold truncate">MSP Field Service</h1>
             <p className="text-xs text-muted-foreground truncate">Welcome, {user?.username}!</p>
           </div>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon" data-testid="button-user-menu-mobile">
+                <User className="h-5 w-5" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <div className="px-2 py-1.5 text-sm font-medium">
+                {user?.username}
+              </div>
+              <DropdownMenuSeparator />
+              {(user as any)?.isAdmin && (
+                <>
+                  <Link href="/admin">
+                    <DropdownMenuItem data-testid="link-admin-panel">
+                      <Shield className="mr-2 h-4 w-4" />
+                      <span>Admin Panel</span>
+                    </DropdownMenuItem>
+                  </Link>
+                  <DropdownMenuSeparator />
+                </>
+              )}
+              <DropdownMenuItem onClick={logout} data-testid="button-logout">
+                <LogOut className="mr-2 h-4 w-4" />
+                <span>Logout</span>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
 
