@@ -82,7 +82,12 @@ export default function DesktopHeader() {
       <div className="flex items-center gap-4">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" data-testid="button-desktop-menu">
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="bg-primary text-primary-foreground hover:bg-primary/90" 
+              data-testid="button-desktop-menu"
+            >
               <Menu className="h-6 w-6" />
             </Button>
           </DropdownMenuTrigger>
