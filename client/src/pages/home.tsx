@@ -74,15 +74,6 @@ export default function Home() {
 
       {/* Main Content */}
       <div className="p-3 md:p-6 max-w-6xl mx-auto space-y-6">
-        {/* Welcome Section - Desktop */}
-        <div className="hidden md:flex items-center gap-4">
-          <img src={mspLogo} alt="MSP Diesel Solutions" className="h-16 w-auto" />
-          <div className="flex-1 min-w-0">
-            <h1 className="text-3xl font-bold mb-1">MSP Field Service</h1>
-            <p className="text-muted-foreground">Welcome back, {user?.username}!</p>
-          </div>
-        </div>
-
         {/* Welcome Section - Mobile */}
         <div className="md:hidden">
           <h1 className="text-xl font-bold">MSP Field Service</h1>
