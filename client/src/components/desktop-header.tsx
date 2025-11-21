@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "wouter";
-import { Menu, MapIcon, Route, History, User, Save, RefreshCw, LogOut } from "lucide-react";
+import { Menu, MapIcon, Route, History, User, Save, LogOut, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import mspLogo from "@assets/msp_logo_1762965721886.png";
 import {
@@ -51,28 +51,6 @@ export default function DesktopHeader() {
     (item) => item.path !== "/route" || hasActiveRoute
   );
 
-  const syncMutation = useMutation({
-    mutationFn: async () => {
-      const response = await apiRequest("POST", "/api/sync", {});
-      return response;
-    },
-    onSuccess: () => {
-      toast({
-        title: "Sync complete",
-        description: "Companies updated from HubSpot",
-        duration: 1000,
-      });
-    },
-    onError: (error: Error) => {
-      toast({
-        title: "Sync failed",
-        description: error.message,
-        variant: "destructive",
-        duration: 1000,
-      });
-    },
-  });
-
   const handleLogout = () => {
     logout();
   };
@@ -120,37 +98,35 @@ export default function DesktopHeader() {
         />
       </div>
 
-      {/* Right: Actions */}
-      <div className="flex items-center gap-2">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => syncMutation.mutate()}
-          disabled={syncMutation.isPending}
-          data-testid="button-sync-desktop"
-        >
-          <RefreshCw className={`h-4 w-4 mr-2 ${syncMutation.isPending ? "animate-spin" : ""}`} />
-          Sync
-        </Button>
-
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" data-testid="button-user-menu">
-              <User className="h-5 w-5" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <div className="px-2 py-1.5 text-sm font-medium">
-              {user?.username}
-            </div>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={handleLogout} data-testid="button-logout">
-              <LogOut className="mr-2 h-4 w-4" />
-              <span>Logout</span>
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
+      {/* Right: User Menu */}
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="ghost" size="icon" data-testid="button-user-menu">
+            <User className="h-5 w-5" />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end">
+          <div className="px-2 py-1.5 text-sm font-medium">
+            {user?.username}
+          </div>
+          <DropdownMenuSeparator />
+          {user?.isAdmin && (
+            <>
+              <Link href="/admin">
+                <DropdownMenuItem data-testid="link-admin-panel">
+                  <Shield className="mr-2 h-4 w-4" />
+                  <span>Admin Panel</span>
+                </DropdownMenuItem>
+              </Link>
+              <DropdownMenuSeparator />
+            </>
+          )}
+          <DropdownMenuItem onClick={handleLogout} data-testid="button-logout">
+            <LogOut className="mr-2 h-4 w-4" />
+            <span>Logout</span>
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
     </header>
   );
 }
