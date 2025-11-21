@@ -47,6 +47,20 @@ function requireAuth(req: any, res: any, next: any) {
   next();
 }
 
+// Admin middleware
+async function requireAdmin(req: any, res: any, next: any) {
+  if (!req.session?.userId) {
+    return res.status(401).json({ error: { code: "UNAUTHORIZED", message: "Not authenticated" } });
+  }
+  
+  const user = await storage.getUser(req.session.userId);
+  if (!user || !user.isAdmin) {
+    return res.status(403).json({ error: { code: "FORBIDDEN", message: "Admin access required" } });
+  }
+  
+  next();
+}
+
 // Create demo user on startup
 async function ensureDemoUser() {
   const existingUser = await storage.getUserByUsername("demo");
@@ -110,6 +124,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         username: user.username,
         email: user.email,
         name: user.name,
+        isAdmin: user.isAdmin,
       });
     } catch (error: any) {
       console.error("Login error:", error);
@@ -131,6 +146,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       username: user.username,
       email: user.email,
       name: user.name,
+      isAdmin: user.isAdmin,
     });
   });
 
@@ -138,6 +154,62 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/auth/logout", (req, res) => {
     (req as any).session = null;
     res.json({ success: true });
+  });
+
+  // ============================================================================
+  // Announcements Routes
+  // ============================================================================
+
+  // Get all announcements (any authenticated user)
+  app.get("/api/announcements", requireAuth, async (req, res) => {
+    try {
+      const announcements = await storage.getAllAnnouncements();
+      res.json(announcements);
+    } catch (error: any) {
+      console.error("Error fetching announcements:", error);
+      res.status(500).json({ error: { code: "SERVER_ERROR", message: error.message } });
+    }
+  });
+
+  // Create announcement (admin only)
+  app.post("/api/announcements", requireAdmin, async (req, res) => {
+    try {
+      const { insertAnnouncementSchema } = await import("@shared/schema");
+      const data = insertAnnouncementSchema.parse({
+        ...req.body,
+        createdBy: (req as any).session.userId,
+      });
+      
+      const announcement = await storage.createAnnouncement(data);
+      res.json(announcement);
+    } catch (error: any) {
+      console.error("Error creating announcement:", error);
+      res.status(400).json({ error: { code: "VALIDATION_ERROR", message: error.message } });
+    }
+  });
+
+  // Update announcement (admin only)
+  app.patch("/api/announcements/:id", requireAdmin, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const announcement = await storage.updateAnnouncement(id, req.body);
+      res.json(announcement);
+    } catch (error: any) {
+      console.error("Error updating announcement:", error);
+      res.status(400).json({ error: { code: "UPDATE_ERROR", message: error.message } });
+    }
+  });
+
+  // Delete announcement (admin only)
+  app.delete("/api/announcements/:id", requireAdmin, async (req, res) => {
+    try {
+      const { id } = req.params;
+      await storage.deleteAnnouncement(id);
+      res.json({ success: true });
+    } catch (error: any) {
+      console.error("Error deleting announcement:", error);
+      res.status(400).json({ error: { code: "DELETE_ERROR", message: error.message } });
+    }
   });
 
   // ============================================================================
