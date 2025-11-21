@@ -77,19 +77,22 @@ export default function Home() {
       <div className="hidden md:block h-16" />
 
       {/* Main Content */}
-      <div className="p-3 md:p-6 max-w-6xl mx-auto space-y-6">
+      <div className="p-3 md:p-6 max-w-6xl mx-auto space-y-4">
         {/* Welcome Section - Mobile */}
         <div className="md:hidden">
           <h1 className="text-xl font-bold">MSP Field Service</h1>
           <p className="text-sm text-muted-foreground">Welcome, {user?.username}!</p>
         </div>
 
-        {/* Yesterday's Metrics Dashboard */}
+        {/* Yesterday's Metrics Dashboard - More Visual */}
         <div className="grid grid-cols-2 gap-3 md:gap-4">
-          <Card>
+          <Card className="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-950/20 border-green-200 dark:border-green-800">
             <CardHeader className="pb-2">
-              <CardDescription className="text-xs">Yesterday's Stops</CardDescription>
-              <CardTitle className="text-2xl md:text-3xl">
+              <div className="flex items-center justify-between">
+                <CardDescription className="text-xs text-green-700 dark:text-green-400 font-medium">Yesterday's Stops</CardDescription>
+                <CheckCircle2 className="w-5 h-5 text-green-600 dark:text-green-400" />
+              </div>
+              <CardTitle className="text-3xl md:text-4xl text-green-700 dark:text-green-300">
                 {summaryLoading ? (
                   <Skeleton className="h-8 w-16" />
                 ) : (
@@ -98,17 +101,19 @@ export default function Home() {
               </CardTitle>
             </CardHeader>
             <CardContent className="pt-0">
-              <div className="flex items-center text-xs text-muted-foreground">
-                <CheckCircle2 className="w-3 h-3 mr-1" />
+              <div className="flex items-center text-xs text-green-600 dark:text-green-400 font-medium">
                 Completed
               </div>
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20 border-blue-200 dark:border-blue-800">
             <CardHeader className="pb-2">
-              <CardDescription className="text-xs">Total Distance</CardDescription>
-              <CardTitle className="text-2xl md:text-3xl">
+              <div className="flex items-center justify-between">
+                <CardDescription className="text-xs text-blue-700 dark:text-blue-400 font-medium">Total Distance</CardDescription>
+                <Navigation className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+              </div>
+              <CardTitle className="text-3xl md:text-4xl text-blue-700 dark:text-blue-300">
                 {summaryLoading ? (
                   <Skeleton className="h-8 w-16" />
                 ) : (
@@ -117,8 +122,7 @@ export default function Home() {
               </CardTitle>
             </CardHeader>
             <CardContent className="pt-0">
-              <div className="flex items-center text-xs text-muted-foreground">
-                <Navigation className="w-3 h-3 mr-1" />
+              <div className="flex items-center text-xs text-blue-600 dark:text-blue-400 font-medium">
                 Traveled
               </div>
             </CardContent>
@@ -200,95 +204,62 @@ export default function Home() {
           </Card>
         ) : null}
 
-        {/* App Usage Guide */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <BookOpen className="w-5 h-5" />
-              How to Use This App
+        {/* App Usage Guide - Compact Grid Layout */}
+        <Card className="bg-gradient-to-br from-slate-50 to-gray-50 dark:from-slate-950/50 dark:to-gray-950/50">
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center gap-2 text-lg">
+              <BookOpen className="w-5 h-5 text-primary" />
+              Quick Start Guide
             </CardTitle>
-            <CardDescription>Quick guide to field service features</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
-            {/* Color Legend */}
-            <div>
-              <h4 className="font-semibold text-sm mb-2">Map Color Guide</h4>
-              <div className="space-y-2">
-                <div className="flex items-center gap-2 text-sm">
-                  <Circle className="w-4 h-4 text-blue-500 fill-blue-500" />
-                  <span className="text-muted-foreground">Blue = Customer (existing account)</span>
-                </div>
-                <div className="flex items-center gap-2 text-sm">
-                  <Circle className="w-4 h-4 text-red-500 fill-red-500" />
-                  <span className="text-muted-foreground">Red = Lead (potential customer)</span>
-                </div>
-                <div className="flex items-center gap-2 text-sm">
-                  <Circle className="w-4 h-4 text-green-500 fill-green-500" />
-                  <span className="text-muted-foreground">Green = Selected for route</span>
-                </div>
+          <CardContent className="space-y-3">
+            {/* Color Legend - Compact */}
+            <div className="grid grid-cols-3 gap-2 p-3 bg-background rounded-lg">
+              <div className="flex flex-col items-center gap-1.5">
+                <Circle className="w-6 h-6 text-blue-500 fill-blue-500" />
+                <span className="text-xs text-center text-muted-foreground">Customer</span>
+              </div>
+              <div className="flex flex-col items-center gap-1.5">
+                <Circle className="w-6 h-6 text-red-500 fill-red-500" />
+                <span className="text-xs text-center text-muted-foreground">Lead</span>
+              </div>
+              <div className="flex flex-col items-center gap-1.5">
+                <Circle className="w-6 h-6 text-green-500 fill-green-500" />
+                <span className="text-xs text-center text-muted-foreground">Selected</span>
               </div>
             </div>
 
-            {/* Feature Guide */}
-            <div className="space-y-3 pt-2">
-              <div>
-                <div className="flex items-center gap-2 mb-1">
-                  <Badge variant="outline" className="text-xs">Plan</Badge>
-                  <h4 className="font-semibold text-sm">Route Planning</h4>
+            {/* Feature Guide - Compact Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+              <div className="p-3 bg-background rounded-lg border">
+                <div className="flex items-center gap-2 mb-1.5">
+                  <MapPin className="w-4 h-4 text-primary" />
+                  <h4 className="font-semibold text-sm">Plan</h4>
                 </div>
-                <p className="text-sm text-muted-foreground pl-1">
-                  Set your starting location and search radius. Select companies on the map or list, then tap "Start Route" to build an optimized driving route.
+                <p className="text-xs text-muted-foreground leading-relaxed">
+                  Select companies and build optimized routes
                 </p>
               </div>
 
-              <div>
-                <div className="flex items-center gap-2 mb-1">
-                  <Badge variant="outline" className="text-xs">Route</Badge>
-                  <h4 className="font-semibold text-sm">Active Navigation</h4>
+              <div className="p-3 bg-background rounded-lg border">
+                <div className="flex items-center gap-2 mb-1.5">
+                  <Navigation className="w-4 h-4 text-primary" />
+                  <h4 className="font-semibold text-sm">Navigate</h4>
                 </div>
-                <p className="text-sm text-muted-foreground pl-1">
-                  Follow your route in real-time. When you're within 800 feet of a stop, you'll see a "Check In" button. Tap to record your visit with voice notes or manual entry.
+                <p className="text-xs text-muted-foreground leading-relaxed">
+                  Follow your route and check in when nearby
                 </p>
               </div>
 
-              <div>
-                <div className="flex items-center gap-2 mb-1">
-                  <Badge variant="outline" className="text-xs">History</Badge>
-                  <h4 className="font-semibold text-sm">Past Routes</h4>
+              <div className="p-3 bg-background rounded-lg border">
+                <div className="flex items-center gap-2 mb-1.5">
+                  <CheckCircle2 className="w-4 h-4 text-primary" />
+                  <h4 className="font-semibold text-sm">History</h4>
                 </div>
-                <p className="text-sm text-muted-foreground pl-1">
-                  Review completed routes and check-ins. View detailed visit data and sync status with HubSpot.
+                <p className="text-xs text-muted-foreground leading-relaxed">
+                  Review completed routes and visits
                 </p>
               </div>
-
-              <div>
-                <div className="flex items-center gap-2 mb-1">
-                  <Badge variant="outline" className="text-xs">Saved</Badge>
-                  <h4 className="font-semibold text-sm">Route Templates</h4>
-                </div>
-                <p className="text-sm text-muted-foreground pl-1">
-                  Save frequently-used routes as templates. Quickly build the same route pattern for regular service runs.
-                </p>
-              </div>
-            </div>
-
-            {/* Pro Tips */}
-            <div className="pt-2 border-t">
-              <h4 className="font-semibold text-sm mb-2">Pro Tips</h4>
-              <ul className="space-y-1 text-sm text-muted-foreground">
-                <li className="flex items-start gap-2">
-                  <TrendingUp className="w-4 h-4 mt-0.5 flex-shrink-0" />
-                  <span>AI voice transcription extracts structured data from your field notes automatically</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <MapPin className="w-4 h-4 mt-0.5 flex-shrink-0" />
-                  <span>Tap the map to select companies - no need to scroll through the list</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <Navigation className="w-4 h-4 mt-0.5 flex-shrink-0" />
-                  <span>Routes sync to HubSpot automatically - all your visit data is backed up</span>
-                </li>
-              </ul>
             </div>
           </CardContent>
         </Card>
