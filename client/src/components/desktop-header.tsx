@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "wouter";
-import { Menu, MapIcon, Route, History, User, Save, LogOut, Shield } from "lucide-react";
+import { Home, Menu, MapIcon, Route, History, User, Save, LogOut, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import mspLogo from "@assets/msp_logo_1762965721886.png";
 import {
@@ -16,11 +16,11 @@ import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 
 const allNavItems = [
+  { path: "/", label: "Home", icon: Home },
   { path: "/plan", label: "Plan", icon: MapIcon },
   { path: "/route", label: "Route", icon: Route },
   { path: "/history", label: "History", icon: History },
   { path: "/saved", label: "Saved", icon: Save },
-  { path: "/summary", label: "Summary", icon: User },
 ];
 
 export default function DesktopHeader() {

@@ -1,13 +1,13 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "wouter";
-import { MapIcon, Route, History, User, Save } from "lucide-react";
+import { Home, MapIcon, Route, History, Save } from "lucide-react";
 
 const allNavItems = [
+  { path: "/", label: "Home", icon: Home },
   { path: "/plan", label: "Plan", icon: MapIcon },
   { path: "/route", label: "Route", icon: Route },
   { path: "/history", label: "History", icon: History },
   { path: "/saved", label: "Saved", icon: Save },
-  { path: "/summary", label: "Summary", icon: User },
 ];
 
 export default function BottomNav() {
