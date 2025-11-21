@@ -1,10 +1,12 @@
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/lib/auth";
-import { MapPin, CheckCircle2, Navigation, BookOpen, MessageSquare, TrendingUp, Circle } from "lucide-react";
+import { MapPin, CheckCircle2, Navigation, BookOpen, MessageSquare, TrendingUp, Circle, Settings } from "lucide-react";
 import { format, subDays } from "date-fns";
+import { Link } from "wouter";
 
 export default function Home() {
   const { user } = useAuth();
@@ -82,7 +84,7 @@ export default function Home() {
           </Card>
         </div>
 
-        {/* Announcements */}
+        {/* Announcements - Featured when available */}
         {announcementsLoading ? (
           <Card>
             <CardHeader>
@@ -93,24 +95,66 @@ export default function Home() {
             </CardContent>
           </Card>
         ) : announcements && announcements.length > 0 ? (
-          <Card>
+          <Card className="border-primary/50 bg-primary/5">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <MessageSquare className="w-5 h-5" />
-                Team Announcements
-              </CardTitle>
-              <CardDescription>Latest updates from leadership</CardDescription>
+              <div className="flex items-start justify-between gap-2">
+                <div className="flex-1">
+                  <CardTitle className="flex items-center gap-2 text-primary">
+                    <MessageSquare className="w-6 h-6" />
+                    Team Announcements
+                    <Badge variant="default" className="ml-2">
+                      {announcements.length} New
+                    </Badge>
+                  </CardTitle>
+                  <CardDescription className="mt-1.5">Important updates from leadership</CardDescription>
+                </div>
+                {(user as any)?.isAdmin && (
+                  <Link href="/admin">
+                    <Button variant="outline" size="sm" data-testid="button-manage-announcements">
+                      <Settings className="w-4 h-4 mr-2" />
+                      Manage
+                    </Button>
+                  </Link>
+                )}
+              </div>
             </CardHeader>
             <CardContent className="space-y-4">
               {announcements.slice(0, 3).map((announcement: any) => (
-                <div key={announcement.id} className="border-l-4 border-primary pl-4 py-2">
-                  <h4 className="font-semibold text-sm">{announcement.title}</h4>
-                  <p className="text-sm text-muted-foreground mt-1">{announcement.message}</p>
+                <div 
+                  key={announcement.id} 
+                  className="border-l-4 border-primary pl-4 py-3 bg-background rounded-r-md"
+                  data-testid={`announcement-${announcement.id}`}
+                >
+                  <h4 className="font-semibold text-base">{announcement.title}</h4>
+                  <p className="text-sm text-muted-foreground mt-1.5 leading-relaxed">{announcement.message}</p>
                   <p className="text-xs text-muted-foreground mt-2">
                     {format(new Date(announcement.createdAt), "MMM d, yyyy 'at' h:mm a")}
                   </p>
                 </div>
               ))}
+              {announcements.length > 3 && (
+                <p className="text-xs text-muted-foreground text-center pt-2">
+                  + {announcements.length - 3} more announcement{announcements.length - 3 > 1 ? 's' : ''}
+                </p>
+              )}
+            </CardContent>
+          </Card>
+        ) : (user as any)?.isAdmin ? (
+          <Card className="border-dashed">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <MessageSquare className="w-5 h-5" />
+                Team Announcements
+              </CardTitle>
+              <CardDescription>No announcements yet</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Link href="/admin">
+                <Button variant="default" className="w-full" data-testid="button-create-first-announcement">
+                  <Settings className="w-4 h-4 mr-2" />
+                  Create First Announcement
+                </Button>
+              </Link>
             </CardContent>
           </Card>
         ) : null}
