@@ -525,9 +525,8 @@ export default function PlanPage() {
           </Tabs>
         </div>
 
-        {/* Map Section - Only show when there are companies and (on desktop or map tab on mobile) */}
-        {filteredCompanies.length > 0 && (isDesktop || activeTab === "map") && (
-          <div className="flex-1 relative">
+        {/* Map Section - Always render, control visibility with CSS */}
+        <div className={`flex-1 relative ${activeTab === "map" ? "block" : "hidden"} md:block`}>
             <MapView
               companies={filteredCompanies}
               userLocation={userLocation}
@@ -620,11 +619,9 @@ export default function PlanPage() {
             })()}
 
           </div>
-        )}
 
-        {/* Controls Panel - Show on desktop or when list tab is active on mobile */}
-        {(activeTab === "list" || isDesktop) && (
-        <div className={`${filteredCompanies.length > 0 ? 'md:w-96' : 'md:flex-1'} bg-background border-l overflow-y-auto relative`}>
+        {/* Controls Panel - Always render, control visibility with CSS */}
+        <div className={`${activeTab === "list" ? "block" : "hidden"} md:block md:w-96 bg-background border-l overflow-y-auto relative`}>
           <div className="p-3 pb-24 md:pb-3 space-y-2">
             {/* Mobile: Minimal top bar with filters button / Desktop: Full controls */}
             <div className="sticky top-0 z-20 -mx-3 -mt-3 px-3 py-2 bg-background/95 backdrop-blur border-b md:hidden">
@@ -678,9 +675,8 @@ export default function PlanPage() {
               </div>
             </div>
 
-            {/* Desktop: Filter Section (always visible) */}
-            {isDesktop && (
-            <div className="bg-muted/40 rounded-md p-3 space-y-3">
+            {/* Desktop: Filter Section (always visible on desktop) */}
+            <div className="hidden md:block bg-muted/40 rounded-md p-3 space-y-3">
               {/* Location */}
               <div>
                 <label className="text-xs font-medium text-muted-foreground">Starting Location</label>
@@ -693,7 +689,6 @@ export default function PlanPage() {
                 <RadiusPicker value={radiusMi} onChange={setRadiusMi} />
               </div>
             </div>
-            )}
 
             {/* Search Bar (Always Visible on Mobile) */}
             <div className="relative md:hidden">
@@ -858,7 +853,6 @@ export default function PlanPage() {
             </div>
           </div>
         </div>
-        )}
       </div>
 
       {/* Resume Route Dialog */}
