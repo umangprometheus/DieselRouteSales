@@ -262,7 +262,7 @@ export function RouteReorderView({
 
       {/* Main container - Full screen on mobile, modal on desktop */}
       <div 
-        className="fixed inset-0 z-[200] bg-background flex flex-col pointer-events-auto md:inset-auto md:top-16 md:bottom-24 md:left-1/2 md:-translate-x-1/2 md:rounded-lg md:shadow-2xl md:w-[90vw] md:max-w-2xl md:pointer-events-auto"
+        className="fixed inset-0 z-[200] bg-background flex flex-col pointer-events-auto md:inset-auto md:top-20 md:bottom-8 md:left-1/2 md:-translate-x-1/2 md:rounded-lg md:shadow-2xl md:w-[90vw] md:max-w-2xl md:pointer-events-auto"
       >
       {/* Header */}
       <div className="flex-shrink-0 border-b">

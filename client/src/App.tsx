@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider, useAuth } from "@/lib/auth";
 import BottomNav from "@/components/bottom-nav";
+import DesktopHeader from "@/components/desktop-header";
 import LoginPage from "@/pages/login";
 import PlanPage from "@/pages/plan";
 import RoutePage from "@/pages/route";
@@ -73,10 +74,26 @@ function BottomNavWrapper() {
   return <BottomNav />;
 }
 
+function DesktopHeaderWrapper() {
+  const { isAuthenticated } = useAuth();
+  const [location] = useLocation();
+
+  // Hide desktop header on login/public routes and check-in submit flow
+  const isPublicRoute = location === "/" || location === "/login";
+  const isCheckInFlow = location.startsWith("/check-in");
+  const showDesktopHeader = isAuthenticated && !isPublicRoute && !isCheckInFlow;
+
+  if (!showDesktopHeader) return null;
+  return <DesktopHeader />;
+}
+
 function AppContent() {
   return (
     <div className="relative min-h-screen">
-      <Router />
+      <DesktopHeaderWrapper />
+      <div className="md:pt-16">
+        <Router />
+      </div>
       <BottomNavWrapper />
     </div>
   );
