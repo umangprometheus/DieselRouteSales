@@ -678,7 +678,8 @@ export default function PlanPage() {
             </div>
 
             {/* Desktop: Filter Section (always visible) */}
-            <div className="hidden md:block bg-muted/40 rounded-md p-3 space-y-3">
+            {isDesktop && (
+            <div className="bg-muted/40 rounded-md p-3 space-y-3">
               {/* Location */}
               <div>
                 <label className="text-xs font-medium text-muted-foreground">Starting Location</label>
@@ -691,6 +692,7 @@ export default function PlanPage() {
                 <RadiusPicker value={radiusMi} onChange={setRadiusMi} />
               </div>
             </div>
+            )}
 
             {/* Search Bar (Always Visible on Mobile) */}
             <div className="relative md:hidden">
