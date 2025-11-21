@@ -32,13 +32,10 @@ function Router() {
 
   return (
     <Switch>
-      {/* Login route */}
+      {/* Public login route */}
       <Route path="/login" component={LoginPage} />
       
-      {/* Protected routes */}
-      <Route path="/">
-        {isAuthenticated ? <HomePage /> : <Redirect to="/login" />}
-      </Route>
+      {/* Specific protected routes first */}
       <Route path="/plan">
         {isAuthenticated ? <PlanPage /> : <Redirect to="/login" />}
       </Route>
@@ -56,6 +53,11 @@ function Router() {
       </Route>
       <Route path="/check-in/submit">
         {isAuthenticated ? <CheckInSubmitPage /> : <Redirect to="/login" />}
+      </Route>
+      
+      {/* Home route - catch-all for authenticated users at root */}
+      <Route path="/">
+        {isAuthenticated ? <HomePage /> : <Redirect to="/login" />}
       </Route>
       
       {/* Fallback to 404 */}

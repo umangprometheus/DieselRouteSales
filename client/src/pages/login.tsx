@@ -37,10 +37,11 @@ export default function LoginPage() {
       toast({
         title: "Welcome back!",
         description: "You've successfully signed in.",
+        duration: 1000,
       });
 
-      // Redirect to plan page
-      setLocation("/plan");
+      // Redirect to home page
+      setLocation("/");
     } catch (error: any) {
       toast({
         variant: "destructive",
