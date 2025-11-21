@@ -22,8 +22,18 @@ import { restrictToVerticalAxis } from "@dnd-kit/modifiers";
 import { SortableItem } from "./SortableItem";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Navigation, MapPin, Clock, Route as RouteIcon, GripVertical, ArrowLeft } from "lucide-react";
+import { Navigation, MapPin, Clock, Route as RouteIcon, GripVertical, ArrowLeft, X } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import type { BuildRouteResponse } from "@shared/schema";
 
 interface RouteReorderViewProps {
@@ -48,11 +58,12 @@ export function RouteReorderView({
   const [editedStops, setEditedStops] = useState(route?.stops || []);
   const [isDirty, setIsDirty] = useState(false);
   const [activeId, setActiveId] = useState<string | null>(null);
+  const [showCloseConfirm, setShowCloseConfirm] = useState(false);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
 
-  // Lock body scroll when open
+  // Lock body scroll when open - ONLY on mobile (< 768px)
   useEffect(() => {
-    if (open) {
+    if (open && window.innerWidth < 768) {
       const scrollY = window.scrollY;
       document.body.style.position = 'fixed';
       document.body.style.top = `-${scrollY}px`;
@@ -227,21 +238,41 @@ export function RouteReorderView({
     onCancel();
   };
 
+  const handleClose = () => {
+    if (isDirty) {
+      setShowCloseConfirm(true);
+    } else {
+      handleCancel();
+    }
+  };
+
+  const confirmClose = () => {
+    setShowCloseConfirm(false);
+    handleCancel();
+  };
+
   if (!open || !route) return null;
 
   return (
-    <div 
-      className="fixed inset-0 z-[200] bg-background flex flex-col pointer-events-auto"
-    >
+    <>
+      {/* Desktop overlay backdrop - pointer-events-none to allow navigation clicks */}
+      <div 
+        className="hidden md:block fixed inset-0 z-[190] bg-black/30 pointer-events-none"
+      />
+
+      {/* Main container - Full screen on mobile, modal on desktop */}
+      <div 
+        className="fixed inset-0 z-[200] bg-background flex flex-col pointer-events-auto md:inset-auto md:top-16 md:bottom-24 md:left-1/2 md:-translate-x-1/2 md:rounded-lg md:shadow-2xl md:w-[90vw] md:max-w-2xl md:pointer-events-auto"
+      >
       {/* Header */}
       <div className="flex-shrink-0 border-b">
         <div className="flex items-center gap-3 p-4">
           <Button
             variant="outline"
             size="icon"
-            onClick={handleCancel}
+            onClick={handleClose}
             data-testid="button-back-from-reorder"
-            className="flex-shrink-0"
+            className="flex-shrink-0 md:hidden"
           >
             <ArrowLeft className="h-5 w-5 text-primary" />
           </Button>
@@ -252,6 +283,15 @@ export function RouteReorderView({
               {customEndpoint && ' + custom endpoint'}
             </p>
           </div>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={handleClose}
+            data-testid="button-close-reorder"
+            className="hidden md:flex flex-shrink-0"
+          >
+            <X className="h-5 w-5" />
+          </Button>
         </div>
 
         {/* Summary Cards */}
@@ -377,7 +417,26 @@ export function RouteReorderView({
           Build Route
         </button>
       </div>
-    </div>
+      </div>
+
+      {/* Unsaved changes confirmation dialog */}
+      <AlertDialog open={showCloseConfirm} onOpenChange={setShowCloseConfirm}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Discard changes?</AlertDialogTitle>
+            <AlertDialogDescription>
+              You have unsaved changes to your route order. If you close now, your edits will be lost.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel data-testid="button-keep-editing">Keep editing</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmClose} data-testid="button-discard-changes">
+              Discard changes
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 }
 
