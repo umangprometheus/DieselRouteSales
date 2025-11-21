@@ -623,7 +623,7 @@ export default function PlanPage() {
         )}
 
         {/* Controls Panel - Desktop or Mobile Sheet */}
-        <div className={`${activeTab === "list" || isDesktop ? "block" : "hidden"} md:block ${filteredCompanies.length > 0 ? 'md:w-96' : 'md:flex-1'} bg-background border-l overflow-y-auto relative`}>
+        <div className={`${activeTab === "list" || isDesktop ? "block" : "hidden"} ${filteredCompanies.length > 0 && isDesktop ? 'md:w-96' : isDesktop ? 'md:flex-1' : ''} bg-background border-l overflow-y-auto relative`}>
           <div className="p-3 pb-24 md:pb-3 space-y-2">
             {/* Mobile: Minimal top bar with filters button / Desktop: Full controls */}
             <div className="sticky top-0 z-20 -mx-3 -mt-3 px-3 py-2 bg-background/95 backdrop-blur border-b md:hidden">
