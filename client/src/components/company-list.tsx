@@ -37,7 +37,7 @@ export default function CompanyList({
         return (
           <Card
             key={company.id}
-            className={`p-4 hover-elevate transition-all cursor-pointer select-none ${
+            className={`px-3 py-4 sm:px-4 w-full hover-elevate transition-all cursor-pointer select-none ${
               isSelected ? "ring-2 ring-primary" : ""
             }`}
             onClick={() => {
@@ -52,7 +52,7 @@ export default function CompanyList({
               touchAction: 'manipulation'
             } as React.CSSProperties}
           >
-            <div className="flex items-start gap-3">
+            <div className="flex items-start gap-2 sm:gap-3 min-w-0">
               <Checkbox
                 checked={isSelected}
                 onCheckedChange={() => onToggle(company.id)}
@@ -61,8 +61,8 @@ export default function CompanyList({
               />
               
               <div className="flex-1 min-w-0">
-                <div className="flex items-start justify-between gap-2 mb-1">
-                  <div className="flex items-center gap-2 flex-1 min-w-0">
+                <div className="flex items-start justify-between gap-1.5 sm:gap-2 mb-1 min-w-0">
+                  <div className="flex items-center gap-1.5 sm:gap-2 flex-1 min-w-0">
                     {/* Lifecycle stage indicator dot */}
                     <div 
                       className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${
@@ -72,13 +72,13 @@ export default function CompanyList({
                       }`}
                       title={company.lifecycleStage || 'Unknown'}
                     />
-                    <h3 className="text-lg font-semibold text-foreground truncate select-none" style={{ WebkitUserSelect: 'none', WebkitTouchCallout: 'none', userSelect: 'none' }}>
+                    <h3 className="text-lg font-semibold text-foreground truncate select-none min-w-0" style={{ WebkitUserSelect: 'none', WebkitTouchCallout: 'none', userSelect: 'none' }}>
                       {company.name}
                     </h3>
                   </div>
                   <Badge 
                     variant="secondary" 
-                    className="bg-success/10 text-success hover:bg-success/20 flex-shrink-0 text-sm font-medium"
+                    className="bg-success/10 text-success hover:bg-success/20 shrink text-sm font-medium max-w-[5rem] overflow-hidden"
                     data-testid={`badge-distance-${company.id}`}
                   >
                     {company.distanceMi.toFixed(1)} mi
