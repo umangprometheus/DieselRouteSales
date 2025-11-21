@@ -198,7 +198,7 @@ export default function SavedPage() {
       </header>
 
       {/* Content */}
-      <div className="flex-1 overflow-y-auto px-4 py-4">
+      <div className="flex-1 overflow-y-auto px-4 py-4 pb-24 md:pb-4">
         {isLoading ? (
           <div className="space-y-4">
             {[1, 2, 3].map((i) => (
