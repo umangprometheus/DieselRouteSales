@@ -36,12 +36,8 @@ export default function Home() {
     <div className="min-h-screen bg-background pb-20 md:pb-4">
       {/* Header - Mobile only */}
       <div className="md:hidden sticky top-0 z-30 p-4 bg-background border-b">
-        <div className="flex items-center gap-3">
-          <img src={mspLogo} alt="MSP" className="h-10 w-auto" />
-          <div className="flex-1 min-w-0">
-            <h1 className="text-xl font-bold truncate">MSP Field Service</h1>
-            <p className="text-xs text-muted-foreground truncate">Welcome, {user?.username}!</p>
-          </div>
+        <div className="flex items-center justify-between">
+          <img src={mspLogo} alt="MSP" className="h-8 w-auto" />
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="icon" data-testid="button-user-menu-mobile">
@@ -85,6 +81,12 @@ export default function Home() {
             <h1 className="text-3xl font-bold mb-1">MSP Field Service</h1>
             <p className="text-muted-foreground">Welcome back, {user?.username}!</p>
           </div>
+        </div>
+
+        {/* Welcome Section - Mobile */}
+        <div className="md:hidden">
+          <h1 className="text-xl font-bold">MSP Field Service</h1>
+          <p className="text-sm text-muted-foreground">Welcome, {user?.username}!</p>
         </div>
 
         {/* Yesterday's Metrics Dashboard */}
