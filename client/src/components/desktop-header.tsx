@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Link, useLocation } from "wouter";
 import { Menu, MapIcon, Route, History, User, Save, RefreshCw, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import mspLogo from "@assets/msp_logo_1762965721886.png";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -111,10 +112,12 @@ export default function DesktopHeader() {
           </DropdownMenuContent>
         </DropdownMenu>
 
-        {/* App Logo/Title */}
-        <div className="flex items-center gap-2">
-          <div className="text-xl font-bold text-primary">MSP</div>
-        </div>
+        {/* App Logo */}
+        <img 
+          src={mspLogo} 
+          alt="MSP Diesel Solutions" 
+          className="h-8 w-auto"
+        />
       </div>
 
       {/* Right: Actions */}
