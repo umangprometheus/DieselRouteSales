@@ -78,7 +78,8 @@ export default function CompanyList({
                   </div>
                   <Badge 
                     variant="secondary" 
-                    className="bg-success/10 text-success hover:bg-success/20 shrink text-sm font-medium max-w-[5rem] overflow-hidden"
+                    shrink
+                    className="bg-success/10 text-success hover:bg-success/20 text-sm font-medium max-w-[5rem] overflow-hidden text-ellipsis"
                     data-testid={`badge-distance-${company.id}`}
                   >
                     {company.distanceMi.toFixed(1)} mi
