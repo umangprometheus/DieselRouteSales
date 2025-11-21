@@ -80,13 +80,13 @@ export function SortableItem({
             {!disabled && (
               <button
                 ref={setActivatorNodeRef}
-                className="flex-shrink-0 p-2 -ml-2 cursor-grab active:cursor-grabbing touch-none"
+                className="flex-shrink-0 p-1.5 sm:p-2 -ml-1.5 sm:-ml-2 cursor-grab active:cursor-grabbing touch-none"
                 data-testid={`drag-handle-${index}`}
                 aria-label="Drag to reorder"
                 {...attributes}
                 {...listeners}
               >
-                <GripVertical className="h-6 w-6 text-primary" />
+                <GripVertical className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
               </button>
             )}
 
@@ -95,42 +95,42 @@ export function SortableItem({
               <div className="flex items-start justify-between gap-1.5 sm:gap-2 min-w-0">
                 <div className="flex-1 min-w-0">
                   {/* Company name with stop number */}
-                  <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
+                  <div className="flex items-center gap-1 sm:gap-1.5 min-w-0">
                     {isEndpoint ? (
-                      <Flag className="h-4 w-4 text-primary flex-shrink-0" />
+                      <Flag className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-primary flex-shrink-0" />
                     ) : (
-                      <span className="text-lg font-bold text-primary flex-shrink-0">#{index + 1}</span>
+                      <span className="text-base sm:text-lg font-bold text-primary flex-shrink-0">#{index + 1}</span>
                     )}
-                    <p className="font-semibold text-base truncate min-w-0">
+                    <p className="font-semibold text-sm sm:text-base truncate min-w-0">
                       {stop.name}
                     </p>
                   </div>
                   
                   {/* Address */}
                   {stop.street && (
-                    <p className="text-sm text-muted-foreground truncate min-w-0">
+                    <p className="text-xs sm:text-sm text-muted-foreground truncate min-w-0">
                       {stop.street}
                       {stop.city && `, ${stop.city}`}
                     </p>
                   )}
                   
                   {/* Metadata - distance and time */}
-                  <div className="flex items-center gap-1.5 sm:gap-2 mt-0.5 flex-wrap min-w-0">
+                  <div className="flex items-center gap-1 sm:gap-1.5 mt-0.5 flex-wrap min-w-0">
                     {stop.distanceFromPrevMi !== null && stop.distanceFromPrevMi > 0 && (
-                      <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                        <Route className="h-3.5 w-3.5" />
+                      <div className="flex items-center gap-0.5 sm:gap-1 text-xs sm:text-sm text-muted-foreground">
+                        <Route className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
                         {formatDistance(stop.distanceFromPrevMi)}
                       </div>
                     )}
                     {stop.etaFromPrevMin !== null && stop.etaFromPrevMin > 0 && (
-                      <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                        <Clock className="h-3.5 w-3.5" />
+                      <div className="flex items-center gap-0.5 sm:gap-1 text-xs sm:text-sm text-muted-foreground">
+                        <Clock className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
                         {formatTime(stop.etaFromPrevMin)}
                       </div>
                     )}
                     {isEndpoint && (
-                      <div className="flex items-center gap-1 text-sm text-primary font-medium">
-                        <MapPin className="h-3.5 w-3.5" />
+                      <div className="flex items-center gap-0.5 sm:gap-1 text-xs sm:text-sm text-primary font-medium">
+                        <MapPin className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
                         Final destination
                       </div>
                     )}
@@ -139,26 +139,26 @@ export function SortableItem({
                 
                 {/* Reorder Buttons - Mobile fallback */}
                 {!disabled && (
-                  <div className="flex flex-col gap-1 flex-shrink-0">
+                  <div className="flex flex-col gap-0.5 flex-shrink-0">
                     <Button
                       size="icon"
                       variant="outline"
-                      className="h-8 w-8"
+                      className="h-7 w-7 sm:h-8 sm:w-8"
                       onClick={onMoveUp}
                       disabled={!canMoveUp}
                       data-testid={`move-up-${index}`}
                     >
-                      <ChevronUp className="h-5 w-5 text-primary" />
+                      <ChevronUp className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
                     </Button>
                     <Button
                       size="icon"
                       variant="outline"
-                      className="h-8 w-8"
+                      className="h-7 w-7 sm:h-8 sm:w-8"
                       onClick={onMoveDown}
                       disabled={!canMoveDown}
                       data-testid={`move-down-${index}`}
                     >
-                      <ChevronDown className="h-5 w-5 text-primary" />
+                      <ChevronDown className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
                     </Button>
                   </div>
                 )}
