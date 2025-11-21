@@ -254,8 +254,28 @@ export default function HistoryPage() {
         </DialogContent>
       </Dialog>
 
+      {/* Desktop spacing for fixed header */}
+      <div className="hidden md:block h-16" />
+
+      {/* Desktop Header with Filter */}
+      <div className="hidden md:flex max-w-2xl mx-auto px-4 py-4 items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold">Route History</h1>
+          <p className="text-sm text-muted-foreground">View and manage completed routes</p>
+        </div>
+        <Button
+          variant="outline"
+          className="gap-2"
+          onClick={() => setDateFilterOpen(true)}
+          data-testid="button-date-filter-desktop"
+        >
+          <Filter className="h-4 w-4" />
+          <span className="font-medium">{getFilterLabel()}</span>
+        </Button>
+      </div>
+
       {/* Content */}
-      <div className="max-w-2xl mx-auto p-4 pt-6">
+      <div className="max-w-2xl mx-auto p-4 md:pt-0">
         {/* Routes List */}
         {isLoading ? (
           <div className="space-y-4">
