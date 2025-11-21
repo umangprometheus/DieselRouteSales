@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { useLocation } from "wouter";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -27,6 +28,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/lib/auth";
 import { Shield, Plus, Pencil, Trash2, Save, X } from "lucide-react";
 import { format } from "date-fns";
 
@@ -39,9 +41,24 @@ type AnnouncementForm = z.infer<typeof announcementSchema>;
 
 export default function AdminPanel() {
   const { toast } = useToast();
+  const { user } = useAuth();
+  const [, navigate] = useLocation();
   const [editingId, setEditingId] = useState<string | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+
+  // Redirect non-admin users
+  useEffect(() => {
+    if (user && !(user as any).isAdmin) {
+      toast({
+        title: "Access Denied",
+        description: "You don't have permission to access this page",
+        variant: "destructive",
+        duration: 1000,
+      });
+      navigate("/");
+    }
+  }, [user, navigate, toast]);
 
   const { data: announcements, isLoading } = useQuery<any[]>({
     queryKey: ["/api/announcements"],

@@ -7,11 +7,12 @@ import { AuthProvider, useAuth } from "@/lib/auth";
 import BottomNav from "@/components/bottom-nav";
 import DesktopHeader from "@/components/desktop-header";
 import LoginPage from "@/pages/login";
+import HomePage from "@/pages/home";
 import PlanPage from "@/pages/plan";
 import RoutePage from "@/pages/route";
-import SummaryPage from "@/pages/summary";
 import HistoryPage from "@/pages/history";
 import SavedPage from "@/pages/saved";
+import AdminPage from "@/pages/admin";
 import CheckInSubmitPage from "@/pages/check-in-submit";
 import NotFound from "@/pages/not-found";
 
@@ -31,25 +32,27 @@ function Router() {
 
   return (
     <Switch>
-      {/* Public routes */}
-      <Route path="/" component={LoginPage} />
+      {/* Login route */}
       <Route path="/login" component={LoginPage} />
       
       {/* Protected routes */}
+      <Route path="/">
+        {isAuthenticated ? <HomePage /> : <Redirect to="/login" />}
+      </Route>
       <Route path="/plan">
         {isAuthenticated ? <PlanPage /> : <Redirect to="/login" />}
       </Route>
       <Route path="/route">
         {isAuthenticated ? <RoutePage /> : <Redirect to="/login" />}
       </Route>
-      <Route path="/summary">
-        {isAuthenticated ? <SummaryPage /> : <Redirect to="/login" />}
-      </Route>
       <Route path="/history">
         {isAuthenticated ? <HistoryPage /> : <Redirect to="/login" />}
       </Route>
       <Route path="/saved">
         {isAuthenticated ? <SavedPage /> : <Redirect to="/login" />}
+      </Route>
+      <Route path="/admin">
+        {isAuthenticated ? <AdminPage /> : <Redirect to="/login" />}
       </Route>
       <Route path="/check-in/submit">
         {isAuthenticated ? <CheckInSubmitPage /> : <Redirect to="/login" />}
@@ -65,10 +68,10 @@ function BottomNavWrapper() {
   const { isAuthenticated } = useAuth();
   const [location] = useLocation();
 
-  // Hide bottom nav on login/public routes and check-in submit flow
-  const isPublicRoute = location === "/" || location === "/login";
+  // Hide bottom nav on login page and check-in submit flow
+  const isLoginRoute = location === "/login";
   const isCheckInFlow = location.startsWith("/check-in");
-  const showBottomNav = isAuthenticated && !isPublicRoute && !isCheckInFlow;
+  const showBottomNav = isAuthenticated && !isLoginRoute && !isCheckInFlow;
 
   if (!showBottomNav) return null;
   return <BottomNav />;
@@ -78,10 +81,10 @@ function DesktopHeaderWrapper() {
   const { isAuthenticated } = useAuth();
   const [location] = useLocation();
 
-  // Hide desktop header on login/public routes and check-in submit flow
-  const isPublicRoute = location === "/" || location === "/login";
+  // Hide desktop header on login page and check-in submit flow
+  const isLoginRoute = location === "/login";
   const isCheckInFlow = location.startsWith("/check-in");
-  const showDesktopHeader = isAuthenticated && !isPublicRoute && !isCheckInFlow;
+  const showDesktopHeader = isAuthenticated && !isLoginRoute && !isCheckInFlow;
 
   if (!showDesktopHeader) return null;
   return <DesktopHeader />;

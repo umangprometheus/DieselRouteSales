@@ -415,7 +415,7 @@ export default function RoutePage() {
     }
     
     localStorage.removeItem("activeRoute");
-    navigate("/summary");
+    navigate("/");
   };
 
   const handleAddStop = async (company: { id: string; name: string; street: string | null; city: string | null; state: string | null }) => {
@@ -691,9 +691,9 @@ export default function RoutePage() {
               variant="secondary" 
               className="w-full"
               onClick={handleEndRoute}
-              data-testid="button-view-summary"
+              data-testid="button-go-home"
             >
-              View Summary
+              Go Home
             </Button>
           </div>
         </div>
