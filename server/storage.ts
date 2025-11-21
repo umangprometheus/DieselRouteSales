@@ -14,6 +14,8 @@ import type {
   InsertRouteStop,
   SyncLog,
   InsertSyncLog,
+  Announcement,
+  InsertAnnouncement,
 } from "@shared/schema";
 
 export interface IStorage {
@@ -59,6 +61,12 @@ export interface IStorage {
   createSyncLog(log: InsertSyncLog): Promise<SyncLog>;
   updateSyncLog(id: string, updates: Partial<SyncLog>): Promise<SyncLog>;
   getLatestSyncLog(): Promise<SyncLog | undefined>;
+
+  getAllAnnouncements(): Promise<Announcement[]>;
+  getAnnouncement(id: string): Promise<Announcement | undefined>;
+  createAnnouncement(announcement: InsertAnnouncement): Promise<Announcement>;
+  updateAnnouncement(id: string, updates: Partial<InsertAnnouncement>): Promise<Announcement>;
+  deleteAnnouncement(id: string): Promise<void>;
 }
 
 export class DbStorage implements IStorage {
@@ -474,6 +482,44 @@ export class DbStorage implements IStorage {
       .orderBy(desc(schema.syncLogs.startedAt))
       .limit(1);
     return log;
+  }
+
+  async getAllAnnouncements(): Promise<Announcement[]> {
+    return await db
+      .select()
+      .from(schema.announcements)
+      .orderBy(desc(schema.announcements.createdAt));
+  }
+
+  async getAnnouncement(id: string): Promise<Announcement | undefined> {
+    const [announcement] = await db
+      .select()
+      .from(schema.announcements)
+      .where(eq(schema.announcements.id, id));
+    return announcement;
+  }
+
+  async createAnnouncement(insertAnnouncement: InsertAnnouncement): Promise<Announcement> {
+    const [announcement] = await db
+      .insert(schema.announcements)
+      .values(insertAnnouncement)
+      .returning();
+    return announcement;
+  }
+
+  async updateAnnouncement(id: string, updates: Partial<InsertAnnouncement>): Promise<Announcement> {
+    const [announcement] = await db
+      .update(schema.announcements)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(schema.announcements.id, id))
+      .returning();
+
+    if (!announcement) throw new Error("Announcement not found");
+    return announcement;
+  }
+
+  async deleteAnnouncement(id: string): Promise<void> {
+    await db.delete(schema.announcements).where(eq(schema.announcements.id, id));
   }
 }
 

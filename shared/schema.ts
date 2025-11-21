@@ -13,6 +13,7 @@ export const users = pgTable("users", {
   email: varchar("email", { length: 255 }).notNull(),
   name: varchar("name", { length: 255 }),
   hubspotOwnerId: varchar("hubspot_owner_id", { length: 100 }),
+  isAdmin: boolean("is_admin").notNull().default(false),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
@@ -410,6 +411,27 @@ export const summaryResponseSchema = z.object({
 });
 
 export type SummaryResponse = z.infer<typeof summaryResponseSchema>;
+
+// ============================================================================
+// Announcements Table - Admin messages for the team
+// ============================================================================
+export const announcements = pgTable("announcements", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  title: varchar("title", { length: 255 }).notNull(),
+  message: text("message").notNull(),
+  createdBy: varchar("created_by").notNull().references(() => users.id),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+export const insertAnnouncementSchema = createInsertSchema(announcements).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type Announcement = typeof announcements.$inferSelect;
+export type InsertAnnouncement = z.infer<typeof insertAnnouncementSchema>;
 
 // ============================================================================
 // Voice-to-Text & AI Parsing Schemas
