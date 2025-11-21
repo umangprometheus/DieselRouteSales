@@ -17,9 +17,12 @@ Preferred communication style: Simple, everyday language.
 **Routing**: Wouter for lightweight client-side routing with protected routes requiring authentication
 
 **UI Component System**: Shadcn UI (Radix UI primitives) + Tailwind CSS
-- Mobile-first design optimized for outdoor field use (360-428px phones)
+- Mobile-first design optimized for outdoor field use (320-430px phones)
+- Responsive layout tested across all iPhone models (SE, 11-15, Pro/Pro Max)
+- iOS safe-area inset support for notched devices (env(safe-area-inset-*))
 - System font stack for performance
 - Minimal spacing primitives (2, 3, 4, 6, 8 units)
+- Responsive padding: 12px (small screens) to 16px (standard phones)
 - Design inspired by Google Maps navigation UI and Linear's clean aesthetics
 
 **State Management**:
@@ -41,6 +44,8 @@ Preferred communication style: Simple, everyday language.
 - Company cards in list view are fully clickable for selection (not just checkbox area)
 - Clear Selection button only appears on map view, not in list view sticky header
 - Distance displayed in US units: miles for >0.5mi, feet for <0.5mi
+- Responsive card layout: Flexible padding and badge sizing prevents overflow on iPhone SE (320px)
+- All flex containers use min-w-0 to enable proper text truncation and prevent horizontal scroll
 
 ### Backend Architecture
 
