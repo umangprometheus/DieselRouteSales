@@ -7,6 +7,7 @@ import { useAuth } from "@/lib/auth";
 import { MapPin, CheckCircle2, Navigation, BookOpen, MessageSquare, TrendingUp, Circle, Settings } from "lucide-react";
 import { format, subDays } from "date-fns";
 import { Link } from "wouter";
+import mspLogo from "@assets/msp_logo_1762965721886.png";
 
 export default function Home() {
   const { user } = useAuth();
@@ -28,8 +29,13 @@ export default function Home() {
     <div className="min-h-screen bg-background pb-20 md:pb-4">
       {/* Header - Mobile only */}
       <div className="md:hidden sticky top-0 z-30 p-4 bg-background border-b">
-        <h1 className="text-2xl font-bold">MSP Field Service</h1>
-        <p className="text-sm text-muted-foreground">Welcome, {user?.username}!</p>
+        <div className="flex items-center gap-3">
+          <img src={mspLogo} alt="MSP" className="h-10 w-auto" />
+          <div className="flex-1 min-w-0">
+            <h1 className="text-xl font-bold truncate">MSP Field Service</h1>
+            <p className="text-xs text-muted-foreground truncate">Welcome, {user?.username}!</p>
+          </div>
+        </div>
       </div>
 
       {/* Desktop spacing for fixed header */}
@@ -37,10 +43,13 @@ export default function Home() {
 
       {/* Main Content */}
       <div className="p-3 md:p-6 max-w-6xl mx-auto space-y-6">
-        {/* Welcome Section */}
-        <div className="hidden md:block">
-          <h1 className="text-3xl font-bold mb-1">MSP Field Service</h1>
-          <p className="text-muted-foreground">Welcome back, {user?.username}!</p>
+        {/* Welcome Section - Desktop */}
+        <div className="hidden md:flex items-center gap-4">
+          <img src={mspLogo} alt="MSP Diesel Solutions" className="h-16 w-auto" />
+          <div className="flex-1 min-w-0">
+            <h1 className="text-3xl font-bold mb-1">MSP Field Service</h1>
+            <p className="text-muted-foreground">Welcome back, {user?.username}!</p>
+          </div>
         </div>
 
         {/* Yesterday's Metrics Dashboard */}
@@ -110,7 +119,7 @@ export default function Home() {
                 </div>
                 {(user as any)?.isAdmin && (
                   <Link href="/admin">
-                    <Button variant="outline" size="sm" data-testid="button-manage-announcements">
+                    <Button variant="outline" size="sm" className="hidden md:flex" data-testid="button-manage-announcements">
                       <Settings className="w-4 h-4 mr-2" />
                       Manage
                     </Button>
