@@ -480,8 +480,8 @@ export default function RoutePage() {
 
   return (
     <div className="fixed inset-0 flex flex-col bg-background overflow-hidden">
-      {/* Header */}
-      <header className="pt-safe px-2 sm:px-4 flex items-center justify-between border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 z-40 min-h-[56px] flex-shrink-0">
+      {/* Header - Mobile only, desktop uses DesktopHeader */}
+      <header className="md:hidden pt-safe px-2 sm:px-4 flex items-center justify-between border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 z-40 min-h-[56px] flex-shrink-0">
         <div className="flex items-center gap-2 sm:gap-3 min-w-0">
           <Button 
             variant="ghost" 

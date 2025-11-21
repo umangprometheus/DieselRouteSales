@@ -476,8 +476,8 @@ export default function PlanPage() {
 
   return (
     <div className="fixed inset-0 flex flex-col bg-background overflow-hidden">
-      {/* Header */}
-      <header className="pt-safe px-4 flex items-center justify-between border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 min-h-[56px] flex-shrink-0">
+      {/* Header - Mobile only, desktop uses DesktopHeader */}
+      <header className="md:hidden pt-safe px-4 flex items-center justify-between border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 min-h-[56px] flex-shrink-0">
         <img 
           src={mspLogo} 
           alt="MSP Diesel Solutions" 

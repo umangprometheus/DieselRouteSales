@@ -18,8 +18,8 @@ export default function SummaryPage() {
 
   return (
     <div className="min-h-screen bg-background pb-20 md:pb-0">
-      {/* Header */}
-      <header className="sticky top-0 z-10 pt-safe px-4 flex items-center justify-between border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 min-h-[56px]">
+      {/* Header - Mobile only, desktop uses DesktopHeader */}
+      <header className="md:hidden sticky top-0 z-10 pt-safe px-4 flex items-center justify-between border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 min-h-[56px]">
         <img 
           src={mspLogo} 
           alt="MSP Diesel Solutions" 
