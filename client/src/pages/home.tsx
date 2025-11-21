@@ -35,39 +35,43 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-background pb-20 md:pb-4">
       {/* Header - Mobile only */}
-      <div className="md:hidden sticky top-0 z-30 p-4 bg-background border-b">
-        <div className="flex items-center justify-between">
-          <img src={mspLogo} alt="MSP" className="h-8 w-auto" />
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" data-testid="button-user-menu-mobile">
-                <User className="h-5 w-5" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <div className="px-2 py-1.5 text-sm font-medium">
-                {user?.username}
-              </div>
-              <DropdownMenuSeparator />
-              {(user as any)?.isAdmin && (
-                <>
-                  <Link href="/admin">
-                    <DropdownMenuItem data-testid="link-admin-panel">
-                      <Shield className="mr-2 h-4 w-4" />
-                      <span>Admin Panel</span>
-                    </DropdownMenuItem>
-                  </Link>
-                  <DropdownMenuSeparator />
-                </>
-              )}
-              <DropdownMenuItem onClick={logout} data-testid="button-logout">
-                <LogOut className="mr-2 h-4 w-4" />
-                <span>Logout</span>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
-      </div>
+      <header className="md:hidden sticky top-0 z-10 px-4 pt-safe flex items-center justify-between border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 min-h-[56px]">
+        <img 
+          src={mspLogo} 
+          alt="MSP Diesel Solutions" 
+          className="h-8 w-auto flex-shrink-0"
+        />
+        
+        {/* User Menu */}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="icon" data-testid="button-user-menu-mobile">
+              <User className="h-5 w-5" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <div className="px-2 py-1.5 text-sm font-medium">
+              {user?.username}
+            </div>
+            <DropdownMenuSeparator />
+            {(user as any)?.isAdmin && (
+              <>
+                <Link href="/admin">
+                  <DropdownMenuItem data-testid="link-admin-panel">
+                    <Shield className="mr-2 h-4 w-4" />
+                    <span>Admin Panel</span>
+                  </DropdownMenuItem>
+                </Link>
+                <DropdownMenuSeparator />
+              </>
+            )}
+            <DropdownMenuItem onClick={logout} data-testid="button-logout">
+              <LogOut className="mr-2 h-4 w-4" />
+              <span>Logout</span>
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </header>
 
       {/* Desktop spacing for fixed header */}
       <div className="hidden md:block h-16" />
