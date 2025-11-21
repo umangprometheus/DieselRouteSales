@@ -74,8 +74,8 @@ export function SortableItem({
           userSelect: 'none'
         }}
       >
-        <CardContent className="p-2">
-          <div className="flex items-center gap-2">
+        <CardContent className="px-2 py-3 sm:px-3">
+          <div className="flex items-center gap-2 min-w-0">
             {/* Drag Handle - Only this activates drag */}
             {!disabled && (
               <button
@@ -92,30 +92,30 @@ export function SortableItem({
 
             {/* Stop Details */}
             <div className="flex-1 min-w-0">
-              <div className="flex items-start justify-between">
-                <div className="flex-1 min-w-0 pr-2">
+              <div className="flex items-start justify-between gap-1.5 sm:gap-2 min-w-0">
+                <div className="flex-1 min-w-0">
                   {/* Company name with stop number */}
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
                     {isEndpoint ? (
                       <Flag className="h-4 w-4 text-primary flex-shrink-0" />
                     ) : (
                       <span className="text-lg font-bold text-primary flex-shrink-0">#{index + 1}</span>
                     )}
-                    <p className="font-semibold text-base truncate">
+                    <p className="font-semibold text-base truncate min-w-0">
                       {stop.name}
                     </p>
                   </div>
                   
                   {/* Address */}
                   {stop.street && (
-                    <p className="text-sm text-muted-foreground truncate">
+                    <p className="text-sm text-muted-foreground truncate min-w-0">
                       {stop.street}
                       {stop.city && `, ${stop.city}`}
                     </p>
                   )}
                   
                   {/* Metadata - distance and time */}
-                  <div className="flex items-center gap-2 mt-0.5">
+                  <div className="flex items-center gap-1.5 sm:gap-2 mt-0.5 flex-wrap min-w-0">
                     {stop.distanceFromPrevMi !== null && stop.distanceFromPrevMi > 0 && (
                       <div className="flex items-center gap-1 text-sm text-muted-foreground">
                         <Route className="h-3.5 w-3.5" />
