@@ -106,7 +106,7 @@ export default function MapView({
     // Create marker if it doesn't exist
     if (!userMarker.current) {
       const el = document.createElement("div");
-      el.className = "w-6 h-6 bg-green-500 rounded-full border-2 border-white shadow-lg animate-pulse";
+      el.className = "w-6 h-6 bg-blue-500 rounded-full border-2 border-white shadow-lg animate-pulse";
 
       userMarker.current = new mapboxgl.Marker({ 
         element: el, 
