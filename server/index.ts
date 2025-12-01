@@ -8,6 +8,10 @@ import { startPeriodicSync } from "./services/sync";
 import { seedDemoCompanies } from "./seed-data";
 
 const app = express();
+
+// Trust proxy for secure cookies behind Replit's load balancer
+app.set('trust proxy', 1);
+
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: false, limit: '50mb' }));
 
