@@ -712,7 +712,6 @@ export default function PlanPage() {
               
               {/* Radius */}
               <div>
-                <label className="text-xs font-medium text-muted-foreground">Search Radius</label>
                 <RadiusPicker value={radiusMi} onChange={setRadiusMi} />
               </div>
             </div>
