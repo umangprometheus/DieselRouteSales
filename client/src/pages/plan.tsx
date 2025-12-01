@@ -524,8 +524,8 @@ export default function PlanPage() {
         </DropdownMenu>
       </header>
 
-      {/* Main Content */}
-      <div className="flex-1 flex flex-col md:flex-row overflow-hidden">
+      {/* Main Content - md:pt-16 accounts for fixed DesktopHeader */}
+      <div className="flex-1 flex flex-col md:flex-row overflow-hidden md:pt-16">
         {/* Mobile Tab Controls - Always visible on mobile */}
         <div className="md:hidden sticky top-0 left-0 right-0 z-30 p-4 pb-4 bg-background">
           <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "map" | "list")} className="w-full">
