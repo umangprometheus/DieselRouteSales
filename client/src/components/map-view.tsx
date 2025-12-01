@@ -450,8 +450,8 @@ export default function MapView({
     <div className={`relative w-full h-full ${className}`} data-testid="map-view">
       <div ref={mapContainer} className="absolute inset-0" />
       
-      {/* Map Legend */}
-      <div className="absolute top-3 left-3 bg-background/95 backdrop-blur-sm border rounded-md shadow-sm z-10 p-2">
+      {/* Map Legend - positioned lower on desktop to avoid dev banner */}
+      <div className="absolute top-3 md:top-14 left-3 bg-background/95 backdrop-blur-sm border rounded-md shadow-sm z-10 p-2">
         <div className="space-y-1">
           <div className="flex items-center gap-2">
             <div className="w-3 h-3 rounded-full bg-[#3b82f6] border-2 border-white shadow-sm"></div>
