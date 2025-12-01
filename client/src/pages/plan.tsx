@@ -582,54 +582,7 @@ export default function PlanPage() {
               }}
             />
 
-            {/* Desktop Floating Action Button - positioned to avoid banner */}
-            <div className="hidden md:flex absolute bottom-6 left-6 z-20 flex-col gap-2 items-start">
-              <div className="bg-background/95 backdrop-blur-sm border rounded-lg shadow-lg p-3">
-                <div className="text-sm mb-2">
-                  {selectedCompanyIds.length === 0 ? (
-                    <span className="text-muted-foreground">Select companies to build route</span>
-                  ) : selectedCompanyIds.length === 1 ? (
-                    <span className="font-medium">1 company selected</span>
-                  ) : (
-                    <span className="font-medium">{selectedCompanyIds.length} companies selected</span>
-                  )}
-                </div>
-                <div className="flex gap-2">
-                  {selectedCompanyIds.length > 0 && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => {
-                        setSelectedCompanyIds([]);
-                        setClickedCompanyId(null);
-                      }}
-                      data-testid="button-clear-selection-desktop-map"
-                    >
-                      <X className="w-4 h-4 mr-1" />
-                      Clear
-                    </Button>
-                  )}
-                  <Button
-                    onClick={handleBuildRoute}
-                    size="sm"
-                    disabled={selectedCompanyIds.length < 2 || buildRouteMutation.isPending}
-                    data-testid="button-start-route-desktop-map"
-                  >
-                    {buildRouteMutation.isPending ? (
-                      <>
-                        <Loader2 className="w-4 h-4 mr-1 animate-spin" />
-                        Building...
-                      </>
-                    ) : (
-                      <>
-                        <Route className="w-4 h-4 mr-1" />
-                        Start Route
-                      </>
-                    )}
-                  </Button>
-                </div>
-              </div>
-            </div>
+            
 
             {/* Bottom Sheet - Company Info */}
             {clickedCompanyId && (() => {
