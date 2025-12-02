@@ -131,24 +131,32 @@ export default function PlanPage() {
     ? companies 
     : companies.filter(c => c.lifecycleStage === lifecycleFilter);
 
-  // Try to get GPS location on mount
+  // Try to get GPS location on mount with high accuracy
   useEffect(() => {
     if (navigator.geolocation) {
+      console.log("[GPS] Requesting high-accuracy location...");
       navigator.geolocation.getCurrentPosition(
         (position) => {
+          const { latitude, longitude, accuracy } = position.coords;
+          console.log(`[GPS] Got location: ${latitude.toFixed(6)}, ${longitude.toFixed(6)} (accuracy: ${accuracy?.toFixed(0)}m)`);
           setUserLocation({
-            lat: position.coords.latitude,
-            lng: position.coords.longitude,
+            lat: latitude,
+            lng: longitude,
           });
         },
         (error) => {
-          console.log("GPS error:", error);
+          console.log("[GPS] Error:", error.code, error.message);
           // Default to Memphis if GPS fails
           setUserLocation({ lat: 35.1495, lng: -90.0490 });
         },
-        { enableHighAccuracy: false, timeout: 5000 }
+        { 
+          enableHighAccuracy: true,  // Use real GPS, not IP/cell tower
+          timeout: 10000,            // Allow 10 seconds for GPS lock
+          maximumAge: 0              // Don't use cached position
+        }
       );
     } else {
+      console.log("[GPS] Geolocation not supported");
       setUserLocation({ lat: 35.1495, lng: -90.0490 });
     }
   }, []);
