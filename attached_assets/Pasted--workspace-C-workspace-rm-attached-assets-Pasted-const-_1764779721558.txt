@@ -1,0 +1,42 @@
+~/workspace$ ^C
+~/workspace$ rm "attached_assets/Pasted-const-axios-require-axios-exports-main-async-event-callback-const-HUBSPOT-API-TO-1762464509672_1762464509674.txt"
+~/workspace$ git add -A
+git commit -m "Remove file containing API key"
+[main 1b9a2a7] Remove file containing API key
+ 1 file changed, 166 deletions(-)
+ delete mode 100644 attached_assets/Pasted-const-axios-require-axios-exports-main-async-event-callback-const-HUBSPOT-API-TO-1762464509672_1762464509674.txt
+~/workspace$ git push -u origin main --force
+Enumerating objects: 1882, done.
+Counting objects: 100% (1882/1882), done.
+Delta compression using up to 8 threads
+Compressing objects: 100% (1859/1859), done.
+Writing objects: 100% (1882/1882), 20.81 MiB | 5.39 MiB/s, done.
+Total 1882 (delta 1523), reused 0 (delta 0), pack-reused 0 (from 0)
+remote: Resolving deltas: 100% (1523/1523), done.
+remote: error: GH013: Repository rule violations found for refs/heads/main.
+remote: 
+remote: - GITHUB PUSH PROTECTION
+remote:   —————————————————————————————————————————
+remote:     Resolve the following violations before pushing again
+remote: 
+remote:     - Push cannot contain secrets
+remote: 
+remote:     
+remote:      (?) Learn how to resolve a blocked push
+remote:      https://docs.github.com/code-security/secret-scanning/working-with-secret-scanning-and-push-protection/working-with-push-protection-from-the-command-line#resolving-a-blocked-push
+remote:     
+remote:     
+remote:       —— Hubspot API Key ———————————————————————————————————
+remote:        locations:
+remote:          - commit: d7cb1c3c7cd37db599cb90d2f6642bacb147a01f
+remote:            path: attached_assets/Pasted-const-axios-require-axios-exports-main-async-event-callback-const-HUBSPOT-API-TO-1762464509672_1762464509674.txt:4
+remote:     
+remote:        (?) To push, remove secret from commit(s) or follow this URL to allow the secret.
+remote:        https://github.com/umangprometheus/DieselRouteSales/security/secret-scanning/unblock-secret/36LIgtj8WZw273ZEEtQtdFqbyN4
+remote:     
+remote: 
+remote: 
+To https://github.com/umangprometheus/DieselRouteSales.git
+ ! [remote rejected] main -> main (push declined due to repository rule violations)
+error: failed to push some refs to 'https://github.com/umangprometheus/DieselRouteSales.git'
+~/workspace$ 
