@@ -2,11 +2,8 @@ import { useEffect, useRef, useState } from "react";
 import mapboxgl from "mapbox-gl";
 import type { CompanyWithDistance } from "@shared/schema";
 
-// Set Mapbox access token
-// Note: MAPBOX_TOKEN secret needs to be duplicated as VITE_MAPBOX_TOKEN for client access
-const token = import.meta.env.VITE_MAPBOX_TOKEN || "";
-console.log("[MapView] Token available:", token ? "YES (length: " + token.length + ")" : "NO");
-mapboxgl.accessToken = token;
+// Mapbox token will be fetched at runtime from /api/config
+// This ensures the token works regardless of how the app is built
 
 interface MapViewProps {
   companies: CompanyWithDistance[];
@@ -41,10 +38,49 @@ export default function MapView({
   const hasInitiallyCentered = useRef(false); // Track if we've done the initial centering
   const [mapLoaded, setMapLoaded] = useState(false);
   const [mapError, setMapError] = useState<string | null>(null);
+  const [tokenLoaded, setTokenLoaded] = useState(false);
+
+  // Fetch Mapbox token from server at runtime (not build time)
+  useEffect(() => {
+    async function fetchMapboxToken() {
+      try {
+        // First try to use build-time token (for backwards compatibility)
+        const buildTimeToken = import.meta.env.VITE_MAPBOX_TOKEN;
+        if (buildTimeToken) {
+          console.log("[MapView] Using build-time token (length:", buildTimeToken.length + ")");
+          mapboxgl.accessToken = buildTimeToken;
+          setTokenLoaded(true);
+          return;
+        }
+
+        // Fetch token from server at runtime
+        console.log("[MapView] Fetching token from /api/config...");
+        const response = await fetch("/api/config");
+        if (!response.ok) {
+          throw new Error("Failed to fetch config");
+        }
+        const config = await response.json();
+        
+        if (config.mapboxToken) {
+          console.log("[MapView] Runtime token loaded (length:", config.mapboxToken.length + ")");
+          mapboxgl.accessToken = config.mapboxToken;
+          setTokenLoaded(true);
+        } else {
+          console.error("[MapView] No Mapbox token in server config");
+          setMapError("Mapbox token not configured on server");
+        }
+      } catch (error) {
+        console.error("[MapView] Failed to fetch Mapbox token:", error);
+        setMapError("Failed to load map configuration");
+      }
+    }
+    
+    fetchMapboxToken();
+  }, []);
 
   // Initialize map
   useEffect(() => {
-    if (!mapContainer.current || map.current) return;
+    if (!mapContainer.current || map.current || !tokenLoaded) return;
 
     // Check if Mapbox token is available
     if (!mapboxgl.accessToken) {
@@ -97,7 +133,7 @@ export default function MapView({
       map.current?.remove();
       map.current = null;
     };
-  }, []);
+  }, [tokenLoaded]);
 
   // Update user location marker (NEVER auto-center, let user control the view)
   useEffect(() => {
@@ -106,7 +142,7 @@ export default function MapView({
     // Create marker if it doesn't exist
     if (!userMarker.current) {
       const el = document.createElement("div");
-      el.className = "w-6 h-6 bg-green-500 rounded-full border-2 border-white shadow-lg animate-pulse";
+      el.className = "w-6 h-6 bg-yellow-500 rounded-full border-2 border-white shadow-lg animate-pulse";
 
       userMarker.current = new mapboxgl.Marker({ 
         element: el, 

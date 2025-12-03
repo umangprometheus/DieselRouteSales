@@ -82,6 +82,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Ensure demo user exists
   await ensureDemoUser();
+
+  // ============================================================================
+  // Config Endpoint - Serves Mapbox token at RUNTIME
+  // ============================================================================
+  // This serves the token at RUNTIME instead of embedding at build time
+  // This ensures the map works regardless of how the app is built/deployed
+  app.get("/api/config", (req, res) => {
+    res.json({
+      mapboxToken: process.env.MAPBOX_TOKEN || process.env.VITE_MAPBOX_TOKEN || "",
+    });
+  });
   
   // Seed demo companies for testing
   const { seedDemoCompanies } = await import("./seed-data");
