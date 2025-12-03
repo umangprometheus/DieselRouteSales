@@ -1,0 +1,39 @@
+~/workspace$ ^[[200~git filter-branch --force --index-filter \
+>   "git rm --cached --ignore-unmatch 'attached_assets/Pasted-const-axios-require-axios-exports-main-async-event-callback-const-HUBSPOT-API-TO-1762464509672_1762464509674.txt'" \
+>   --prune-empty --tag-name-filter cat -- --all~
+git filter-branch --force --index-filter   \"git rm --cached --ignore-unmatch 'attached_assets/Pasted-const-axios-require-axios-exports-main-async-event-callback-const-HUBSPOT-API-TO-1762464509672_1762464509674.txt'\"   --prune-empty --tag-name-filter cat -- --all~bash: git: command not found
+~/workspace$ git push -u origin main --force
+Enumerating objects: 1886, done.
+Counting objects: 100% (1886/1886), done.
+Delta compression using up to 8 threads
+Compressing objects: 100% (1863/1863), done.
+Writing objects: 100% (1886/1886), 20.79 MiB | 5.31 MiB/s, done.
+Total 1886 (delta 1528), reused 0 (delta 0), pack-reused 0 (from 0)
+remote: Resolving deltas: 100% (1528/1528), done.
+remote: error: GH013: Repository rule violations found for refs/heads/main.
+remote: 
+remote: - GITHUB PUSH PROTECTION
+remote:   —————————————————————————————————————————
+remote:     Resolve the following violations before pushing again
+remote: 
+remote:     - Push cannot contain secrets
+remote: 
+remote:     
+remote:      (?) Learn how to resolve a blocked push
+remote:      https://docs.github.com/code-security/secret-scanning/working-with-secret-scanning-and-push-protection/working-with-push-protection-from-the-command-line#resolving-a-blocked-push
+remote:     
+remote:     
+remote:       —— Hubspot API Key ———————————————————————————————————
+remote:        locations:
+remote:          - commit: d7cb1c3c7cd37db599cb90d2f6642bacb147a01f
+remote:            path: attached_assets/Pasted-const-axios-require-axios-exports-main-async-event-callback-const-HUBSPOT-API-TO-1762464509672_1762464509674.txt:4
+remote:     
+remote:        (?) To push, remove secret from commit(s) or follow this URL to allow the secret.
+remote:        https://github.com/umangprometheus/DieselRouteSales/security/secret-scanning/unblock-secret/36LIgtj8WZw273ZEEtQtdFqbyN4
+remote:     
+remote: 
+remote: 
+To https://github.com/umangprometheus/DieselRouteSales.git
+ ! [remote rejected] main -> main (push declined due to repository rule violations)
+error: failed to push some refs to 'https://github.com/umangprometheus/DieselRouteSales.git'
+~/workspace$ 
